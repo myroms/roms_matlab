@@ -1,14 +1,17 @@
-function [dist,phaseangle] = distance(lat,lon,units)
+function [dist,phaseangle] = sw_dist(lat,lon,units)
 
 % SW_DIST    Distance between two lat,lon coordinates
+%===================================================================
+% SW_DIST  $Id$
+%          Copyright (C) CSIRO, Phil Morgan & Steve Rintoul 1992.
 %
-% USAGE:  [dist,phaseangle] = distance(lat,lon {,units} )
+% USAGE:  [dist,phaseangle] = sw_dist(lat,lon {,units} )
 %
 % DESCRIPTION:
 %   Calculate distance between two positions on glode using the "Plane
 %   Sailing" method.  Also uses simple geometry to calculate the bearing of
 %   the path between position pairs.
-% 
+%
 % INPUT:
 %    lat      = decimal degrees (+ve N, -ve S) [- 90.. +90]
 %    lon      = decimal degrees (+ve E, -ve W) [-180..+180]
@@ -24,18 +27,17 @@ function [dist,phaseangle] = distance(lat,lon,units)
 % AUTHOR:   Phil Morgan and Steve Rintoul 92-02-10
 %
 % DISCLAIMER:
-%   This software is provided "as is" without warranty of any kind.  
+%   This software is provided "as is" without warranty of any kind.
 %   See the file sw_copy.m for conditions of use and licence.
-% 
+%
 % REFERENCE:
 %    The PLANE SAILING method as descriibed in "CELESTIAL NAVIGATION" 1989 by
 %    Dr. P. Gormley. The Australian Antartic Division.
+%
 
-% svn $Id$
-%===================================================================
-% SW_DIST  $Revision$  $Date$
-%          Copyright (C) CSIRO, Phil Morgan & Steve Rintoul 1992. 
-%==================================================================
+% Modifications
+% 99-06-25. Lindsay Pender, Function name change from distance to sw_dist.
+% 99-06-25. Lindsay Pender, Fixed transpose of row vectors.
 
 % CALLER:   general purpose
 % CALLEE:   none
@@ -45,7 +47,7 @@ function [dist,phaseangle] = distance(lat,lon,units)
 %----------------------
 if nargin > 3
   error('sw_dist.m: No more than 3 arguments allowed')
-elseif nargin==3 
+elseif nargin==3
   if ~isstr(units)
       error('sw_dist.m: units argument must be string')
   end %if
@@ -58,15 +60,8 @@ end%if
 [mlat,nlat] = size(lat);
 if mlat~=1 & nlat~=1
    error('sw_dist.m: lat, lon must be vectors.  No matrices allowed')
-else
-  if mlat == 1
-    Transpose = 1;  % row vector passed in
-  else
-    Transpose = 0;  % accept column vector
-  end%if
 end%if
-lat = lat(:); %force to column vectors
-lon = lon(:);
+
 if length(lat)~=length(lon)
    error('sw_dist.m: lat and lon must have same number of elements')
 end%if
@@ -102,10 +97,4 @@ end %if
 
 % CALCUALTE ANGLE TO X AXIS
 phaseangle  = angle(dep+dlat*sqrt(-1))*RAD2DEG;
- 
-if Transpose
-  dist = dist';
-  phaseangle = phaseangle';
-end %if
-
 return

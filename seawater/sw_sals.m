@@ -1,36 +1,37 @@
 function S = sw_sals(Rt,T)
 
 % SW_SALS    Salinity of sea water
+%=========================================================================
+% SW_SALS  $Id$
+%          Copyright (C) CSIRO, Phil Morgan 1993.
 %
 % USAGE:  S = sw_sals(Rt,T)
 %
 % DESCRIPTION:
-%    Salinity of sea water as a function of Rt and T.  
+%    Salinity of sea water as a function of Rt and T.
 %    UNESCO 1983 polynomial.
 %
 % INPUT:
-%   Rt = Rt(S,T) = C(S,T,0)/C(35,T,0)
-%   T  = temperature [degree C (IPTS-68)]
+%   Rt = Rt(S,T) = C(S,T,0)/C(35,T(IPTS-68),0)
+%   T  = temperature [degree C (ITS-90)]
 %
 % OUTPUT:
 %   S  = salinity    [psu      (PSS-78)]
-% 
-% AUTHOR:  Phil Morgan 93-04-17  (morgan@ml.csiro.au)
+%
+% AUTHOR:  Phil Morgan 93-04-17, Lindsay Pender (Lindsay.Pender@csiro.au)
 %
 % DISCLAIMER:
-%   This software is provided "as is" without warranty of any kind.  
+%   This software is provided "as is" without warranty of any kind.
 %   See the file sw_copy.m for conditions of use and licence.
 %
 % REFERENCES:
 %    Fofonoff, P. and Millard, R.C. Jr
-%    Unesco 1983. Algorithms for computation of fundamental properties of 
+%    Unesco 1983. Algorithms for computation of fundamental properties of
 %    seawater, 1983. _Unesco Tech. Pap. in Mar. Sci._, No. 44, 53 pp.
+%
 
-% svn $Id$
-%=========================================================================
-% SW_SALS  $Revision$  $Date$
-%          Copyright (C) CSIRO, Phil Morgan 1993.
-%=========================================================================
+% Modifications
+% 03-12-12. Lindsay Pender, Converted to ITS-90.
 
 % CALLER: sw_salt
 % CALLEE: none
@@ -51,6 +52,9 @@ end %if
 %--------------------------
 % eqn (1) & (2) p6,7 unesco
 %--------------------------
+
+del_T68 = T * 1.00024 - 15;
+
 a0 =  0.0080;
 a1 = -0.1692;
 a2 = 25.3851;
@@ -68,10 +72,9 @@ b5 = -0.0144;
 k  =  0.0162;
 
 Rtx   = sqrt(Rt);
-del_T = T - 15;
-del_S = (del_T ./ (1+k*del_T) ) .* ...
+del_S = (del_T68 ./ (1+k*del_T68) ) .* ...
         ( b0 + (b1 + (b2+ (b3 + (b4 + b5.*Rtx).*Rtx).*Rtx).*Rtx).*Rtx);
-	
+
 S = a0 + (a1 + (a2 + (a3 + (a4 + a5.*Rtx).*Rtx).*Rtx).*Rtx).*Rtx;
 
 S = S + del_S;

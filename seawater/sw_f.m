@@ -1,6 +1,9 @@
 function f = sw_f(lat)
 
 % SW_F       Coriolis factor "f"
+%===========================================================================
+% SW_F   $Id$
+%        Copyright (C) CSIRO, Phil Morgan 1993.
 %
 % USAGE:  f = sw_f(lat)
 %
@@ -8,7 +11,7 @@ function f = sw_f(lat)
 %    Calculates the Coriolis factor "f" defined by
 %       f = 2*Omega*Sin(lat)  where Omega = 7.292e-5 radians/sec
 %
-% INPUT:  
+% INPUT:
 %   lat = Latitude in decimal degress north [-90..+90]
 %
 % OUTPUT:
@@ -17,23 +20,17 @@ function f = sw_f(lat)
 % AUTHOR:  Phil Morgan 93-04-20  (morgan@ml.csiro.au)
 %
 % DISCLAIMER:
-%   This software is provided "as is" without warranty of any kind.  
+%   This software is provided "as is" without warranty of any kind.
 %   See the file sw_copy.m for conditions of use and licence.
 %
-% REFERENCE: 
+% REFERENCE:
 %   S. Pond & G.Pickard  2nd Edition 1986
 %   Introductory Dynamical Oceanogrpahy
 %   Pergamon Press Sydney.  ISBN 0-08-028728-X
-%   
+%
 %   A.E. Gill 1982. p.597
 %   "Atmosphere-Ocean Dynamics"
 %   Academic Press: New York.  ISBN: 0-12-283522-0
-
-% svn $Id$
-%=========================================================================
-% SW_F   $Revision$  $Date$
-%        Copyright (C) CSIRO, Phil Morgan 1993.
-%=========================================================================
 
 % CALLER:  general purpose
 % CALLEE:  none
@@ -43,7 +40,7 @@ function f = sw_f(lat)
 %-------------
 if nargin ~= 1
    error('sw_f.m:  Requires one input argument')
-end %if  
+end %if
 
 %-------------
 % BEGIN

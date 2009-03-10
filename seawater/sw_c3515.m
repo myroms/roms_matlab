@@ -1,6 +1,9 @@
 function c3515 = sw_c3515()
 
 % SW_C3515   Conductivity at (35,15,0)
+%=========================================================================
+% SW_c3515  $Id$
+%       %   Copyright (C) CSIRO, Phil Morgan 1993.
 %
 % USAGE:  c3515 = sw_c3515
 %
@@ -10,26 +13,20 @@ function c3515 = sw_c3515()
 % INPUT: (none)
 %
 % OUTPUT:
-%   c3515  = Conductivity   [mmho/cm == mS/cm] 
-% 
+%   c3515  = Conductivity   [mmho/cm == mS/cm]
+%
 % AUTHOR:  Phil Morgan 93-04-17  (morgan@ml.csiro.au)
 %
 % DISCLAIMER:
-%   This software is provided "as is" without warranty of any kind.  
+%   This software is provided "as is" without warranty of any kind.
 %   See the file sw_copy.m for conditions of use and licence.
 %
 % REFERENCES:
 %    R.C. Millard and K. Yang 1992.
-%    "CTD Calibration and Processing Methods used by Woods Hole 
+%    "CTD Calibration and Processing Methods used by Woods Hole
 %     Oceanographic Institution"  Draft April 14, 1992
 %    (Personal communication)
 %
-
-% svn $Id$
-%=========================================================================
-% SW_c3515  $Revision$   $Date$
-%           Copyright (C) CSIRO, Phil Morgan 1993.
-%=========================================================================
 
 % CALLER: none
 % CALLEE: none

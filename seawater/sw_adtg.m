@@ -1,6 +1,9 @@
 function ADTG = sw_adtg(S,T,P)
 
 % SW_ADTG    Adiabatic temperature gradient
+%===========================================================================
+% SW_ADTG   $Id$
+%           Copyright (C) CSIRO, Phil Morgan  1992.
 %
 % adtg = sw_adtg(S,T,P)
 %
@@ -9,22 +12,22 @@ function ADTG = sw_adtg(S,T,P)
 %
 % INPUT:  (all must have same dimensions)
 %   S = salinity    [psu      (PSS-78) ]
-%   T = temperature [degree C (IPTS-68)]
+%   T = temperature [degree C (ITS-90)]
 %   P = pressure    [db]
 %       (P may have dims 1x1, mx1, 1xn or mxn for S(mxn) )
 %
 % OUTPUT:
 %   ADTG = adiabatic temperature gradient [degree_C/db]
 %
-% AUTHOR:  Phil Morgan 92-04-03  (morgan@ml.csiro.au)
+% AUTHOR:  Phil Morgan, Lindsay Pender (Lindsay.Pender@csiro.au)
 %
 % DISCLAIMER:
-%   This software is provided "as is" without warranty of any kind.  
+%   This software is provided "as is" without warranty of any kind.
 %   See the file sw_copy.m for conditions of use and licence.
 %
 % REFERENCES:
 %    Fofonoff, P. and Millard, R.C. Jr
-%    Unesco 1983. Algorithms for computation of fundamental properties of 
+%    Unesco 1983. Algorithms for computation of fundamental properties of
 %    seawater. Unesco Tech. Pap. in Mar. Sci., No. 44, 53 pp.  Eqn.(31) p.39
 %
 %    Bryden, H. 1973.
@@ -33,11 +36,9 @@ function ADTG = sw_adtg(S,T,P)
 %    DEEP-SEA RES., 1973, Vol20,401-408.
 %
 
-% svn $Id$
-%===========================================================================
-% SW_ADTG   $Revision$  $Date$
-%           Copyright (C) CSIRO, Phil Morgan  1992.
-%===========================================================================
+% Modifications
+% 99-06-25. Lindsay Pender, Fixed transpose of row vectors.
+% 03-12-12. Lindsay Pender, Converted to ITS-90.
 
 %-------------
 % CHECK INPUTS
@@ -51,7 +52,7 @@ end %if
 [mt,nt] = size(T);
 [mp,np] = size(P);
 
-  
+
 % CHECK THAT S & T HAVE SAME SHAPE
 if (ms~=mt) | (ns~=nt)
    error('check_stp: S & T must have same dimensions')
@@ -65,28 +66,19 @@ elseif np==ns & mp==1      % P is row vector with same cols as S
 elseif mp==ms & np==1      % P is column vector
    P = P( :, ones(1,ns) ); %   Copy across each row
 elseif mp==ms & np==ns     % PR is a matrix size(S)
-   % shape ok 
+   % shape ok
 else
    error('check_stp: P has wrong dimensions')
 end %if
-[mp,np] = size(P);
- 
 
-  
-% IF ALL ROW VECTORS ARE PASSED THEN LET US PRESERVE SHAPE ON RETURN.
-Transpose = 0;
-if mp == 1  % row vector
-   P       =  P(:);
-   T       =  T(:);
-   S       =  S(:);   
-
-   Transpose = 1;
-end %if
 %***check_stp
 
 %-------------
 % BEGIN
 %-------------
+
+T68 = 1.00024 * T;
+
 a0 =  3.5803E-5;
 a1 = +8.5258E-6;
 a2 = -6.836E-8;
@@ -107,13 +99,10 @@ e0 = -4.6206E-13;
 e1 = +1.8676E-14;
 e2 = -2.1687E-16;
 
-ADTG =      a0 + (a1 + (a2 + a3.*T).*T).*T ... 
-         + (b0 + b1.*T).*(S-35)  ...
-	 + ( (c0 + (c1 + (c2 + c3.*T).*T).*T) + (d0 + d1.*T).*(S-35) ).*P ...
-         + (  e0 + (e1 + e2.*T).*T ).*P.*P;
-
-if Transpose
-   ADTG = ADTG';
-end %if
+ADTG =      a0 + (a1 + (a2 + a3.*T68).*T68).*T68 ...
+         + (b0 + b1.*T68).*(S-35)  ...
+     + ( (c0 + (c1 + (c2 + c3.*T68).*T68).*T68) ...
+     + (d0 + d1.*T68).*(S-35) ).*P ...
+         + (  e0 + (e1 + e2.*T68).*T68 ).*P.*P;
 
 return

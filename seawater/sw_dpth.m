@@ -1,6 +1,9 @@
 function DEPTHM = sw_dpth(P,LAT)
 
 % SW_DPTH    Depth from pressure
+%===========================================================================
+% SW_DPTH   $Id$
+%           Copyright (C) CSIRO, Phil Morgan 1992.
 %
 % USAGE:  dpth = sw_dpth(P,LAT)
 %
@@ -18,18 +21,15 @@ function DEPTHM = sw_dpth(P,LAT)
 % AUTHOR:  Phil Morgan 92-04-06  (morgan@ml.csiro.au)
 %
 % DISCLAIMER:
-%   This software is provided "as is" without warranty of any kind.  
+%   This software is provided "as is" without warranty of any kind.
 %   See the file sw_copy.m for conditions of use and licence.
 %
 % REFERENCES:
-%    Unesco 1983. Algorithms for computation of fundamental properties of 
+%    Unesco 1983. Algorithms for computation of fundamental properties of
 %    seawater, 1983. _Unesco Tech. Pap. in Mar. Sci._, No. 44, 53 pp.
 
-% svn $Id$
-%===========================================================================
-% SW_DPTH   $Revision$  $Date$
-%           Copyright (C) CSIRO, Phil Morgan 1992.
-%=========================================================================
+% Modifications
+% 99-06-25. Lindsay Pender, Fixed transpose of row vectors.
 
 % CALLER:  general purpose
 % CALLEE:  none
@@ -39,24 +39,20 @@ function DEPTHM = sw_dpth(P,LAT)
 %-------------
 [mP,nP] = size(P);
 [mL,nL] = size(LAT);
-if mL==1 & nL==1
+if mL==1 & nL==1                    % LAT scalar - fill to size of P
   LAT = LAT*ones(size(P));
-end %if  
 
-if (mP~=mL) | (nP~=nL)              % P & LAT are not the same shape
-     if (nP==nL) & (mL==1)          % LAT for each column of P
-        LAT = LAT( ones(1,mP), : ); %     copy LATS down each column
-                                    %     s.t. dim(P)==dim(LAT)
-     else
-        error('sw_depth.m:  Inputs arguments have wrong dimensions')
-     end %if
-end %if
+elseif nP == nL & mL == 1           % LAT is row vector
+  LAT = LAT(ones(1, mP), :);        % Coppy down each column
 
-Transpose = 0;
-if mP == 1  % row vector
-   P         =  P(:);
-   LAT       =  LAT(:);
-   Transpose = 1;
+elseif mP == mL & nL == 1           % LAT is column vector
+  LAT = LAT(:, ones(1, nP));        % Copy across each row
+
+elseif mP == mL & nP == nL
+  % Ok
+
+else
+   error('sw_depth.m:  Inputs arguments have wrong dimensions')
 end %if
 
 %-------------
@@ -77,9 +73,4 @@ X   = X.*X;
 bot_line = 9.780318*(1.0+(5.2788E-3+2.36E-5*X).*X) + gam_dash*0.5*P;
 top_line = (((c4*P+c3).*P+c2).*P+c1).*P;
 DEPTHM   = top_line./bot_line;
-
-if Transpose
-   DEPTHM = DEPTHM';
-end %if
-
 return

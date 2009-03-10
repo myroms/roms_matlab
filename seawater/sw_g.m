@@ -1,7 +1,9 @@
-
 function g = sw_g(LAT,z)
 
 % SW_G       Gravitational acceleration
+%===========================================================================
+% SW_G   $Id$
+%        Copyright (C) CSIRO, Phil Morgan 1993.
 %
 % USAGE:  g = sw_g(lat,z)
 %
@@ -18,23 +20,17 @@ function g = sw_g(LAT,z)
 % AUTHOR:  Phil Morgan 93-04-20  (morgan@ml.csiro.au)
 %
 % DISCLAIMER:
-%   This software is provided "as is" without warranty of any kind.  
+%   This software is provided "as is" without warranty of any kind.
 %   See the file sw_copy.m for conditions of use and licence.
 %
 % REFERENCES:
-%   Unesco 1983. Algorithms for computation of fundamental properties of 
+%   Unesco 1983. Algorithms for computation of fundamental properties of
 %   seawater, 1983. _Unesco Tech. Pap. in Mar. Sci._, No. 44, 53 pp.
 %
 %   A.E. Gill 1982. p.597
 %   "Atmosphere-Ocean Dynamics"
 %   Academic Press: New York.  ISBN: 0-12-283522-0
 %
-
-% svn $Id$
-%===========================================================================
-% SW_G   $Revision$  $Date$
-%        Copyright (C) CSIRO, Phil Morgan 1993.
-%=========================================================================
 
 % CALLER:  general purpose
 % CALLEE:  none
@@ -44,7 +40,7 @@ function g = sw_g(LAT,z)
 %-------------
 if ~(nargin==1 | nargin==2)
    error('sw_g.m:  Requires one or two input arguments')
-end %if  
+end %if
 if nargin == 1
   z = zeros(size(LAT));
 end %if
@@ -68,5 +64,4 @@ g       = 9.780318*(1.0+(5.2788E-3+2.36E-5*sin2).*sin2);
 if any(any(z))
    g    = g./((1+z/a).^2);    % from A.E.Gill p.597
 end %if
-
 return

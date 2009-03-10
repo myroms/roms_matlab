@@ -1,6 +1,9 @@
 function dS = sw_salds(Rtx,delT)
 
 % SW_SALDS   Differiential dS/d(sqrt(Rt)) at constant T.
+%=========================================================================
+% SW_SALDS   $Id$
+%            Copyright (C) CSIRO, Phil Morgan 1993.
 %
 % USAGE:  dS = sw_salds(Rtx,delT)
 %
@@ -14,24 +17,18 @@ function dS = sw_salds(Rtx,delT)
 %
 % OUTPUT:
 %   dS = S differential dS/d(sqrt(Rt)) at constant T.
-% 
-% AUTHOR:  Phil Morgan 93-04-21  (morgan@ml.csiro.au)
+%
+% AUTHOR:  Phil Morgan 93-04-21, Lindsay Pender (Lindsay.Pender@csiro.au)
 %
 % DISCLAIMER:
-%   This software is provided "as is" without warranty of any kind.  
+%   This software is provided "as is" without warranty of any kind.
 %   See the file sw_copy.m for conditions of use and licence.
 %
 % REFERENCES:
 %    Fofonoff, P. and Millard, R.C. Jr
-%    Unesco 1983. Algorithms for computation of fundamental properties of 
+%    Unesco 1983. Algorithms for computation of fundamental properties of
 %    seawater, 1983. _Unesco Tech. Pap. in Mar. Sci._, No. 44, 53 pp.
 %
-
-% svn $Id$
-%=========================================================================
-% SW_SALDS   $Revision$  $Date$
-%            Copyright (C) CSIRO, Phil Morgan 1993.
-%=========================================================================
 
 % CALLER: sw_cndr.m
 % CALLEE: none
@@ -52,6 +49,7 @@ end %if
 %-------
 % BEGIN
 %-------
+
 a0 =  0.0080;
 a1 = -0.1692;
 a2 = 25.3851;

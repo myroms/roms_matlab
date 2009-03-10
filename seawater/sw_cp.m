@@ -1,6 +1,9 @@
 function cp = sw_cp(S,T,P)
 
 % SW_CP      Heat Capacity (Cp) of sea water
+%=========================================================================
+% SW_CP  $Id$
+%         Copyright (C) CSIRO, Phil Morgan 1993.
 %
 % USAGE: cp = sw_cp(S,T,P)
 %
@@ -9,30 +12,28 @@ function cp = sw_cp(S,T,P)
 %
 % INPUT:  (all must have same dimensions)
 %   S = salinity    [psu      (PSS-78)]
-%   T = temperature [degree C (IPTS-68)]
+%   T = temperature [degree C (ITS-90)]
 %   P = pressure    [db]
 %       (P may have dims 1x1, mx1, 1xn or mxn for S(mxn) )
 %
 % OUTPUT:
-%   cp = Specific Heat Capacity  [J kg^-1 C^-1] 
-% 
-% AUTHOR:  Phil Morgan 93-04-20  (morgan@ml.csiro.au)
+%   cp = Specific Heat Capacity  [J kg^-1 C^-1]
+%
+% AUTHOR:  Phil Morgan, Lindsay Pender (Lindsay.Pender@csiro.au)
 %
 % DISCLAIMER:
-%   This software is provided "as is" without warranty of any kind.  
+%   This software is provided "as is" without warranty of any kind.
 %   See the file sw_copy.m for conditions of use and licence.
 %
 % REFERENCES:
 %    Fofonff, P. and Millard, R.C. Jr
-%    Unesco 1983. Algorithms for computation of fundamental properties of 
+%    Unesco 1983. Algorithms for computation of fundamental properties of
 %    seawater, 1983. _Unesco Tech. Pap. in Mar. Sci._, No. 44, 53 pp.
 %
 
-% svn $Id$
-%=========================================================================
-% SW_CP  $Revision$  $Date$
-%         Copyright (C) CSIRO, Phil Morgan 1993.
-%=========================================================================
+% Modifications
+% 99-06-25. Lindsay Pender, Fixed transpose of row vectors.
+% 03-12-12. Lindsay Pender, Converted to ITS-90.
 
 % CALLER: general purpose
 % CALLEE: none
@@ -41,7 +42,7 @@ function cp = sw_cp(S,T,P)
 % CHECK INPUT ARGUMENTS
 %----------------------
 if nargin ~=3
-   error('sw_cp.m: Must pass 3 parameters')
+   error('Must pass 3 parameters')
 end %if
 
 % CHECK S,T,P dimensions and verify consistent
@@ -49,10 +50,10 @@ end %if
 [mt,nt] = size(T);
 [mp,np] = size(P);
 
-  
+
 % CHECK THAT S & T HAVE SAME SHAPE
 if (ms~=mt) | (ns~=nt)
-   error('check_stp: S & T must have same dimensions')
+   error('S & T must have same dimensions')
 end %if
 
 % CHECK OPTIONAL SHAPES FOR P
@@ -63,29 +64,18 @@ elseif np==ns & mp==1      % P is row vector with same cols as S
 elseif mp==ms & np==1      % P is column vector
    P = P( :, ones(1,ns) ); %   Copy across each row
 elseif mp==ms & np==ns     % PR is a matrix size(S)
-   % shape ok 
+   % shape ok
 else
-   error('check_stp: P has wrong dimensions')
+   error('P has wrong dimensions')
 end %if
-[mp,np] = size(P);
- 
 
-  
-% IF ALL ROW VECTORS ARE PASSED THEN LET US PRESERVE SHAPE ON RETURN.
-Transpose = 0;
-if mp == 1  % row vector
-   P       =  P(:);
-   T       =  T(:);
-   S       =  S(:);   
-
-   Transpose = 1;
-end %if
 %***check_stp
 
 %------
 % BEGIN
 %------
 P = P/10; % to convert db to Bar as used in Unesco routines
+T68 = T * 1.00024;
 
 %------------
 % eqn 26 p.32
@@ -104,10 +94,10 @@ b0 =  0.1770383;
 b1 = -4.07718e-3;
 b2 =  5.148e-5;
 
-Cpst0 =  c0 + c1.*T + c2.*T.^2 + c3.*T.^3 + c4.*T.^4 + ...
-        (a0 + a1.*T + a2.*T.^2).*S + ...
-	(b0 + b1.*T + b2.*T.^2).*S.*sqrt(S);
-    
+Cpst0 = (((c4.*T68 + c3).*T68 + c2).*T68 + c1).*T68 + c0 + ...
+        (a0 + a1.*T68 + a2.*T68.^2).*S + ...
+    (b0 + b1.*T68 + b2.*T68.^2).*S.*sqrt(S);
+
 %------------
 % eqn 28 p.33
 %------------
@@ -128,11 +118,11 @@ c1 =  2.6380e-9;
 c2 = -6.5637e-11;
 c3 =  6.136e-13;
 
-del_Cp0t0 =  (a0 + a1.*T + a2.*T.^2 + a3.*T.^3 + a4.*T.^4).*P +    ...
-	     (b0 + b1.*T + b2.*T.^2 + b3.*T.^3 + b4.*T.^4).*P.^2 + ...   
-             (c0 + c1.*T + c2.*T.^2 + c3.*T.^3).*P.^3;
+del_Cp0t0 =  (((((c3.*T68 + c2).*T68 + c1).*T68 + c0).*P + ...
+             ((((b4.*T68 + b3).*T68 + b2).*T68 + b1).*T68 + b0)).*P + ...
+             ((((a4.*T68 + a3).*T68 + a2).*T68 + a1).*T68 + a0)).*P;
 
-%------------	 
+%------------
 % eqn 29 p.34
 %------------
 d0 =  4.9247e-3;
@@ -159,18 +149,14 @@ h2 =  3.513e-13;
 j1 = -1.4300e-12;
 S3_2  = S.*sqrt(S);
 
-del_Cpstp = [(d0 + d1.*T + d2.*T.^2 + d3.*T.^3 + d4.*T.^4).*S + ...
-             (e0 + e1.*T + e2.*T.^2).*S3_2].*P                + ...
-	    [(f0 + f1.*T + f2.*T.^2 + f3.*T.^3).*S            + ...
-	     g0.*S3_2].*P.^2                                  + ...
-	     [(h0 + h1.*T + h2.*T.^2).*S                      + ...
-	     j1.*T.*S3_2].*P.^3;
-     
+del_Cpstp = [((((d4.*T68 + d3).*T68 + d2).*T68 + d1).*T68 + d0).*S + ...
+             ((e2.*T68 + e1).*T68 + e0).*S3_2].*P                + ...
+        [(((f3.*T68 + f2).*T68 + f1).*T68 + f0).*S            + ...
+         g0.*S3_2].*P.^2                                  + ...
+         [((h2.*T68 + h1).*T68 + h0).*S                      + ...
+         j1.*T68.*S3_2].*P.^3;
+
 
 cp = Cpst0 + del_Cp0t0 + del_Cpstp;
-
-if Transpose
-   cp = cp';
-end %if
 
 return

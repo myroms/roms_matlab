@@ -1,13 +1,16 @@
 function vel = sw_gvel(ga,lat,lon)
 
 % SW_GVEL    Geostrophic velocity
+%===================================================================
+% GEOVEL   $Id$
+%          Copyright (C) CSIRO, Phil Morgan 1992
 %
 % USAGE:  vel = sw_gvel(ga,lat,lon)
 %
 % DESCRIPTION:
 %    Calculates geostrophic velocity given the geopotential anomaly
 %    and position of each station.
-% 
+%
 % INPUT:
 %    ga   = geopotential anomoly relative to the sea surface.
 %           dim(mxnstations)
@@ -19,9 +22,9 @@ function vel = sw_gvel(ga,lat,lon)
 %           dim(m,nstations-1)
 %
 % AUTHOR:   Phil Morgan   1992/03/26  (morgan@ml.csiro.au)
-%           
+%
 % DISCLAIMER:
-%   This software is provided "as is" without warranty of any kind.  
+%   This software is provided "as is" without warranty of any kind.
 %   See the file sw_copy.m for conditions of use and licence.
 %
 % REFERENCE: S. Pond & G.Pickard  2nd Edition 1986
@@ -31,18 +34,13 @@ function vel = sw_gvel(ga,lat,lon)
 %
 % NOTE: This calls sw_dist.m.  You can replace the call to this
 %       routine if you have a more appropraite distance routine.
-
-% svn $Id$
-%===================================================================
-% GEOVEL   $Revision$  $Date$
-%          Copyright (C) CSIRO, Phil Morgan 1992
-%==================================================================
+%
 
 % CALLER:   general purpose
 % CALLEE:   sw_dist.m
 %
 
-  
+
 DEG2RAD = pi/180;
 RAD2DEG = 180/pi;
 OMEGA   = 7.292e-5;  % Angular velocity of Earth  [radians/sec]
@@ -56,6 +54,6 @@ lf    = f.*distm;
 
 LF = lf(ones(m,1),:);
 
-vel   = -( ga(:,2:n)-ga(:,1:n-1) ) ./ LF;  
+vel   = -( ga(:,2:n)-ga(:,1:n-1) ) ./ LF;
 
 return

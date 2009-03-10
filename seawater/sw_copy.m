@@ -1,6 +1,6 @@
 % SW_COPY    Copyright and licence information on SEAWATER library.
 % =================================================================
-% SW_COPY  $Revision$  $Date$
+% SW_COPY  $Id$
 %          Copyright (C) Phil Morgan 1993
 %
 %      SOFTWARE LICENCE AGREEMENT
@@ -8,12 +8,12 @@
 %      1.0 Grant of Licence
 %
 %      1.1  The CSIRO Division of  Oceanography (herein referred to as
-%           "CSIRO") hereby grants you (hereinafter  referred to  as 
+%           "CSIRO") hereby grants you (hereinafter  referred to  as
 %           the  "Licencee"),  subject  to  the  Licencee agreeing  to
 %           comply with the terms and  conditions of this Agreement, a
 %           non-transferable,   non-exclusive  licence   to  use   the
 %           computer  programs described in this document (hereinafter
-%           referred to  as the   "Software")  for  the  purpose   of  
+%           referred to  as the   "Software")  for  the  purpose   of
 %           the  Licencee's computing activity.
 %
 %      1.2  CSIRO hereby grants the Licencee the right to  make copies
@@ -38,27 +38,27 @@
 %
 %           (i)   sell,  let for  hire or  by way  of  trade, offer  or
 %                 exhibit  or  expose  for sale  or  hire  or otherwise
-%  	          distribute the Software for  the purposes of trade or
+%             distribute the Software for  the purposes of trade or
 %                 any other purpose;
-%  
+%
 %           (ii)  authorise  or assist any third person  to do any
-%                 of the acts set out in (i)  above;  
+%                 of the acts set out in (i)  above;
 %
 %           (iii) modify  the  Software source  code  without  advising
-%                 CSIRO. 
+%                 CSIRO.
 %
 %      2.2 The Licencee agrees that:
 %
 %           (a)  CSIRO  is  the  owner  of  all  copyright  and  other
 %                Intellectual  Property   Rights  subsisting  in   the
 %                Software;
-%       
+%
 %           (b)  this   document  must  be   properly   cited  in  any
 %                publication  reporting  results  derived   from  this
 %                document or obtained from application and use of this
-%                software. Any  of   the  Licencee's  documentation   
-%                describing  results  generated  by  the  Licencee's  
-%                use  of  the Software will contain an acknowledgement 
+%                software. Any  of   the  Licencee's  documentation
+%                describing  results  generated  by  the  Licencee's
+%                use  of  the Software will contain an acknowledgement
 %                of CSIRO's  ownership of the Software;
 %
 %           (c)  CSIRO reserves all rights  in the Software other than
@@ -142,7 +142,7 @@
 %           this  Agreement,  and  shall  survive  all  expiration  or
 %           termination of this Agreement.
 %
-%      4.0 Termination 
+%      4.0 Termination
 %
 %      4.1  The Licence shall terminate  immediately upon the Licencee
 %           breaching any term or  condition of this Agreement whether
@@ -152,11 +152,9 @@
 %      4.2  CSIRO  may terminate the Licence on  reasonable grounds by
 %           notice in  writing  to the  Licencee, and  such notice  of
 %           termination shall  be effective  immediately upon  receipt
-%           by  the  Licencee. 
+%           by  the  Licencee.
 %
-%=========================================================================
-
-%$Id$
+%
 
 more on
 help sw_copy

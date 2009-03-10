@@ -1,6 +1,9 @@
 function [ga] = sw_gpan(S,T,P)
 
 % SW_GPAN    Geopotential anomaly
+%=========================================================================
+% SW_GPAN  $Id$
+%          Copyright (C) CSIRO, Phil Morgan 1992.
 %
 % USAGE:  [gpan]= sw_gpan(S,T,P)
 %
@@ -10,17 +13,17 @@ function [ga] = sw_gpan(S,T,P)
 %
 % INPUT:  (all must have same dimensions)
 %   S = salinity    [psu      (PSS-78)]
-%   T = temperature [degree C (ITP-68)]
+%   T = temperature [degree C (ITS-90)]
 %   P = Pressure    [db]
 %       (P may have dims 1x1, mx1, 1xn or mxn for S(mxn) )
 %
 % OUTPUT:
 %  gpan = Geopotential Anomaly  [m^3 kg^-1 Pa == m^2 s^-2 == J kg^-1]
 %
-% AUTHOR:  Phil Morgan 92-11-05  (morgan@ml.csiro.au)
+% AUTHOR:  Phil Morgan 92-11-05, Lindsay Pender (Lindsay.Pender@csiro.au)
 %
 % DISCLAIMER:
-%   This software is provided "as is" without warranty of any kind.  
+%   This software is provided "as is" without warranty of any kind.
 %   See the file sw_copy.m for conditions of use and licence.
 %
 % REFERENCE: S. Pond & G.Pickard  2nd Edition 1986
@@ -29,24 +32,22 @@ function [ga] = sw_gpan(S,T,P)
 %
 % Note that older literature may use units of "dynamic decimeter' for above.
 %
-% Adapted method from Pond and Pickard (p76) to calc gpan rel to sea 
+% Adapted method from Pond and Pickard (p76) to calc gpan rel to sea
 % surface whereas P&P calculated relative to the deepest common depth.
+%
 
-% svn $Id$
-%=========================================================================
-% SW_GPAN  $Revision$  $Date$
-%          Copyright (C) CSIRO, Phil Morgan 1992.
-%=========================================================================
+% Modifications
+% 03-12-12. Lindsay Pender, Converted to ITS-90.
 
 %
 % CALLER: general purpose
-% CALLEE: sw_svan.m 
+% CALLEE: sw_svan.m
 
 %----------------------
 % CHECK INPUT ARGUMENTS
 %----------------------
 if nargin ~=3
-   error('sw_gpan.m: Must pass 3 parameters')
+   error('Must pass 3 parameters')
 end %if
 
 % CHECK S,T,P dimensions and verify consistent
@@ -54,10 +55,10 @@ end %if
 [mt,nt] = size(T);
 [mp,np] = size(P);
 
-  
+
 % CHECK THAT S & T HAVE SAME SHAPE
 if (ms~=mt) | (ns~=nt)
-   error('check_stp: S & T must have same dimensions')
+   error('S & T must have same dimensions')
 end %if
 
 % CHECK OPTIONAL SHAPES FOR P
@@ -68,20 +69,20 @@ elseif np==ns & mp==1      % P is row vector with same cols as S
 elseif mp==ms & np==1      % P is column vector
    P = P( :, ones(1,ns) ); %   Copy across each row
 elseif mp==ms & np==ns     % PR is a matrix size(S)
-   % shape ok 
+   % shape ok
 else
-   error('check_stp: P has wrong dimensions')
+   error('P has wrong dimensions')
 end %if
 [mp,np] = size(P);
- 
 
-  
+
+
 % IF ALL ROW VECTORS ARE PASSED THEN LET US PRESERVE SHAPE ON RETURN.
 Transpose = 0;
 if mp == 1  % row vector
    P       =  P(:);
    T       =  T(:);
-   S       =  S(:);   
+   S       =  S(:);
 
    Transpose = 1;
 end %if

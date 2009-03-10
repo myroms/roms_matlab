@@ -1,6 +1,9 @@
 function dens = sw_dens(S,T,P)
 
 % SW_DENS    Density of sea water
+%=========================================================================
+% SW_DENS  $Id$
+%          Copyright (C) CSIRO, Phil Morgan 1992.
 %
 % USAGE:  dens = sw_dens(S,T,P)
 %
@@ -9,22 +12,22 @@ function dens = sw_dens(S,T,P)
 %
 % INPUT:  (all must have same dimensions)
 %   S = salinity    [psu      (PSS-78)]
-%   T = temperature [degree C (IPTS-68)]
+%   T = temperature [degree C (ITS-90)]
 %   P = pressure    [db]
 %       (P may have dims 1x1, mx1, 1xn or mxn for S(mxn) )
 %
 % OUTPUT:
-%   dens = density  [kg/m^3] 
-% 
-% AUTHOR:  Phil Morgan 92-11-05  (morgan@ml.csiro.au)
+%   dens = density  [kg/m^3]
+%
+% AUTHOR:  Phil Morgan 92-11-05, Lindsay Pender (Lindsay.Pender@csiro.au)
 %
 % DISCLAIMER:
-%   This software is provided "as is" without warranty of any kind.  
+%   This software is provided "as is" without warranty of any kind.
 %   See the file sw_copy.m for conditions of use and licence.
 %
 % REFERENCES:
 %    Fofonoff, P. and Millard, R.C. Jr
-%    Unesco 1983. Algorithms for computation of fundamental properties of 
+%    Unesco 1983. Algorithms for computation of fundamental properties of
 %    seawater, 1983. _Unesco Tech. Pap. in Mar. Sci._, No. 44, 53 pp.
 %
 %    Millero, F.J., Chen, C.T., Bradshaw, A., and Schleicher, K.
@@ -32,11 +35,9 @@ function dens = sw_dens(S,T,P)
 %    Deap-Sea Research., 1980, Vol27A, pp255-264.
 %
 
-% svn $Id$
-%=========================================================================
-% SW_DENS  $Revision$  $Date$
-%          Copyright (C) CSIRO, Phil Morgan 1992.
-%=========================================================================
+% Modifications
+% 99-06-25. Lindsay Pender, Fixed transpose of row vectors.
+% 03-12-12. Lindsay Pender, Converted to ITS-90.
 
 % CALLER: general purpose
 % CALLEE: sw_dens0.m sw_seck.m
@@ -55,7 +56,7 @@ end %if
 [mt,nt] = size(T);
 [mp,np] = size(P);
 
-  
+
 % CHECK THAT S & T HAVE SAME SHAPE
 if (ms~=mt) | (ns~=nt)
    error('check_stp: S & T must have same dimensions')
@@ -69,23 +70,11 @@ elseif np==ns & mp==1      % P is row vector with same cols as S
 elseif mp==ms & np==1      % P is column vector
    P = P( :, ones(1,ns) ); %   Copy across each row
 elseif mp==ms & np==ns     % PR is a matrix size(S)
-   % shape ok 
+   % shape ok
 else
    error('check_stp: P has wrong dimensions')
 end %if
-[mp,np] = size(P);
- 
 
-  
-% IF ALL ROW VECTORS ARE PASSED THEN LET US PRESERVE SHAPE ON RETURN.
-Transpose = 0;
-if mp == 1  % row vector
-   P       =  P(:);
-   T       =  T(:);
-   S       =  S(:);   
-
-   Transpose = 1;
-end %if
 %***check_stp
 
 %------
@@ -95,9 +84,7 @@ densP0 = sw_dens0(S,T);
 K      = sw_seck(S,T,P);
 P      = P/10;  % convert from db to atm pressure units
 dens   = densP0./(1-P./K);
-
-if Transpose
-   dens = dens';
-end %if
-
 return
+
+
+
