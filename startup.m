@@ -20,6 +20,7 @@ my_root='/home/arango/ocean/toms/repository';
 
 path(path, fullfile(my_root, 'matlab', 'bathymetry', ''))
 path(path, fullfile(my_root, 'matlab', 'coastlines', ''))
+path(path, fullfile(my_root, 'matlab', 'initial', ''))
 path(path, fullfile(my_root, 'matlab', 'landmask', ''))
 path(path, fullfile(my_root, 'matlab', 'seagrid', ''))
 path(path, fullfile(my_root, 'matlab', 'seawater', ''))

@@ -57,11 +57,10 @@ function [z,s,C]=scoord(h, x, y, Vtransform, Vstretching, ...
 % On Output:
 %
 %    z             Depths (m) of RHO- or W-points (matrix)
-%    s             S-coordinate independent variable, [-1 < s < 0] at
+%    s             S-coordinate independent variable, [-1 <= s <= 0] at
 %                    vertical RHO- or W-points (vector)
-%    C             Set of S-curves used to stretch the vertical coordinate
-%                    lines that follow the topography at vertical RHO- or
-%                    W-points (vector)
+%    C             Nondimensional, monotonic, vertical stretching function,
+%                    C(s), 1D array, [-1 <= C(s) <= 0]
 %
 
 % svn $Id$ 
@@ -95,7 +94,6 @@ if (Vstretching < 1 | Vstretching > 3),
 	num2str(Vstretching), setstr(7)]);
 end,
 
-Np=N+1;
 [Lp Mp]=size(h);
 hmin=min(min(h));
 hmax=max(max(h));
@@ -140,134 +138,26 @@ else,
 end,
 
 %----------------------------------------------------------------------------
-% Define S-Curves at vertical RHO- or W-points (-1 < s < 0).
+% Compute vertical stretching function, C(k):
 %----------------------------------------------------------------------------
 
-% Original vertical stretching function (Song and Haidvogel, 1994).
+report=1;
 
-if (Vstretching == 1),
-
-  ds=1.0/N;
-  if (kgrid == 1),
-    Nlev=Np;
-    lev=0:N;
-    s=(lev-N).*ds;
-  else,
-    Nlev=N;
-    lev=[1:N]-0.5;
-    s=(lev-N).*ds;
-  end,
-  if (theta_s > 0),
-    Ptheta=sinh(theta_s.*s)./sinh(theta_s);
-    Rtheta=tanh(theta_s.*(s+0.5))./(2.0*tanh(0.5*theta_s))-0.5;
-    C=(1.0-theta_b).*Ptheta+theta_b.*Rtheta;
-  else,
-    C=s;
-  end,
-
-% A. Shchepetkin (UCLA-ROMS) vertical stretching function.
-
-elseif (Vstretching == 2),
-
-  alfa=1.0;
-  beta=1.0;
-  ds=1.0/N;
-  if (kgrid == 1),
-    Nlev=Np;
-    lev=0:N;
-    s=(lev-N).*ds;
-  else
-    Nlev=N;
-    lev=[1:N]-0.5;
-    s=(lev-N).*ds;
-  end,
-  if (theta_s > 0),
-    Csur=(1.0-cosh(theta_s.*s))/(cosh(theta_s)-1.0);
-    if (theta_b > 0),
-      Cbot=-1.0+sinh(theta_b*(s+1.0))/sinh(theta_b);
-      weigth=(s+1.0).^alfa.*(1.0+(alfa/beta).*(1.0-(s+1.0).^beta));
-      C=weigth.*Csur+(1.0-weigth).*Cbot;
-    else
-      C=Csur;
-    end,
-  else,
-    C=s;
-  end,
-  
-%  R. Geyer BBL vertical stretching function.
-
-elseif (Vstretching == 3),
-
-  ds=1.0/N;
-  if (kgrid == 1),
-    Nlev=Np;
-    lev=0:N;
-    s=(lev-N).*ds;
-  else,
-    Nlev=N;
-    lev=[1:N]-0.5;
-    s=(lev-N).*ds;
-  end,
-  if (theta_s > 0),
-     exp_s=theta_s;      %  surface stretching exponent
-     exp_b=theta_b;      %  bottom  stretching exponent
-     alpha=3;            %  scale factor for all hyperbolic functions
-    Cbot=log(cosh(alpha*(s+1).^exp_b))/log(cosh(alpha))-1;
-    Csur=-log(cosh(alpha*abs(s).^exp_s))/log(cosh(alpha));
-    weight=(1-tanh( alpha*(s+.5)))/2;
-    C=weight.*Cbot+(1-weight).*Csur;
-  else,
-    C=s;
-  end,
-
-end,
-
-% Report S-coordinate parameters.
-
-report = 1;
-if report,
+if (report),
   disp(' ');
-  if (Vstretching == 1),
-    disp(['Vstretching = ',num2str(Vstretching), '   Song and Haidvogel (1994)']);
-  elseif (Vstretching == 2),
-    disp(['Vstretching = ',num2str(Vstretching), '   Shchepetkin (2005)']);
-  elseif (Vstretching == 3),
-    disp(['Vstretching = ',num2str(Vstretching), '   Geyer (2009), BBL']);
-  end,
   if (Vtransform == 1),
     disp(['Vtransform  = ',num2str(Vtransform), '   original ROMS']);
   elseif (Vtransform == 2),
     disp(['Vtransform  = ',num2str(Vtransform), '   ROMS-UCLA']);
   end,
-  if (kgrid == 1)
-    disp(['   kgrid    = ',num2str(kgrid), '   at W-points']);
-  else,
-    disp(['   kgrid    = ',num2str(kgrid), '   at RHO-points']);
-  end,
-  disp(['   theta_s  = ',num2str(theta_s)]);
-  disp(['   theta_b  = ',num2str(theta_b)]);
-  disp(['   hc       = ',num2str(hc)]);
-  disp(['   hmin     = ',num2str(hmin)]);
-  disp(['   hmax     = ',num2str(hmax)]);
-  disp(' ');
-  disp(' S-coordinate curves: k, s(k), C(k)')
-  disp(' ');
-  if (kgrid == 1),
-    for k=Nlev:-1:1,
-      disp(['    ', ...
-	    sprintf('%3g',k-1     ), '   ', ...
-	    sprintf('%20.12e',s(k)), '   ', ...
-	    sprintf('%20.12e',C(k))]);
-    end,
-  else
-    for k=Nlev:-1:1,
-      disp(['    ', ...
-	    sprintf('%3g',k       ), '   ', ...
-	    sprintf('%20.12e',s(k)), '   ', ...
-	    sprintf('%20.12e',C(k))]);
-    end,
-  end,
-  disp(' ');
+end,
+
+[s,C]=stretching(Vstretching, theta_s, theta_b, hc, N, kgrid, report);
+
+if (kgrid == 1),
+  Nlev=N+1;
+else,
+  Nlev=N;
 end,
 
 %============================================================================

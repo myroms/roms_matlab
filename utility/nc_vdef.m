@@ -11,40 +11,38 @@ function [varid,status]=nc_vdef(ncid,Var);
 %
 %    ncid        NetCDF file ID (integer).
 %    Var         Variable information (structure array):
-%                  Var.name  => variable name.
-%                  Var.type  => variable type.
-%                  Var.dimid => variable dimension IDs.
-%                  Var.long  => variable "long-name" attribute.
-%                  Var.opt_T => variable "option_T" attribute.
-%                  Var.opt_F => variable "option_F" attribute.
-%                  Var.opt_0 => variable "option_0" attribute.
-%                  Var.opt_1 => variable "option_1" attribute.
-%                  Var.opt_2 => variable "option_2" attribute.
-%                  Var.opt_3 => variable "option_3" attribute.
-%                  Var.opt_4 => variable "option_4" attribute.
-%                  Var.opt_5 => variable "option_5" attribute.
-%                  Var.opt_6 => variable "option_6" attribute.
-%                  Var.opt_7 => variable "option_7" attribute.
-%                  Var.units => variable "units" attribute.
-%                  Var.fill  => variable "_FillValue" attribute.
-%                  Var.miss  => variable "missing_value" attribute.
-%                  Var.offset=> variable "add_offset" attribute.
-%                  Var.min   => variable "valid_min" attribute.
-%                  Var.max   => variable "valid_max" attribute.
-%                  Var.minus => variable "negative" attribute.
-%                  Var.plus  => variable "positive" attribute.
-%                  Var.field => variable "field" attribute.
-%                  Var.pos   => variable "positions" attribute.
-%                  Var.time  => variable "time" attribute.
-%                  Var.coord => variable "coordinates" attribute.
-%                  Var.urot  => variable "u-rotation" attribute.
-%                  Var.vrot  => variable "v-rotation" attribute.
-%                  Var.left  => variable "left" attribute.
-%                  Var.right => variable "right" attribute.
-%                  Var.top   => variable "top" attribute.
-%                  Var.bottom=> variable "bottom" attribute.
-%                  Var.up    => variable "up" attribute.
-%                  Var.down  => variable "down" attribute.
+%                  Var.name     => name (string)
+%                  Var.type     => type (number)
+%                  Var.dimid    => dimension IDs (number)
+%                  Var.long     => "long_name" attribute (string)
+%                  Var.flag_str => "flag_values" attribute (string)
+%                  Var.flag_num => "flag_values" attribute (number)
+%                  Var.meaning  => "flag_meanings" attribute (string)
+%                  Var.units    => "units" attribute (string)
+%                  Var.calendar => "calendar" attribute (string) 
+%                  Var.offset   => "add_offset" attribute (number)
+%                  Var.cycle    => "cycle_length" attribute (number)
+%                  Var.min      => "valid_min" attribute (number)
+%                  Var.max      => "valid_max" attribute (number)
+%                  Var.positive => "positive" attribute (string)
+%                  Var.plus     => "positive_value" attribute (string)
+%                  Var.minus    => "negative_value" attribute (string)
+%                  Var.fill     => "_FillValue" attribute (number)
+%                  Var.miss     => "missing_value" attribute (string)
+%                  Var.stdname  => "standard_name" attribute (string)
+%                  Var.formula  => "formula_terms" attribute (string
+%                  Var.time     => "time" attribute (string)
+%                  Var.pos      => "positions" attribute (string)
+%                  Var.coord    => "coordinates" attribute (string)
+%                  Var.urot     => "u-rotation" attribute (string)
+%                  Var.vrot     => "v-rotation" attribute (string)
+%                  Var.left     => "left" attribute (string)
+%                  Var.right    => "right" attribute (string)
+%                  Var.top      => "top" attribute (string)
+%                  Var.bottom   => "bottom" attribute (string)
+%                  Var.up       => "up" attribute (string)
+%                  Var.down     => "down" attribute (string)
+%                  Var.field    => "field" attribute (string)
 %
 % On Output:
 %
@@ -67,6 +65,7 @@ function [varid,status]=nc_vdef(ncid,Var);
 [ncdouble]=mexnc('parameter','nc_double');
 [ncfloat ]=mexnc('parameter','nc_float');
 [ncchar  ]=mexnc('parameter','nc_char');
+[ncint   ]=mexnc('parameter','nc_int');
 
 % Set variable type (default: floating point, single precision)
 
@@ -80,455 +79,181 @@ end,
 %  Define requested variable.
 %---------------------------------------------------------------------------
 
-% Define variable.
-
 if (isfield(Var,'name') & isfield(Var,'dimid')),
   vdid=Var.dimid;
   nvdim=length(vdid);
-  [varid]=mexnc('ncvardef',ncid,Var.name,vartyp,nvdim,vdid);
-  if (varid == -1),
-    error(['NC_VDEF: ncvardef - unable to define variable: ',Var.name]);
+  [varid,status]=mexnc('def_var',ncid,Var.name,vartyp,nvdim,vdid);
+  if (varid == -1 | status ~= 0),
+    error(['NC_VDEF: DEF_VAR - unable to define variable: ',Var.name]);
     return,
   end,
 end,
 
-% Set "long-name" attribute.
+%---------------------------------------------------------------------------
+% Write variable attributes.
+%---------------------------------------------------------------------------
 
-if (isfield(Var,'long')),
-  text=Var.long;
-  lstr=length(text);
-  if (lstr > 0),
-    [status]=mexnc('ncattput',ncid,varid,'long_name',ncchar,lstr,text);
-    if (status == -1),
-      error(['NC_VDEF: ncattput - unable to define attribute: ',...
-             Var.name,':long_name.']);
+names=fieldnames(Var);
+nfields=length(names);
+
+for n=1:nfields,
+  put_string=0;
+  put_number=0;
+  Aname=char(names(n));
+  switch Aname
+    case ('long')
+      Vatt='long_name';
+      text=getfield(Var,Aname);
+      put_string=1;
+    case ('flag_str')
+      Vatt='flag_values';
+      text=getfield(Var,Aname);
+      put_string=1;
+    case ('flag_num')
+      Vatt='flag_values';
+      value=getfield(Var,Aname)
+      put_number=1;
+    case ('meaning')
+      Vatt='flag_meanings';
+      text=getfield(Var,Aname);
+      put_string=1;
+    case ('units')
+      Vatt='units';
+      text=getfield(Var,Aname);
+      put_string=1;
+    case ('calendar')
+      Vatt='calendar';
+      text=getfield(Var,Aname);
+      put_string=1;
+    case ('offset')
+      Vatt='add_offset';
+      value=getfield(Var,Aname);
+      put_number=1;
+    case ('cycle')
+      Vatt='cycle_length';
+      value=getfield(Var,Aname);
+      put_number=1;
+    case ('min')
+      Vatt='valid_min';
+      value=getfield(Var,Aname);
+      put_number=1;
+    case ('max')
+      Vatt='valid_max';
+      value=getfield(Var,Aname);
+      put_number=1;
+    case ('positive')
+      Vatt='positive';
+      text=getfield(Var,Aname);
+      put_string=1;
+    case ('plus')
+      Vatt='positive_value';
+      text=getfield(Var,Aname);
+      put_string=1;
+    case ('minus')
+      Vatt='negative_value';
+      text=getfield(Var,Aname);
+      put_string=1;
+    case ('fill')
+      Vatt='_FillValue';
+      value=getfield(Var,Aname);
+      put_number=1;
+    case ('miss')
+      Vatt='missing_value';
+      value=getfield(Var,Aname);
+      put_number=1;
+    case ('stdname')
+      Vatt='standard_name';
+      text=getfield(Var,Aname);
+      put_string=1;
+    case ('formula')
+      Vatt='formula_terms';
+      text=getfield(Var,Aname);
+      put_string=1;
+    case ('time')
+      Vatt='time';
+      text=getfield(Var,Aname);
+      put_string=1;
+    case ('pos')
+      Vatt='positions';
+      text=getfield(Var,Aname);
+      put_string=1;
+    case ('coord')
+      Vatt='coordinates';
+      text=getfield(Var,Aname);
+      put_string=1;
+    case ('urot')
+      Vatt='rotation1';
+      text=getfield(Var,Aname);
+      put_string=1;
+    case ('vrot')
+      Vatt='rotation2';
+      text=getfield(Var,Aname);
+      put_string=1;
+    case ('left')
+      Vatt='left';
+      text=getfield(Var,Aname);
+      put_string=1;
+    case ('right')
+      Vatt='right';
+      text=getfield(Var,Aname);
+      put_string=1;
+    case ('top')
+      Vatt='top';
+      text=getfield(Var,Aname);
+      put_string=1;
+    case ('bottom')
+      Vatt='bottom';
+      text=getfield(Var,Aname);
+      put_string=1;
+    case ('up')
+      Vatt='up';
+      text=getfield(Var,Aname);
+      put_string=1;
+    case ('down')
+      Vatt='down';
+      text=getfield(Var,Aname);
+      put_string=1;
+    case ('field')
+      Vatt='field';
+      text=getfield(Var,Aname);
+      put_string=1;
+  end,
+  if (put_string),
+    lstr=length(text);
+    [status]=mexnc('put_att_text',ncid,varid,Vatt,ncchar,lstr,text);
+    if (status ~= 0),
+      error(['NC_VDEF: PUT_ATT_TEXT - unable to define attribute: ',...
+             Var.name,':',Vatt,'.']);
       return,
     end,
   end,
-end,
-
-% Set "option_T" attribute.
-
-if (isfield(Var,'opt_T')),
-  text=Var.opt_T;
-  lstr=length(text);
-  if (lstr > 0),
-    [status]=mexnc('ncattput',ncid,varid,'option_T',ncchar,lstr,text);
-    if (status == -1),
-      error(['NC_VDEF: ncattput - unable to define attribute: ',...
-             Vname.name,':option_T.']);
-      return,
-    end,
-  end,
-end,
-
-% Set "option_F" attribute.
-
-if (isfield(Var,'opt_F')),
-  text=Var.opt_F;
-  lstr=length(text);
-  if (lstr > 0),
-    [status]=mexnc('ncattput',ncid,varid,'option_F',ncchar,lstr,text);
-    if (status == -1),
-      error(['NC_VDEF: ncattput - unable to define attribute: ',...
-             Vname.name,':option_T.']);
-      return,
-    end,
-  end,
-end,
-
-% Set "option_0" attribute.
-
-if (isfield(Var,'opt_0')),
-  text=Var.opt_0;
-  lstr=length(text);
-  if (lstr > 0),
-    [status]=mexnc('ncattput',ncid,varid,'option_0',ncchar,lstr,text);
-    if (status == -1),
-      error(['NC_VDEF: ncattput - unable to define attribute: ',...
-             Vname.name,':option_0.']);
-      return,
-    end,
-  end,
-end,
-
-% Set "option_1" attribute.
-
-if (isfield(Var,'opt_1')),
-  text=Var.opt_1;
-  lstr=length(text);
-  if (lstr > 0),
-    [status]=mexnc('ncattput',ncid,varid,'option_1',ncchar,lstr,text);
-    if (status == -1),
-      error(['NC_VDEF: ncattput - unable to define attribute: ',...
-             Vname.name,':option_1.']);
-      return,
-    end,
-  end,
-end,
-
-% Set "option_2" attribute.
-
-if (isfield(Var,'opt_2')),
-  text=Var.opt_2;
-  lstr=length(text);
-  if (lstr > 0),
-    [status]=mexnc('ncattput',ncid,varid,'option_2',ncchar,lstr,text);
-    if (status == -1),
-      error(['NC_VDEF: ncattput - unable to define attribute: ',...
-             Vname.name,':option_2.']);
-      return,
-    end,
-  end,
-end,
-
-% Set "option_3" attribute.
-
-if (isfield(Var,'opt_3')),
-  text=Var.opt_3;
-  lstr=length(text);
-  if (lstr > 0),
-    [status]=mexnc('ncattput',ncid,varid,'option_3',ncchar,lstr,text);
-    if (status == -1),
-      error(['NC_VDEF: ncattput - unable to define attribute: ',...
-             Vname.name,':option_3.']);
-      return,
-    end,
-  end,
-end,
-
-% Set "option_4" attribute.
-
-if (isfield(Var,'opt_4')),
-  text=Var.opt_4;
-  lstr=length(text);
-  if (lstr > 0),
-    [status]=mexnc('ncattput',ncid,varid,'option_4',ncchar,lstr,text);
-    if (status == -1),
-      error(['NC_VDEF: ncattput - unable to define attribute: ',...
-             Vname.name,':option_4.']);
-      return,
-    end,
-  end,
-end,
-
-% Set "option_5" attribute.
-
-if (isfield(Var,'opt_5')),
-  text=Var.opt_5;
-  lstr=length(text);
-  if (lstr > 0),
-    [status]=mexnc('ncattput',ncid,varid,'option_5',ncchar,lstr,text);
-    if (status == -1),
-      error(['NC_VDEF: ncattput - unable to define attribute: ',...
-             Vname.name,':option_5.']);
-      return,
-    end,
-  end,
-end,
-
-% Set "option_6" attribute.
-
-if (isfield(Var,'opt_6')),
-  text=Var.opt_6;
-  lstr=length(text);
-  if (lstr > 0),
-    [status]=mexnc('ncattput',ncid,varid,'option_6',ncchar,lstr,text);
-    if (status == -1),
-      error(['NC_VDEF: ncattput - unable to define attribute: ',...
-             Vname.name,':option_6.']);
-      return,
-    end,
-  end,
-end,
-
-% Set "option_7" attribute.
-
-if (isfield(Var,'opt_7')),
-  text=Var.opt_7;
-  lstr=length(text);
-  if (lstr > 0),
-    [status]=mexnc('ncattput',ncid,varid,'option_7',ncchar,lstr,text);
-    if (status == -1),
-      error(['NC_VDEF: ncattput - unable to define attribute: ',...
-             Vname.name,':option_7.']);
-      return,
-    end,
-  end,
-end,
-
-% Set "units" attribute.
-
-if (isfield(Var,'units')),
-  text=Var.units;
-  lstr=length(text);
-  if (lstr > 0),
-    [status]=mexnc('ncattput',ncid,varid,'units',ncchar,lstr,text);
-    if (status == -1),
-      error(['NC_VDEF: ncattput - unable to define attribute: ',...
-             Var.name,':units.']);
-      return,
-    end,
-  end,
-end,
-
-% Set "add_offset" attribute.
-
-if (isfield(Var,'offset')),
-  [status]=mexnc('ncattput',ncid,varid,'add_offset',vartyp,1,Var.offset);
-  if (status == -1),
-    error(['NC_VDEF: ncattput - unable to define attribute: ',...
-           Vname.name,':valid_offset']);
-    return,
-  end,
-end,
-
-% Set "valid_min" attribute.
-
-if (isfield(Var,'min')),
-  [status]=mexnc('ncattput',ncid,varid,'valid_min',vartyp,1,Var.min);
-  if (status == -1),
-    error(['NC_VDEF: ncattput - unable to define attribute: ',...
-           Vname.name,':valid_min']);
-    return,
-  end,
-end,
-
-% Set "valid_max" attribute.
-
-if (isfield(Var,'max')),
-  [status]=mexnc('ncattput',ncid,varid,'valid_max',vartyp,1,Var.max);
-  if (status == -1),
-    error(['NC_VDEF: ncattput - unable to define attribute: ',...
-           Vname.name,':valid_max.']);
-    return,
-  end,
-end,
-
-% Set "positive" attribute.
-
-if (isfield(Var,'plus')),
-  text=Var.plus;
-  lstr=length(text);
-  if (lstr > 0),
-    [status]=mexnc('ncattput',ncid,varid,'positive',ncchar,lstr,text);
-    if (status == -1),
-      error(['NC_VDEF: ncattput - unable to define attribute: ',...
-             Vname.name,':option_T.']);
-      return,
-    end,
-  end,
-end,
-
-% Set "negative" attribute.
-
-if (isfield(Var,'minus')),
-  text=Var.minus;
-  lstr=length(text);
-  if (lstr > 0),
-    [status]=mexnc('ncattput',ncid,varid,'negative',ncchar,lstr,text);
-    if (status == -1),
-      error(['NC_VDEF: ncattput - unable to define attribute: ',...
-             Vname.name,':option_T.']);
-      return,
-    end,
-  end,
-end,
-
-% Set "_FillValue" attribute.
-
-if (isfield(Var,'fill')),
-  [status]=mexnc('ncattput',ncid,varid,'_FillValue',vartyp,1,Var.fill);
-  if (status == -1),
-    error(['NC_VDEF: ncattput - unable to define attribute: ',...
-           Vname.name,':_FillValue']);
-    return,
-  end,
-end,
-
-% Set "missing_value" attribute.
-
-if (isfield(Var,'miss')),
-  [status]=mexnc('ncattput',ncid,varid,'missing_value',vartyp,1,Var.miss);
-  if (status == -1),
-    error(['NC_VDEF: ncattput - unable to define attribute: ',...
-           Vname.name,':missing_value']);
-    return,
-  end,
-end,
-
-% Set "positions" attribute.
-
-if (isfield(Var,'pos')),
-  text=Var.pos;
-  lstr=length(text);
-  if (lstr > 0),
-    [status]=mexnc('ncattput',ncid,varid,'positions',ncchar,lstr,text);
-    if (status == -1),
-      error(['NC_VDEF: ncattput - unable to define attribute: ',...
-             Vname.name,':positions']);
-    end,
-  end,
-end,
-
-% Set "time" attribute.
-
-if (isfield(Var,'time')),
-  text=Var.time;
-  lstr=length(text);
-  if (lstr > 0),
-    [status]=mexnc('ncattput',ncid,varid,'time',ncchar,lstr,text);
-    if (status == -1),
-      error(['NC_VDEF: ncattput - unable to define attribute: ',...
-             Vname.name,':time']);
-    end,
-  end,
-end,
-
-% Set "coordinates" attribute.
-
-if (isfield(Var,'coord')),
-  text=Var.coord;
-  lstr=length(text);
-  if (lstr > 0),
-    [status]=mexnc('ncattput',ncid,varid,'coordinates',ncchar,lstr,text);
-    if (status == -1),
-      error(['NC_VDEF: ncattput - unable to define attribute: ',...
-             Vname.name,':coordinates']);
-    end,
-  end,
-end,
-
-% Set "u-rotation" attribute.
-
-if (isfield(Var,'urot')),
-  text=Var.pos;
-  lstr=length(text);
-  if (lstr > 0),
-    [status]=mexnc('ncattput',ncid,varid,'rotation1',ncchar,lstr,text);
-    if (status == -1),
-      error(['NC_VDEF: ncattput - unable to define attribute: ',...
-             Vname.name,':rotation1']);
-    end,
-  end,
-end,
-
-% Set "v-rotation" attribute.
-
-if (isfield(Var,'vrot')),
-  text=Var.pos;
-  lstr=length(text);
-  if (lstr > 0),
-    [status]=mexnc('ncattput',ncid,varid,'rotation2',ncchar,lstr,text);
-    if (status == -1),
-      error(['NC_VDEF: ncattput - unable to define attribute: ',...
-             Vname.name,':rotation2']);
-    end,
-  end,
-end,
-
-% Set "left" attribute.
-
-if (isfield(Var,'left')),
-  text=Var.left;
-  lstr=length(text);
-  if (lstr > 0),
-    [status]=mexnc('ncattput',ncid,varid,'left',ncchar,lstr,text);
-    if (status == -1),
-      error(['NC_VDEF: ncattput - unable to define attribute: ',...
-             Vname.name,':left.']);
-      return,
-    end,
-  end,
-end,
-
-% Set "right" attribute.
-
-if (isfield(Var,'right')),
-  text=Var.right;
-  lstr=length(text);
-  if (lstr > 0),
-    [status]=mexnc('ncattput',ncid,varid,'right',ncchar,lstr,text);
-    if (status == -1),
-      error(['NC_VDEF: ncattput - unable to define attribute: ',...
-             Vname.name,':right.']);
-      return,
-    end,
-  end,
-end,
-
-% Set "top" attribute.
-
-if (isfield(Var,'top')),
-  text=Var.top;
-  lstr=length(text);
-  if (lstr > 0),
-    [status]=mexnc('ncattput',ncid,varid,'top',ncchar,lstr,text);
-    if (status == -1),
-      error(['NC_VDEF: ncattput - unable to define attribute: ',...
-             Vname.name,':top.']);
-      return,
-    end,
-  end,
-end,
-
-% Set "bottom" attribute.
-
-if (isfield(Var,'bottom')),
-  text=Var.bottom;
-  lstr=length(text);
-  if (lstr > 0),
-    [status]=mexnc('ncattput',ncid,varid,'bottom',ncchar,lstr,text);
-    if (status == -1),
-      error(['NC_VDEF: ncattput - unable to define attribute: ',...
-             Vname.name,':bottom.']);
-      return,
-    end,
-  end,
-end,
-
-
-% Set "up" attribute.
-
-if (isfield(Var,'up')),
-  text=Var.up;
-  lstr=length(text);
-  if (lstr > 0),
-    [status]=mexnc('ncattput',ncid,varid,'up',ncchar,lstr,text);
-    if (status == -1),
-      error(['NC_VDEF: ncattput - unable to define attribute: ',...
-             Vname.name,':up.']);
-      return,
-    end,
-  end,
-end,
-
-% Set "down" attribute.
-
-if (isfield(Var,'down')),
-  text=Var.down;
-  lstr=length(text);
-  if (lstr > 0),
-    [status]=mexnc('ncattput',ncid,varid,'down',ncchar,lstr,text);
-    if (status == -1),
-      error(['NC_VDEF: ncattput - unable to define attribute: ',...
-             Vname.name,':down.']);
-      return,
-    end,
-  end,
-end,
-
-% Set "field" attribute.
-
-if (isfield(Var,'field')),
-  text=Var.field;
-  lstr=length(text);
-  if (lstr > 0),
-    [status]=mexnc('ncattput',ncid,varid,'field',ncchar,lstr,text);
-    if (status == -1),
-      error(['NC_VDEF: ncattput - unable to define attribute: ',...
-             Vname.name,':field.']);
-      return,
+  if (put_number),
+    nval=length(value);
+    switch (vartyp)
+      case (ncint)   
+        value=int32(value);
+        [status]=mexnc('put_att_int',   ncid,varid,Vatt,vartyp,nval,value);
+        if (status == -1),
+          error(['NC_VDEF: PUT_ATT_INT - unable to define attribute: ',...
+                 Vname.name,':',Vatt,'.']);
+          return,
+        end,
+      case (ncfloat)
+        value=single(value);
+	[status]=mexnc('put_att_float', ncid,varid,Vatt,vartyp,nval,value);
+        if (status == -1),
+          error(['NC_VDEF: PUT_ATT_FLOAT - unable to define attribute: ',...
+                 Vname.name,':',Vatt,'.']);
+          return,
+        end,
+      case (ncdouble)
+        value=double(value);
+	[status]=mexnc('put_att_double',ncid,varid,Vatt,vartyp,nval,value);
+        if (status == -1),
+          error(['NC_VDEF: PUT_ATT_DOUBLE - unable to define attribute: ',...
+                 Vname.name,':',Vatt,'.']);
+          return,
+        end,
     end,
   end,
 end,
