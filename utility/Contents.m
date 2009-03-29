@@ -1,6 +1,6 @@
 %
 % ROMS Miscellaneous Matlab scripts
-% ================================
+% =================================
 %
 % This utility contains several generic Matlab scripts to pre- and
 % post-processing ROMS data.
@@ -38,6 +38,7 @@
 % Time management:
 %
 %   date_stamp   - Set current date string.
+%   day_code     - Compute day of the week for a given date.
 %
 % Parallelism:
 %
