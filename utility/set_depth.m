@@ -62,6 +62,7 @@ function [z]=set_depth(Vtransform, Vstretching, ...
 %    See License_ROMS.txt                           Hernan G. Arango        %
 %===========================================================================%
 
+z=[];
 
 %----------------------------------------------------------------------------
 %  Set several parameters.
@@ -79,21 +80,32 @@ if (nargin < 8),
 end,
 
 if (Vtransform < 1 | Vtransform > 2),
+  disp(' ');
   disp([setstr(7),'*** Error:  SET_DEPTH - Illegal parameter Vtransform = ' ...
 	num2str(Vtransfrom), setstr(7)]);
+  disp(' ');
+  return
 end,
 
 if (Vstretching < 1 | Vstretching > 3),
+  disp(' ');
   disp([setstr(7),'*** Error:  SET_DEPTH - Illegal parameter Vstretching = ' ...
 	num2str(Vstretching), setstr(7)]);
+  disp(' ');
+  return
 end,
 
-if (hc > min(min(h))),
+if (hc > min(min(h)) & Vtransform == 1),
+  disp(' ');
   disp([setstr(7),'*** Error:  SET_DEPTH - critical depth exceeds minimum' ...
 	' bathymetry value.',setstr(7)]);
-  disp([setstr(7),'                     hc   = ',num2str(hc),setstr(7)]);
-  disp([setstr(7),'                     hmax = ',num2str(min(min(h))), ...
-	setstr(7)]);
+  disp([setstr(7),'                        Vtranform = ', ...
+        num2str(Vtransform),setstr(7)]);
+  disp([setstr(7),'                        hc        = ', ...
+        num2str(hc),setstr(7)]);
+  disp([setstr(7),'                        hmax      = ', ...
+	num2str(min(min(h))), setstr(7)]);
+  disp(' ');
   return
 end,
 

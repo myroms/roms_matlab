@@ -47,6 +47,8 @@ function [s,C]=stretching(Vstretching, theta_s, theta_b, hc, N, kgrid, ...
 %    See License_ROMS.txt                           Hernan G. Arango        %
 %===========================================================================%
 
+s=[];
+C=[];
 
 %----------------------------------------------------------------------------
 %  Set several parameters.
@@ -64,8 +66,11 @@ if (nargin < 7),
 end,
 
 if (Vstretching < 1 | Vstretching > 3),
+  disp(' ');
   disp([setstr(7),'*** Error:  STRETCHING - Illegal parameter Vstretching = ' ...
 	num2str(Vstretching), setstr(7)]);
+  disp(' ');
+  return
 end,
 
 if (nargin < 7),
