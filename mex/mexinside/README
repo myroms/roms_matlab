@@ -1,0 +1,18 @@
+! svn $Id$
+
+MEXINSIDE
+
+In order to compile this mexfile, just invoke "mex mexinside.c" from
+the matlab prompt.
+
+This package provides the following files:
+
+    mexinside.c
+        Source files.
+
+    test_mexinside.m
+        Used to test the mex file.  It should be obvious if it succeeded.
+        
+    README
+        This file.
+

@@ -278,8 +278,14 @@ switch lower(grid_file),
    [varnam,nvars]=nc_vname(grid_file);
    got_Clon=strmatch('lon_coast',varnam);
    got_Clat=strmatch('lat_coast',varnam);
+   if isempty(got_Clon),
+     got_Clon=0;
+   end,
+   if isempty(got_Clat),
+     got_Clat=0;
+   end,
 
-   if (~(got_Clon & got_Clat)),
+   if (~(got_Clon & got_Clat) & spherical),
      if (any(coast_file=='*')),
        [fn,pth]=uigetfile(coast_file,'Select Coastline file...');
        if (~fn),
@@ -323,7 +329,6 @@ switch lower(grid_file),
               'DoubleBuffer','on',...
               'backingstore','off',...
               'menubar','none');
-   size(rmask)
    cdata=rmask*2+mod(mod(mx,2)+mod(my,2),2)+1;
    gx=mx(:,1)-1;
    gy=my(1,:)-1;

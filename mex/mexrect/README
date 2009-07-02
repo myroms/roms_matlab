@@ -1,0 +1,75 @@
+! svn $Id$
+
+MEXRECT
+
+COMPILE NOTES
+=======================================================================
+R2006a, Mandriva 2007, Linux X86:
+    g77 : gcc3.3-g77-3.3.6-3mdk
+
+    At the unix command line, issue the command "mex mexmexrect.F"
+
+R2006a, Centos 4.4, Linux X86_64:
+    g77 : gcc-g77-3.4.6-3
+
+    At the unix command line, issue the command "mex mexmexrect.F"
+
+R2006a, Mandriva 2006, Linux X86_64:
+    g77 : gcc3.3-g77-3.3.6-3mdk
+
+    At the unix command line, issue the command "mex mexmexrect.F"
+
+R14sp2, Mandriva 2006, Linux X86_64:
+    g77 : gcc3.3-g77-3.3.6-3mdk
+
+    Copy the file ${MATLAB}/bin/mexopts.sh into the current directory.  
+    Edit line 149, changing it from
+            FLIBS="$RPATH $MLIBS -lm -lstdc++"
+    to
+            FLIBS="$RPATH $MLIBS -lm /usr/lib64/libstdc++.so.5"
+    I believe that one has to do this because the default libstdc++ 
+    on this version of Mandriva is libstdc++.so.6.0.5, while matlab was
+    compiled with libstdc++.so.5
+
+    At the unix command line, issue the command "mex mexmexrect.F"
+
+R14sp2, Solaris 2.8:
+    f90: Sun WorkShop 6 2000/04/07 FORTRAN 95 6.0
+
+    At the unix command line, type "mex mexrect.F"
+
+
+In order to test things out, start up matlab and issue the command
+
+    >> test_mexrect
+
+
+
+=======================================================================
+
+This package provides the following files:
+
+    AUTHORS:  
+        people contributing mex file builds and source code.
+
+    COPYING:  
+        copyright notice.
+
+    ChangeLog:  
+        detailed changes in particular files in this module
+
+    mexrect.F
+        Source files.
+
+    makefile:  
+        used to compile the mexfile.  
+
+    test_mexrect.m
+        Used to test the mex file.  It should be obvious if it succeeded.
+        
+    NEWS
+        High level news about this particular release.
+
+    README
+        This file.
+

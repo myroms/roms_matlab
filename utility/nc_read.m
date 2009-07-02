@@ -319,6 +319,8 @@ if (nvdim == 0),
     [f,status]=mexnc('get_var_float' ,ncid,varid);
   elseif (nctype == NC_INT),
     [f,status]=mexnc('get_var_int'   ,ncid,varid);
+  elseif (nctype == NC_CHAR),
+    [f,status]=mexnc('get_var_text'  ,ncid,varid);
   else,
     [f,status]=mexnc('ncvarget1'     ,ncid,varid,[0]);
   end,

@@ -128,9 +128,11 @@ for i = 0:nvatts-1
     if (nctype == NC_DOUBLE),
       [spval,status]=mexnc('get_att_double',ncid,varid,'_FillValue');
     elseif (nctype == NC_FLOAT),
-      [spval,status]=mexnc('get_att_float',ncid,varid,'_FillValue');
+      [spval,status]=mexnc('get_att_float' ,ncid,varid,'_FillValue');
+    elseif (nctype == NC_INT),
+      [spval,status]=mexnc('get_att_int'   ,ncid,varid,'_FillValue');
     else
-      [spval,status]=mexnc('ncattget',ncid,varid,'_FillValue');
+      [spval,status]=mexnc('ncattget'      ,ncid,varid,'_FillValue');
     end,
     if (status == -1),
       error(['NC_WRITE: ncattget error while reading _FillValue attribute'])

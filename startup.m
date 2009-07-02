@@ -16,12 +16,17 @@ IPRINT=0;
 
 format long g
 
+% Change "my_root" to the appropriate path were these matlab scripts are
+% installed in your computer.
+
 my_root='/home/arango/ocean/toms/repository';
 
 path(path, fullfile(my_root, 'matlab', 'bathymetry', ''))
 path(path, fullfile(my_root, 'matlab', 'coastlines', ''))
 path(path, fullfile(my_root, 'matlab', 'initial', ''))
 path(path, fullfile(my_root, 'matlab', 'landmask', ''))
+path(path, fullfile(my_root, 'matlab', 'mex', ''))
 path(path, fullfile(my_root, 'matlab', 'seagrid', ''))
+path(path, fullfile(my_root, 'matlab', 'seagrid', 'presto', ''))
 path(path, fullfile(my_root, 'matlab', 'seawater', ''))
 path(path, fullfile(my_root, 'matlab', 'utility', ''))

@@ -1,0 +1,73 @@
+! svn $Id$
+
+Tested on 
+    R2006a Linux x86 
+        gcc      - gcc-4.1.1-3mdk
+        g77      - gcc3.3-g77-3.3.6-3mdk
+    R2006a Linux x86 
+        gcc      - gcc-4.1.1-3mdk
+        g95      - g95-0.50-1.403_20060327.1mdv2007.0
+    R2006a Linux x86 
+        gcc      - gcc-4.1.1-3mdk
+        gfortran - gcc-gfortran-4.1.1-3mdk
+    R2006a Linux x86_64 
+        gcc      - gcc-4.0.1-5mdk
+        g77      - gcc3.3-g77-3.3.6-2mdk
+    R14 Solaris
+        cc       - Sun WorkShop 6 2000/04/07 C 5.1
+        f90      - Sun WorkShop 6 2000/04/07 FORTRAN 95 6.0
+
+
+To compile on x86 or x86_64 Linux with g77 as the fortran compiler:
+    Copy the mexopts.sh file from ${MATLAB}/bin directory into the 
+    current directory.
+
+    Uncomment the FFLAGS line down at the bottom, make it read
+        FFLAGS="-g -fno-second-underscore $FFLAGS"
+
+    At the unix command line, type "make linux"
+
+    I'd strongly recommend using g77 over g95 or gfortran for the time
+    being...
+
+To compile on x86 Linux with gfortran as the fortran compiler:
+
+    Copy the mexopts.sh file from ${MATLAB}/bin directory into the 
+    current directory.
+
+    Uncomment the FFLAGS line down at the bottom, make it read
+        FFLAGS="-g -fno-second-underscore $FFLAGS"
+
+    Uncomment the FC setting down at the bottom, make it read
+        FC="gfortran"
+
+    At the unix command line, type "make linux"
+
+To compile on x86 Linux with g95 as the fortran compiler:
+
+    Copy the mexopts.sh file from ${MATLAB}/bin directory into the 
+    current directory.
+
+    Uncomment the FFLAGS line down at the bottom, make it read
+        FFLAGS="-g -fno-second-underscore $FFLAGS"
+
+    Uncomment the FC setting down at the bottom, make it read
+        FC="g95"
+
+    I also had to make changes in the glnx86 section, having to change
+
+            CLIBS="$RPATH $MLIBS -lm -lstdc++"
+            FLIBS="$RPATH $MLIBS -lm -lstdc++"
+
+    to
+
+            CLIBS="$RPATH $MLIBS -lm /usr/lib/libstdc++.so.6"
+            FLIBS="$RPATH $MLIBS -lm /usr/lib/libstdc++.so.6"
+
+    I don't quite understand why.
+
+    At the unix command line, type "make linux"
+
+To compile on solaris with Sun WorkShop 6, at the unix command line, 
+type "make sol"
+
