@@ -276,8 +276,8 @@ switch lower(grid_file),
 % Check if grid NetCDF file has coastline data.
 
    [varnam,nvars]=nc_vname(grid_file);
-   got_Clon=strmatch('lon_coast',varnam);
-   got_Clat=strmatch('lat_coast',varnam);
+   got_Clon=strmatch('lon_coast',varnam,'exact');
+   got_Clat=strmatch('lat_coast',varnam,'exact');
    if isempty(got_Clon),
      got_Clon=0;
    end,

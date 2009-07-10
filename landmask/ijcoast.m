@@ -42,8 +42,8 @@ method='linear';
 got_coast=0;
 if (nargin < 2),
   [varnam,nvars]=nc_vname(Gname);
-  got_coast=strmatch('lon_coast',varnam);
-  got_coast=got_coast+strmatch('lat_coast',varnam);
+  got_coast=strmatch('lon_coast',varnam,'exact');
+  got_coast=got_coast+strmatch('lat_coast',varnam,'exact');
 end,
 
 C.grid=Gname;

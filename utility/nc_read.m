@@ -109,7 +109,10 @@ got_mask=0;
 
 if (water),
   [Vnames,nvars]=nc_vname(fname);
-  got_mask=strmatch(msknam,Vnames);
+  got_mask=strmatch(msknam,Vnames,'exact');
+  if isempty (got_mask),
+    got_mask=0;
+  end,
   if (got_mask),
     mask=ncread(fname,msknam);
   else,

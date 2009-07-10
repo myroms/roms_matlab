@@ -9,6 +9,7 @@
 % Terrain-Following Coordinates:
 %
 %   depths        - Compute ROMS depths associated with a NetCDF 3D variable.
+%   hslope        - Compute and plot ROMS grid bathymetry slope.
 %   scoord        - Compute and plot ROMS vertical stretched coordinates.
 %   set_depth     - Compute ROMS depths for 3D variable during pre-processing,
 %                    like initial conditions, climatology, etc.
@@ -16,11 +17,14 @@
 %
 % NetCDF I/O Processing:
 %
+%   nc_attadd     - Add/modify a global or variable NetCDF attribute.
+%   nc_attdel     - Delete requested global or variable NetCDF attribute.
 %   nc_dim        - Inquire about the dimensions in a NetCDF file.
 %   nc_inq        - Inquire about the contents of a NetCDF file.
 %   nc_vdef       - Create a ROMS variable in a NetCDF file.
 %   nc_vinfo      - Inquire information about requested NetCDF variable.
 %   nc_vname      - Get the names of all variables in a NetCDF file.
+%   nc_vrename    - Rename a NetCDF variable.
 %
 %   nc_read       - Generic function to read  requested NetCDF variable.
 %   nc_write      - Generic function to write requested NetCDF variable.

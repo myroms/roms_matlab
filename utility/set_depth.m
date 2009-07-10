@@ -1,6 +1,6 @@
 function [z]=set_depth(Vtransform, Vstretching, ...
                        theta_s, theta_b, hc, N, ...
-		       igrid, h, zeta);
+		       igrid, h, zeta, report);
 %
 % SET_DEPTH:  Compute ROMS grid depth from vertical stretched variables
 %
@@ -49,6 +49,9 @@ function [z]=set_depth(Vtransform, Vstretching, ...
 %                    h(1:Lp+1,1:Mp+1).
 %    zeta          Free-surface, 2D array at RHO-points (m), OPTIONAL,
 %                    zeta(1:Lp+1,1:Mp+1).
+%    report        Flag to report detailed information (OPTIONAL):
+%                    report = 0,       do not report
+%                    report = 1,       report information
 %
 % On Output:
 %
@@ -113,6 +116,10 @@ if (nargin < 9),
   zeta=zeros(size(h));
 end,
 
+if (nargin < 10),
+  report=1;
+end,
+
 Np=N+1;
 [Lp Mp]=size(h);
 L=Lp-1;
@@ -125,8 +132,6 @@ hmax=max(max(h));
 % Compute vertical stretching function, C(k):
 %----------------------------------------------------------------------------
 
-report=1;
-
 if (report),
   disp(' ');
   if (Vtransform == 1),
@@ -134,19 +139,19 @@ if (report),
   elseif (Vtransform == 2),
     disp(['Vtransform  = ',num2str(Vtransform), '   ROMS-UCLA']);
   end,
-end,
 
-switch ( igrid ),
-  case 1
-    disp(['   igrid    = ',num2str(igrid), '   at horizontal RHO-points']);
-  case 2
-    disp(['   igrid    = ',num2str(igrid), '   at horizontal PSI-points']);
-  case 3
-    disp(['   igrid    = ',num2str(igrid), '   at horizontal U-points']);
-  case 4
-    disp(['   igrid    = ',num2str(igrid), '   at horizontal V-points']);
-  case 5
-    disp(['   igrid    = ',num2str(igrid), '   at horizontal RHO-points']);
+  switch ( igrid ),
+    case 1
+      disp(['   igrid    = ',num2str(igrid), '   at horizontal RHO-points']);
+    case 2
+      disp(['   igrid    = ',num2str(igrid), '   at horizontal PSI-points']);
+    case 3
+      disp(['   igrid    = ',num2str(igrid), '   at horizontal U-points']);
+    case 4
+      disp(['   igrid    = ',num2str(igrid), '   at horizontal V-points']);
+    case 5
+      disp(['   igrid    = ',num2str(igrid), '   at horizontal RHO-points']);
+  end,
 end,
 
 if (igrid == 5),
