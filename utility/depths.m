@@ -20,7 +20,7 @@ function [z]=depths(fname, gname, igrid, idims, tindex);
 %                  igrid=4  => v-velocity points
 %                  igrid=5  => w-velocity points
 %    idims       Depths dimension order switch (integer):
-%                  idims=0  => (i,j,k)
+%                  idims=0  => (i,j,k)  column-major order
 %                  idims=1  => (j,i,k)
 %    tindex      Time index (integer)
 %
@@ -49,7 +49,7 @@ if (nargin < 3)
 end,
 
 if (nargin < 4),
-  idims=1;
+  idims=0;
 end,
 
 if (nargin < 5),

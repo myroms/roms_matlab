@@ -265,11 +265,11 @@ end,
 if (iprint),
   if (curvilinear),
     disp('  ');
-    disp(['You need to activate the CURVILINEAR flag in your header file!!!']);
+    disp(['You need to activate the CURVGRID flag in your header file!!!']);
     disp('  ');
   else,
     disp('  ');
-    disp(['There is not need to activate the CURVILINEAR flag in your ',...
+    disp(['There is not need to activate the CURVGRID flag in your ',...
 	  'header file...']);
     disp('  ');
   end,

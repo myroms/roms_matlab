@@ -31,15 +31,20 @@ function [F]=eos(gname,fname,tindex);
 %                  F.Zw       Depth positions at W-points
 %                  F.mask     Land/Sea mask
 %
-% Check Values: (T=3 C, S=35.5 PSU, Z=-5000 m)
+% Check Values: (T=3 C, S=35.5, Z=-5000 m)
 %
 %     alpha = 2.1014611551470D-04 (1/Celsius)
-%     beta  = 7.2575037309946D-04 (1/PSU)
+%     beta  = 7.2575037309946D-04 (nondimensional)
 %     gamma = 3.9684764511766D-06 (1/Pa)
 %     den   = 1050.3639165364     (kg/m3)
 %     den1  = 1028.2845117925     (kg/m3)
 %     sound = 1548.8815240223     (m/s)
 %     bulk  = 23786.056026320     (Pa)
+%
+% Note: Salinity does not have physical units. Check the following forum
+%       post for details:
+%
+%       https://www.myroms.org/forum/viewtopic.php?f=14&t=294
 %
 %  Reference:
 %
@@ -131,7 +136,7 @@ bulk = K0 - K1.*Zr + K2.*Zr.^2;
 F.den = (den1.*bulk) ./ (bulk + 0.1.*Zr);
 
 %----------------------------------------------------------------------------
-%  Compute thermal expansion (1/Celsius), saline contraction (1/PSU),
+%  Compute thermal expansion (1/Celsius), saline contraction (nondimensional),
 %  and adiabatic and isentropic compressibility (1/Pa) coefficients.
 %----------------------------------------------------------------------------
 
@@ -166,7 +171,7 @@ DbulkDP = -K1 + K2.*2.*Zr;
 
 wrk = F.den .* (bulk + 0.1.*Zr).^2;
 
-%  Compute thermal expansion (1/Celsius), saline contraction (1/PSU),
+%  Compute thermal expansion (1/Celsius), saline contraction (nondimensional),
 %  and adiabatic and isentropic compressibility (1/Pa) coefficients.
 
 F.alpha = -(DbulkDT.*0.1.*Zr.*den1 + ...

@@ -1,4 +1,4 @@
-function [f]=nc_read(fname,vname,tindex);
+function [f]=nc_read(fname,vname,tindex,FillValue);
 
 %
 % NC_READ:  Read requested NetCDF variable
@@ -18,6 +18,13 @@ function [f]=nc_read(fname,vname,tindex);
 %                     time record is read when the variable has unlimitted
 %                     dimension or the word "time" in any of its dimension
 %                     names.
+%    FillValue   Optional, fill value to use when "_FillValue" attribute is
+%                  found in variable. If not provided, a zero fill values
+%                  will use.
+%
+%                  In some circumstances, like plotting, it is advantageous
+%                  to set FillValue = NaN to visualize better the land/sea
+%                  masking or the missing data.
 %
 % On Output:
 %
@@ -33,6 +40,19 @@ function [f]=nc_read(fname,vname,tindex);
 %    See License_ROMS.txt                           Hernan G. Arango        %
 %===========================================================================%
 
+% If FillValue is not provided, use zero as a fill value.
+
+if (nargin < 4),
+  FillValue=0;
+end,
+
+% If tindex is not provided, use empty value.
+
+if (nargin < 3)
+  tindex=[];
+end,
+
+% 
 %----------------------------------------------------------------------------
 % Inquire information from NetCDF file.
 %----------------------------------------------------------------------------
@@ -114,7 +134,7 @@ if (water),
     got_mask=0;
   end,
   if (got_mask),
-    mask=ncread(fname,msknam);
+    mask=ncread(fname,msknam,tindex,FillValue);
   else,
 %   [fn,pth]=uigetfile(grid_file,'Enter grid NetCDF file...');
 %   gname=[pth,fn];
@@ -151,16 +171,16 @@ if (water),
 else,
 
   if (nargin < 3),
-    f=ncread(fname,vname);
+    f=ncread(fname,vname,tindex,FillValue);
   else
-    f=ncread(fname,vname,tindex);
+    f=ncread(fname,vname,tindex,FillValue);
   end,
   
 end,
 
 return
 
-function [f]=ncread(fname,vname,tindex);
+function [f]=ncread(fname,vname,tindex,FillValue);
 
 %
 % NCREAD:  Internal routine to read requested NetCDF variable
@@ -179,6 +199,9 @@ function [f]=ncread(fname,vname,tindex);
 %                     time record is read if the variable has unlimitted
 %                     dimension or the word "time" in any of its dimension
 %                     names.
+%    FillValue   Optional, fill value to use when "_FillValue" attribute is
+%                  found in variable.
+%    
 %
 % On Output:
 %
@@ -196,7 +219,7 @@ end,
 %  Activate switch for reading specific record.
 
 time_rec=0;
-if (nargin > 2),
+if (~isempty(tindex)),
   time_rec=1;
 end,
 
@@ -390,13 +413,13 @@ if (IPRINT),
 end,
 
 %----------------------------------------------------------------------------
-%  Replace _FillValue with NaNs.
+%  Replace "_FillValue" with specified value.
 %----------------------------------------------------------------------------
 
 if (got_FillValue),
   ind=find(f >= spval);
   if (~isempty(ind)),
-    f(ind)=NaN;
+    f(ind)=FillValue;
   end,
 end,
 
