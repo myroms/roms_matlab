@@ -171,7 +171,7 @@
      salt_var = zeros(size(A.salt));
    end,
 
-q   ic = ic + 1;
+   ic = ic + 1;
    zeta_var = zeta_var + A.deltaZ_u.^2;
    u_var    = u_var    + A.deltaU_u.^2;
    v_var    = v_var    + A.deltaV_u.^2;
