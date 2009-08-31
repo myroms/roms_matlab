@@ -49,6 +49,7 @@ function [K]=ini_balance(Gname,Hname,TimeRec);
 %                               (1/Celsius)
 %              K.beta         Surface saline contraction coefficient
 %                               (nondimensional)
+%              K.rho          Basic state in situ density (kg/m3)
 %              K.Hz           Vertical level thicknesses (m)
 %              K.Zr           Depths at vertical RHO-points (m, negative)
 %              K.Zw           Depths at vertical W-points   (m, negative)
@@ -193,13 +194,14 @@ if (~isfield(K,'vmask')),
   K.vmask=ones(size([Lp,M]));
 end,
 
-%  Compute surface thermal expansion (1/Celsius) and saline contraction 
-%  coefficients.
+%  Compute surface thermal expansion (1/Celsius), saline contraction 
+%  coefficients, and in situ density (kg/m3).
 
 F=eos(Gname,Hname,TimeRec);
 
-K.alpha=squeeze(F.alpha(:,:,N));
-K.beta=squeeze(F.beta(:,:,N));
+K.alpha=squeeze(F.alpha(:,:,N)).*K.rmask;
+K.beta=squeeze(F.beta(:,:,N)).*K.rmask;
+K.rho=(F.den-1000).*repmat(K.rmask,[1 1 N]);
 
 %  Compute vertical depths (m, negative).  Notice that "tindex" is set
 %  to zero for zero free-surface since we want the rest state depths.

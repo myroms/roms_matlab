@@ -111,12 +111,14 @@ function [K]=balance_4dvar(A);
 %                               (1/Celsius)
 %              K.beta         Surface saline contraction coefficient
 %                               (nondimensional)
+%              K.rho          Basic state in situ density (kg/m3)
 %              K.Hz           Vertical level thicknesses (m)
 %              K.Zr           Depths at vertical RHO-points (m, negative)
 %              K.Zw           Depths at vertical W-points   (m, negative)
 %
 %              ............................................................
 %
+%              K.ssh_ref      Basic state reference sea-surface height (m)
 %              K.zeta_b       Balanced, baroclinic free-surface anomaly (m)
 %              K.deltaT       Given temperature anomlay (Celsius)
 %              K.deltaS_b     Balanced salinity anomaly
@@ -136,6 +138,9 @@ function [K]=balance_4dvar(A);
 %
 %    rho_balance    Computes balanced density anomaly using a linear
 %                   equation of state.
+%
+%    ssh_reference  Computes the balance operartor reference sea surface
+%                   height.
 %
 %    uv_balance     Computes balanced, baroclinic U- and V-momentum
 %                   anomalies (m/s) using the geostrophic balance.
@@ -259,6 +264,15 @@ end,
 %---------------------------------------------------------------------------
 
 [deltaU_b,deltaV_b,zeta_rhs]=uv_balance(K,deltaR_b);
+
+%---------------------------------------------------------------------------
+%  Compute basic state, reference sea surface height (m), solve elliptic
+%  equation.
+%---------------------------------------------------------------------------
+
+if (A.elliptic),
+  [K.ssh_ref,K.ssh_err]=ssh_reference(K,K.rho,A.zeta_guess,Niter);  
+end,
 
 %---------------------------------------------------------------------------
 %  Compute balanced, baroclinic free-surface anomaly (m).

@@ -185,8 +185,6 @@ for iter=1:Niter-1,
   Ltrans=1;
   [pc_r2d,bv_r2d]=r2d_oper(K,Ltrans,z1_r2d);
      
-  [bv_r2d]=ad_r2d_bc(bv_r2d,2,L,2,M,K.EW_periodic,K.NS_periodic);
-
 %  Compute new residual vectors "r" and "br".
 
   r_r2d (2:L,2:M,iter+1)=r_r2d (2:L,2:M,iter)-                           ...

@@ -27,6 +27,8 @@
 %   s_balance     - Given a temperature anomaly, deltaT=T-Tavg, it 
 %                     computes balanced salinity anomaly using a T-S
 %                     empirical formula.
+%   ssh_reference - Computes the balance operartor reference sea surface
+%                     height.
 %   uv_balance    - Computes balanced, baroclinic U- and V-momentum
 %                     anomalies (m/s) using the geostrophic balance.
 %   zeta_balance  - Computes balanced, baroclinic free-surface anomaly

@@ -83,7 +83,6 @@ U04=+5.38750D-9;  V00=-5.72466D-3;   V01=+1.02270D-4;   V02=-1.65460D-6;
 W00=+4.8314D-4; 
 
 grav=9.81;
-rho0=1000;
 
 %----------------------------------------------------------------------------
 %  Read in temperature and salinity.
@@ -104,6 +103,18 @@ S=nc_read(fname,'salt',tindex);
 %----------------------------------------------------------------------------
 %  Compute density (kg/m3) at standard one atmosphere pressure.
 %----------------------------------------------------------------------------
+
+ind=find(T < -2.0);
+if (~isempty(ind)),
+  T(ind)=-2.0;                   % lower temperature valid minumum value
+end,
+
+ind=find(S < 0.0);
+if (~isempty(ind)),
+  S(ind)=0.0;                    % lower salinity valid minimum value
+end,
+
+clear ind
 
 sqrtS=sqrt(S);
 
