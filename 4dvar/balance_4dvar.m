@@ -255,7 +255,7 @@ end,
 %  state.
 %---------------------------------------------------------------------------
 
-[deltaR_b]=rho_balance(K,A.deltaT,deltaS_b);
+[deltaR_b]=rho_balance(K,A.deltaT,A.deltaS);
 
 %---------------------------------------------------------------------------
 %  Compute balanced, baroclinic U- and V-momentum anomalies (m/s) using

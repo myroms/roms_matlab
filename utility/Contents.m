@@ -45,14 +45,6 @@
 %   gcircle       - Great circle distance between two (lon,lat) points.
 %   geodesic_dist - Geodesic distance between two (lon,lat) points.
 %
-% Preprocessing:
-%
-%   c_climatology - Creates a ROMS climatology NetCDF file.
-%   d_climatology - Driver to create a ROMS climatology file.
-%
-%   c_initial     - Creates a ROMS initial conditions NetCDF file.
-%   d_initial     - Driver to create a ROMS initial conditions file.
-%
 % Time management:
 %
 %   caldate      - Converts Julian day number to calendar date structure.
