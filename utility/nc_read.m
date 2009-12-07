@@ -30,7 +30,7 @@ function [f]=nc_read(fname,vname,tindex,FillValue);
 %
 %    f           Field (scalar or array)
 %
-% calls:         nc_dim, nc_vinfo, nc_vname, ncread
+% calls:         nc_dim, nc_vinfo, nc_vname, read_nc
 %
 
 % svn $Id$
@@ -134,12 +134,12 @@ if (water),
     got_mask=0;
   end,
   if (got_mask),
-    mask=ncread(fname,msknam,tindex,FillValue);
+    mask=read_nc(fname,msknam,tindex,FillValue);
   else,
 %   [fn,pth]=uigetfile(grid_file,'Enter grid NetCDF file...');
 %   gname=[pth,fn];
     gname=input('Enter grid NetCDF file: ');
-    mask=ncread(gname,msknam);
+    mask=read_nc(gname,msknam);
   end,
 end,
 
@@ -150,9 +150,9 @@ end,
 if (water),
 
   if (nargin < 3),
-    v=ncread(fname,vname);
+    v=read_nc(fname,vname);
   else
-    v=ncread(fname,vname,tindex);
+    v=read_nc(fname,vname,tindex);
   end,
   [Npts,Ntime]=size(v);
 
@@ -171,21 +171,21 @@ if (water),
 else,
 
   if (nargin < 3),
-    f=ncread(fname,vname,tindex,FillValue);
+    f=read_nc(fname,vname,tindex,FillValue);
   else
-    f=ncread(fname,vname,tindex,FillValue);
+    f=read_nc(fname,vname,tindex,FillValue);
   end,
   
 end,
 
 return
 
-function [f]=ncread(fname,vname,tindex,FillValue);
+function [f]=read_nc(fname,vname,tindex,FillValue);
 
 %
-% NCREAD:  Internal routine to read requested NetCDF variable
+% READ_NC:  Internal routine to read requested NetCDF variable
 %
-% [f]=ncread(fname,vname,tindex)
+% [f]=read_nc(fname,vname,tindex)
 %
 % This function reads in a generic multi-dimensional field from a NetCDF
 % file.
@@ -227,7 +227,7 @@ end,
 
 [ncid]=mexnc('ncopen',fname,'nc_nowrite');
 if (ncid == -1),
-  error(['NCREAD: ncopen - unable to open file: ' fname])
+  error(['READ_NC: ncopen - unable to open file: ' fname])
   return
 end,
 
@@ -255,7 +255,7 @@ if (varid < 0),
   [status]=mexnc('ncclose',ncid);
   nc_inq(fname);
   disp('  ');
-  error(['NCREAD: ncvarid - cannot find variable: ',vname])
+  error(['READ_NC: ncvarid - cannot find variable: ',vname])
   return
 end,
 
@@ -263,14 +263,14 @@ end,
 
 [ndims,nvars,natts,recdim,status]=mexnc('ncinquire',ncid);
 if (status == -1),
-  error(['NCREAD: ncinquire - cannot inquire file: ',fname])
+  error(['READ_NC: ncinquire - cannot inquire file: ',fname])
 end,
 
 % Get information about requested variable.
 
 [vname,nctype,nvdims,dimids,nvatts,status]=mexnc('ncvarinq',ncid,varid);
 if (status == -1),
-  error(['NCREAD: ncvarinq - unable to inquire about variable: ',vname])
+  error(['READ_NC: ncvarinq - unable to inquire about variable: ',vname])
 end,
 
 % Inquire about the _FillValue attribute.
@@ -280,7 +280,7 @@ got_FillValue=0;
 for i = 0:nvatts-1
   [attnam,status]=mexnc('ncattname',ncid,varid,i);
   if (status == -1)
-    error(['NCREAD: ncattname: error while inquiring attribute ' num2str(i)])
+    error(['READ_NC: ncattname: error while inquiring attribute ' num2str(i)])
   end,
   lstr=length(attnam);
   if (strncmp(attnam(1:lstr),'_FillValue',10)),
@@ -294,7 +294,7 @@ for i = 0:nvatts-1
       [spval,status]=mexnc('ncattget'      ,ncid,varid,'_FillValue');
     end,
     if (status == -1),
-      error(['NCREAD: ncattget error while reading _FillValue attribute'])
+      error(['READ_NC: ncattget error while reading _FillValue attribute'])
     end,
     got_FillValue=1;
   end,
@@ -306,7 +306,7 @@ index=0;
 for n=1:nvdims
   [name,dsize,status]=mexnc('ncdiminq',ncid,dimids(n));
   if (status == -1),
-    error(['NCREAD: ncdiminq - unable to inquire about dimension ID: ',...
+    error(['READ_NC: ncdiminq - unable to inquire about dimension ID: ',...
           num2str(dimids(n))])
   else
     lstr=length(name);
@@ -352,7 +352,7 @@ if (nvdim == 0),
   end,
 
   if (status == -1),
-    error(['NCREAD: ncvarget1 - error while reading: ',vname])
+    error(['READ_NC: ncvarget1 - error while reading: ',vname])
   end,
 
 %  Read in a multidemensional array.
@@ -370,7 +370,7 @@ else,
   end,
 
   if (status == -1),
-    error(['NCREAD: ncvarget - error while reading: ',vname])
+    error(['READ_NC: ncvarget - error while reading: ',vname])
   end,
 
   if (nvdims == 3),
@@ -437,7 +437,7 @@ end,
 
 [status]=mexnc('ncclose',ncid);
 if (status == -1),
-  error(['NCREAD: ncclose - unable to close NetCDF file.'])
+  error(['READ_NC: ncclose - unable to close NetCDF file.'])
 end
 
 return
