@@ -23,7 +23,7 @@ function editmask(grid_file, coast_file);
 
 % svn $Id$
 %===========================================================================%
-%  Copyright (c) 2002-2009 The ROMS/TOMS Group                              %
+%  Copyright (c) 2002-2010 The ROMS/TOMS Group                              %
 %    Licensed under a MIT/X style license                                   %
 %    See License_ROMS.txt                            A. Shcherbina          %
 %===========================================================================%

@@ -25,7 +25,7 @@ function [hout]=smooth_bath(hinp,rmask,order,rlim,npass);
 
 % svn $Id$
 %===========================================================================%
-%  Copyright (c) 2002-2009 The ROMS/TOMS Group                              %
+%  Copyright (c) 2002-2010 The ROMS/TOMS Group                              %
 %    Licensed under a MIT/X style license                                   %
 %    See License_ROMS.txt                           Hernan G. Arango        %
 %===========================================================================%
