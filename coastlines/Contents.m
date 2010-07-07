@@ -2,14 +2,15 @@
 % Coastline Extracting Functions
 % ==============================
 %
-% These functions are used for extracting coastline data from the GSHHS dataset.
+% These functions are used for extracting coastline data from the GSHHS
+% dataset.
 %
 %
-%   boundary.dat  -
+%   boundary.dat  - Example file to load boundary edges to "seagrid".
 %
 %   extract_coast - Driver to extract coastline.  The extracted data is
-%                   either written into a Matlab file that can be use in
-%                   "seagrid" or an ASCII file for ROMS plotting package.
+%                     either written into a Matlab file that can be use in
+%                     "seagrid" or an ASCII file for ROMS plotting package.
 %   grid_corners  - Driver to set the grid corners for "seagrid".
 %
 %   r_gshhs       - Read and extract coastline data from GSHHS dataset.

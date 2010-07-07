@@ -148,7 +148,7 @@ else,
     end,
     lstr=length(attnam);
     if (strmatch(aname(1:latt),attnam(1:lstr),'exact')),
-      status=mexnc('del_att',ncid,NCGLOBAL,attnam)
+      status=mexnc('del_att',ncid,NCGLOBAL,attnam);
       if (status < 0)
         disp('  ');
         disp(mexnc('strerror',status));

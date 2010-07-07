@@ -77,6 +77,17 @@ if (varid < 0),
   return
 end,
 
+%  Put open file into define mode.
+
+[status]=mexnc('redef',ncid);
+if (status < 0),
+  disp('  ');
+  disp(mexnc('strerror',status));
+  [status]=mexnc('close',ncid);
+  error(['NC_VRENAME: redef - unable to put in definition mode: ',fname]);
+  return
+end,
+
 %  Change name of requested variable.
 
 [status]=mexnc('rename_var',ncid,varid,vname_new);
@@ -84,6 +95,16 @@ if (status < 0),
   disp('  ');
   disp(mexnc('strerror',status));
   error(['NC_VRENAME: rename_var - unable to rename variable: ',vname_old]);
+end,
+
+%  Exit definition mode.
+
+[status]=mexnc('enddef',ncid);
+if (status < 0),
+  disp('  ');
+  disp(mexnc('strerror',status));
+  error(['NC_VRENAME: enddef - unable to exit definition mode: ',fname]);
+  return
 end,
 
 %  Close NetCDF file.

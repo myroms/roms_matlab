@@ -95,6 +95,14 @@ S.hc = S.Tcline;
 
 [status]=c_initial(S);
 
+%  Set attributes for "ocean_time".
+
+avalue='seconds since 0001-01-01 00:00:00';
+[status]=nc_attadd(INIname,'units',avalue,'ocean_time');
+  
+avalue='360.0 days in every year';
+[status]=nc_attadd(INIname,'calendar',avalue,'ocean_time');
+
 %---------------------------------------------------------------------------
 %  Set grid variables.
 %---------------------------------------------------------------------------
@@ -177,25 +185,21 @@ if (~isfield(S, 'mask_v'  )),  S.mask_v   = ones([Lv Mv]);  end,
 %  Write out grid variables.
 %---------------------------------------------------------------------------
 			 
-if (S.spherical),
-  [status]=nc_write(INIname, 'spherical',   'T');
-else,
-  [status]=nc_write(INIname, 'spherical',   'F');
-end,  
+[status]=nc_write(INIname,   'spherical',   S.spherical);
 
-  [status]=nc_write(INIname, 'Vtransform',  S.Vtransform);
-  [status]=nc_write(INIname, 'Vstretching', S.Vstretching);
-  [status]=nc_write(INIname, 'theta_s',     S.theta_s);
-  [status]=nc_write(INIname, 'theta_b',     S.theta_b);
-  [status]=nc_write(INIname, 'Tcline',      S.Tcline);
-  [status]=nc_write(INIname, 'hc',          S.hc);
+[status]=nc_write(INIname,   'Vtransform',  S.Vtransform);
+[status]=nc_write(INIname,   'Vstretching', S.Vstretching);
+[status]=nc_write(INIname,   'theta_s',     S.theta_s);
+[status]=nc_write(INIname,   'theta_b',     S.theta_b);
+[status]=nc_write(INIname,   'Tcline',      S.Tcline);
+[status]=nc_write(INIname,   'hc',          S.hc);
 
-  [status]=nc_write(INIname, 's_rho',       S.s_rho);
-  [status]=nc_write(INIname, 's_w',         S.s_w);
-  [status]=nc_write(INIname, 'Cs_r',        S.Cs_r);
-  [status]=nc_write(INIname, 'Cs_w',        S.Cs_w);
+[status]=nc_write(INIname,   's_rho',       S.s_rho);
+[status]=nc_write(INIname,   's_w',         S.s_w);
+[status]=nc_write(INIname,   'Cs_r',        S.Cs_r);
+[status]=nc_write(INIname,   'Cs_w',        S.Cs_w);
 
-  [status]=nc_write(INIname, 'h',           S.h);
+[status]=nc_write(INIname,   'h',           S.h);
 
 if (S.spherical),
   [status]=nc_write(INIname, 'lon_rho',     S.lon_rho);

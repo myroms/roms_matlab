@@ -176,7 +176,7 @@ if (~strcmp(cliptype,'point')),
     Yc(I)=Y(I)+(Xedge-X(I)).*(Y(I+1)-Y(I))./bt;
     Yc(I(ibt))=(Y(I(ibt))+Y(I(ibt)+1))/2;
     Xc(I)=Xedge;
-    index(I(finite(Yc(I))))=0;
+    index(I(isfinite(Yc(I))))=0;
 
   end,
 
@@ -201,7 +201,7 @@ if (~strcmp(cliptype,'point')),
     Yc(I+1)=Y(I)+(Xedge-X(I)).*(Y(I+1)-Y(I))./bt;
     Yc(I(ibt)+1)=(Y(I(ibt))+Y(I(ibt)+1))/2;
     Xc(I+1)=Xedge;
-    index(I(finite(Yc(I+1)))+1)=0;
+    index(I(isfinite(Yc(I+1)))+1)=0;
   end;
 
 end;

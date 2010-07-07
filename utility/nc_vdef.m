@@ -11,38 +11,29 @@ function [varid,status]=nc_vdef(ncid,Var);
 %
 %    ncid        NetCDF file ID (integer).
 %    Var         Variable information (structure array):
-%                  Var.name     => name (string)
-%                  Var.type     => type (number)
-%                  Var.dimid    => dimension IDs (number)
-%                  Var.long     => "long_name" attribute (string)
-%                  Var.flag_str => "flag_values" attribute (string)
-%                  Var.flag_num => "flag_values" attribute (number)
-%                  Var.meaning  => "flag_meanings" attribute (string)
-%                  Var.units    => "units" attribute (string)
-%                  Var.calendar => "calendar" attribute (string) 
-%                  Var.offset   => "add_offset" attribute (number)
-%                  Var.cycle    => "cycle_length" attribute (number)
-%                  Var.min      => "valid_min" attribute (number)
-%                  Var.max      => "valid_max" attribute (number)
-%                  Var.positive => "positive" attribute (string)
-%                  Var.plus     => "positive_value" attribute (string)
-%                  Var.minus    => "negative_value" attribute (string)
-%                  Var.fill     => "_FillValue" attribute (number)
-%                  Var.miss     => "missing_value" attribute (string)
-%                  Var.stdname  => "standard_name" attribute (string)
-%                  Var.formula  => "formula_terms" attribute (string
-%                  Var.time     => "time" attribute (string)
-%                  Var.pos      => "positions" attribute (string)
-%                  Var.coord    => "coordinates" attribute (string)
-%                  Var.urot     => "u-rotation" attribute (string)
-%                  Var.vrot     => "v-rotation" attribute (string)
-%                  Var.left     => "left" attribute (string)
-%                  Var.right    => "right" attribute (string)
-%                  Var.top      => "top" attribute (string)
-%                  Var.bottom   => "bottom" attribute (string)
-%                  Var.up       => "up" attribute (string)
-%                  Var.down     => "down" attribute (string)
-%                  Var.field    => "field" attribute (string)
+%
+%                  Var.name  => variable name (string)
+%
+%                  Var.type  => external data type (string or numeric):
+%                               'byte'   or  nc_byte
+%                               'char'   or  nc_char
+%                               'short'  or  nc_short
+%                               'int'    or  nc_int
+%                               'float'  or  nc_float
+%                               'double' or  nc_double
+%                                     
+%                  Var.dimid => dimension IDs (numeric), if not present
+%                               or empthy [] the variable is a scalar
+%                  
+%                  Any other field in the structure, if any,
+%                  is proccessed as a variable attribute. For
+%                  example:
+%
+%                  Var.long_name  => "long_name" attribute (string)
+%                  Var.add_offset => "add_offset" attribute (number)
+%
+%                  the values of the attribute can be numeric (scalar
+%                  or vector) or characters (array or cell array).
 %
 % On Output:
 %
@@ -57,23 +48,65 @@ function [varid,status]=nc_vdef(ncid,Var);
 %    See License_ROMS.txt                           Hernan G. Arango        %
 %===========================================================================%
 
+% Check input structure.
+
+if (~isfield(Var,'name')),
+  disp(' ');
+  error([ 'NC_VDEF - Cannot field ''name'' in structure array: Var']);
+  return
+end,
+
+if (~isfield(Var,'type')),
+  disp(' ');
+  error([ 'NC_VDEF - Cannot field ''type'' in structure array: Var']);
+  return
+end,
+
+if (~isfield(Var,'dimid')),
+  disp(' ');
+  error([ 'NC_VDEF - Cannot field ''dimid'' in structure array: Var']);
+  return
+end,
 
 %---------------------------------------------------------------------------
 %  Get some NetCDF parameters.
 %---------------------------------------------------------------------------
 
-[ncdouble]=mexnc('parameter','nc_double');
-[ncfloat ]=mexnc('parameter','nc_float');
+[ncbyte  ]=mexnc('parameter','nc_byte');
 [ncchar  ]=mexnc('parameter','nc_char');
+[ncshort ]=mexnc('parameter','nc_short');
 [ncint   ]=mexnc('parameter','nc_int');
+[ncfloat ]=mexnc('parameter','nc_float');
+[ncdouble]=mexnc('parameter','nc_double');
 
-% Set variable type (default: floating point, single precision)
+% Set variable external data type representation.
 
 if (isfield(Var,'type')),
-  vartyp=Var.type;
+  type=getfield(Var,'type');
+  if (ischar(type)),
+    switch type
+      case 'byte'
+        vartyp=ncbyte;
+      case 'char'
+        vartyp=ncchar;
+      case 'short'
+        vartyp=ncshort;
+      case 'int'
+        vartyp=ncint;
+      case 'float'
+        vartyp=ncfloat;
+      case 'double'
+        vartyp=ncdouble;
+    end,
+  else
+    vartyp=type;
+  end,
 else,
-  vartyp=ncfloat;
+  error(['NC_VDEF: external data type field ''type'' is missing in ' ...
+	 'structure: Var']);
+  return,
 end,
+
 
 %---------------------------------------------------------------------------
 %  Define requested variable.
@@ -84,176 +117,88 @@ if (isfield(Var,'name') & isfield(Var,'dimid')),
   nvdim=length(vdid);
   [varid,status]=mexnc('def_var',ncid,Var.name,vartyp,nvdim,vdid);
   if (varid == -1 | status ~= 0),
+    disp('  ');
+    disp(mexnc('strerror',status));
     error(['NC_VDEF: DEF_VAR - unable to define variable: ',Var.name]);
     return,
   end,
 end,
 
 %---------------------------------------------------------------------------
-% Write variable attributes.
+%  Add variable attributes.
 %---------------------------------------------------------------------------
 
 names=fieldnames(Var);
 nfields=length(names);
 
 for n=1:nfields,
-  put_string=0;
-  put_number=0;
   Aname=char(names(n));
   switch Aname
-    case ('long')
-      Vatt='long_name';
-      text=getfield(Var,Aname);
-      put_string=1;
-    case ('flag_str')
-      Vatt='flag_values';
-      text=getfield(Var,Aname);
-      put_string=1;
-    case ('flag_num')
-      Vatt='flag_values';
-      value=getfield(Var,Aname)
-      put_number=1;
-    case ('meaning')
-      Vatt='flag_meanings';
-      text=getfield(Var,Aname);
-      put_string=1;
-    case ('units')
-      Vatt='units';
-      text=getfield(Var,Aname);
-      put_string=1;
-    case ('calendar')
-      Vatt='calendar';
-      text=getfield(Var,Aname);
-      put_string=1;
-    case ('offset')
-      Vatt='add_offset';
-      value=getfield(Var,Aname);
-      put_number=1;
-    case ('cycle')
-      Vatt='cycle_length';
-      value=getfield(Var,Aname);
-      put_number=1;
-    case ('min')
-      Vatt='valid_min';
-      value=getfield(Var,Aname);
-      put_number=1;
-    case ('max')
-      Vatt='valid_max';
-      value=getfield(Var,Aname);
-      put_number=1;
-    case ('positive')
-      Vatt='positive';
-      text=getfield(Var,Aname);
-      put_string=1;
-    case ('plus')
-      Vatt='positive_value';
-      text=getfield(Var,Aname);
-      put_string=1;
-    case ('minus')
-      Vatt='negative_value';
-      text=getfield(Var,Aname);
-      put_string=1;
-    case ('fill')
-      Vatt='_FillValue';
-      value=getfield(Var,Aname);
-      put_number=1;
-    case ('miss')
-      Vatt='missing_value';
-      value=getfield(Var,Aname);
-      put_number=1;
-    case ('stdname')
-      Vatt='standard_name';
-      text=getfield(Var,Aname);
-      put_string=1;
-    case ('formula')
-      Vatt='formula_terms';
-      text=getfield(Var,Aname);
-      put_string=1;
-    case ('time')
-      Vatt='time';
-      text=getfield(Var,Aname);
-      put_string=1;
-    case ('pos')
-      Vatt='positions';
-      text=getfield(Var,Aname);
-      put_string=1;
-    case ('coord')
-      Vatt='coordinates';
-      text=getfield(Var,Aname);
-      put_string=1;
-    case ('urot')
-      Vatt='rotation1';
-      text=getfield(Var,Aname);
-      put_string=1;
-    case ('vrot')
-      Vatt='rotation2';
-      text=getfield(Var,Aname);
-      put_string=1;
-    case ('left')
-      Vatt='left';
-      text=getfield(Var,Aname);
-      put_string=1;
-    case ('right')
-      Vatt='right';
-      text=getfield(Var,Aname);
-      put_string=1;
-    case ('top')
-      Vatt='top';
-      text=getfield(Var,Aname);
-      put_string=1;
-    case ('bottom')
-      Vatt='bottom';
-      text=getfield(Var,Aname);
-      put_string=1;
-    case ('up')
-      Vatt='up';
-      text=getfield(Var,Aname);
-      put_string=1;
-    case ('down')
-      Vatt='down';
-      text=getfield(Var,Aname);
-      put_string=1;
-    case ('field')
-      Vatt='field';
-      text=getfield(Var,Aname);
-      put_string=1;
+    case {'name', 'type', 'dimid'}
+      put_attribute=0;
+    otherwise,
+      put_attribute=1;
+      value=getfield(Var,Aname);    
   end,
-  if (put_string),
-    lstr=length(text);
-    [status]=mexnc('put_att_text',ncid,varid,Vatt,ncchar,lstr,text);
-    if (status ~= 0),
-      error(['NC_VDEF: PUT_ATT_TEXT - unable to define attribute: ',...
-             Var.name,':',Vatt,'.']);
-      return,
-    end,
-  end,
-  if (put_number),
-    nval=length(value);
-    switch (vartyp)
-      case (ncint)   
-        value=int32(value);
-        [status]=mexnc('put_att_int',   ncid,varid,Vatt,vartyp,nval,value);
-        if (status == -1),
-          error(['NC_VDEF: PUT_ATT_INT - unable to define attribute: ',...
-                 Vname.name,':',Vatt,'.']);
-          return,
-        end,
-      case (ncfloat)
-        value=single(value);
-	[status]=mexnc('put_att_float', ncid,varid,Vatt,vartyp,nval,value);
-        if (status == -1),
-          error(['NC_VDEF: PUT_ATT_FLOAT - unable to define attribute: ',...
-                 Vname.name,':',Vatt,'.']);
-          return,
-        end,
-      case (ncdouble)
-        value=double(value);
-	[status]=mexnc('put_att_double',ncid,varid,Vatt,vartyp,nval,value);
-        if (status == -1),
-          error(['NC_VDEF: PUT_ATT_DOUBLE - unable to define attribute: ',...
-                 Vname.name,':',Vatt,'.']);
-          return,
-        end,
+
+% Define variable attributes.  
+
+  if (put_attribute),
+
+% Attribute value is character array or cell array.
+
+    if (iscellstr(value) | ischar(value)),
+      if (iscellstr(value)),
+        value=char(value);            % need figure out this one
+      end,
+      lstr=length(value);
+      [status]=mexnc('put_att_text',ncid,varid,Aname,ncchar,lstr,value);
+      if (status ~= 0),
+        disp('  ');
+        disp(mexnc('strerror',status));
+        error(['NC_VDEF: PUT_ATT_TEXT - unable to define attribute: ',...
+               Var.name,':',Aname,'.']);
+        return,
+      end,
+
+% Attribute value is numeric (scalar or vector). Check external data
+% representation.
+
+    else,
+
+      nval=length(value);
+      switch (vartyp)
+        case (ncint)   
+          value=int32(value);
+          [status]=mexnc('put_att_int',   ncid,varid,Aname,vartyp,nval,value);
+          if (status ~= 0),
+            disp('  ');
+            disp(mexnc('strerror',status));
+            error(['NC_VDEF: PUT_ATT_INT - unable to define attribute: ',...
+                   Vname.name,':',Aname,'.']);
+            return,
+          end,
+        case (ncfloat)
+          value=single(value);
+	  [status]=mexnc('put_att_float', ncid,varid,Aname,vartyp,nval,value);
+          if (status ~= 0),
+            disp('  ');
+            disp(mexnc('strerror',status));
+            error(['NC_VDEF: PUT_ATT_FLOAT - unable to define attribute: ',...
+                   Vname.name,':',Aname,'.']);
+            return,
+          end,
+        case (ncdouble)
+          value=double(value);
+	  [status]=mexnc('put_att_double',ncid,varid,Aname,vartyp,nval,value);
+          if (status ~= 0),
+            disp('  ');
+            disp(mexnc('strerror',status));
+            error(['NC_VDEF: PUT_ATT_DOUBLE - unable to define attribute: ',...
+                   Vname.name,':',Aname,'.']);
+            return,
+          end,
+      end,
     end,
   end,
 end,

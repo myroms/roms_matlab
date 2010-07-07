@@ -23,6 +23,7 @@ my_root='/home/arango/ocean/toms/repository';
 
 path(path, fullfile(my_root, 'matlab', '4dvar', ''))
 path(path, fullfile(my_root, 'matlab', 'bathymetry', ''))
+path(path, fullfile(my_root, 'matlab', 'boundary', ''))
 path(path, fullfile(my_root, 'matlab', 'coastlines', ''))
 path(path, fullfile(my_root, 'matlab', 'initial', ''))
 path(path, fullfile(my_root, 'matlab', 'landmask', ''))

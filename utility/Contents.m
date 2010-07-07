@@ -34,6 +34,18 @@
 %
 %   nc_slice      - Interpolates requested slice from a 3D NetCDF variable.
 %
+% ROMS Data Processing:
+%
+%   roms_vectors  - Processes vector data for either the full grid
+%                     or boundary edges. The strategy is to get any
+%                     horizontal vector field at RHO-points for the
+%                     event that a rotation to ROMS curvilinear grid
+%                     is needed.  Then, they are computed at the
+%                     appropriate Arakawa C-grid location.
+%
+%   uv_barotropic - Computes vertically integrated velocity components
+%                      for ROMS full grid or boundaries.
+%
 % Filters:
 %
 %   shapiro1      - 1D Shapiro filter.
@@ -45,7 +57,7 @@
 %   gcircle       - Great circle distance between two (lon,lat) points.
 %   geodesic_dist - Geodesic distance between two (lon,lat) points.
 %
-% Time management:
+% Time Management:
 %
 %   caldate      - Converts Julian day number to calendar date structure.
 %   date_stamp   - Sets current date string.

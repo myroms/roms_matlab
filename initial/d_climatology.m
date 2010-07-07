@@ -19,7 +19,9 @@
  my_root = '/home/arango/ocean/toms/repository/Projects/damee';
 
  GRDname = fullfile(my_root, 'Data/netcdf3', 'damee4_grid_a.nc');
- CLMname = fullfile(my_root, 'Data/netcdf3', 'damee4_Lclm_b.nc');
+%CLMname = fullfile(my_root, 'Data/netcdf3', 'damee4_Lclm_b.nc');
+
+ CLMname = 'damee4_Lclm_b.nc';
 
  OAname( 1,:)  = fullfile(my_root, 'Data/OA', 'oa4_lev94_jan.nc');
  OAname( 2,:)  = fullfile(my_root, 'Data/OA', 'oa4_lev94_feb.nc');
@@ -118,6 +120,58 @@ S.def_salt = 1;       S.salt_time = 12;
 
 [status]=c_climatology(S);
 
+%  Update attributes for time variables.
+
+if (S.def_zeta),
+  avalue='days since 0001-01-01 00:00:00';
+  [status]=nc_attadd(CLMname,'units',avalue,'zeta_time');
+  
+  avalue='360.0 days in every year';
+  [status]=nc_attadd(CLMname,'calendar',avalue,'zeta_time');
+
+  [status]=nc_attadd(CLMname,'cycle_length',360.0,'zeta_time');
+end,
+
+if (S.def_v2d),
+  avalue='days since 0001-01-01 00:00:00';
+  [status]=nc_attadd(CLMname,'units',avalue,'v2d_time');
+  
+  avalue='360.0 days in every year';
+  [status]=nc_attadd(CLMname,'calendar',avalue,'v2d_time');
+
+  [status]=nc_attadd(CLMname,'cycle_length',360.0,'v2d_time');
+end,
+
+if (S.def_v3d),
+  avalue='days since 0001-01-01 00:00:00';
+  [status]=nc_attadd(CLMname,'units',avalue,'v3d_time');
+  
+  avalue='360.0 days in every year';
+  [status]=nc_attadd(CLMname,'calendar',avalue,'v3d_time');
+
+  [status]=nc_attadd(CLMname,'cycle_length',360.0,'v3d_time');
+end,
+
+if (S.def_temp),
+  avalue='days since 0001-01-01 00:00:00';
+  [status]=nc_attadd(CLMname,'units',avalue,'temp_time');
+  
+  avalue='360.0 days in every year';
+  [status]=nc_attadd(CLMname,'calendar',avalue,'temp_time');
+
+  [status]=nc_attadd(CLMname,'cycle_length',360.0,'temp_time');
+end,
+
+if (S.def_salt),
+  avalue='days since 0001-01-01 00:00:00';
+  [status]=nc_attadd(CLMname,'units',avalue,'salt_time');
+  
+  avalue='360.0 days in every year';
+  [status]=nc_attadd(CLMname,'calendar',avalue,'salt_time');
+
+  [status]=nc_attadd(CLMname,'cycle_length',360.0,'salt_time');
+end,
+
 %---------------------------------------------------------------------------
 %  Set grid variables.
 %---------------------------------------------------------------------------
@@ -190,25 +244,21 @@ if (~isfield(S, 'mask_v'  )),  S.mask_v   = ones([Lv Mv]);  end,
 %  Write out grid variables.
 %---------------------------------------------------------------------------
 			 
-if (S.spherical),
-  [status]=nc_write(CLMname, 'spherical',   'T');
-else,
-  [status]=nc_write(CLMname, 'spherical',   'F');
-end,  
+[status]=nc_write(CLMname,   'spherical',   S.spherical);
 
-  [status]=nc_write(CLMname, 'Vtransform',  S.Vtransform);
-  [status]=nc_write(CLMname, 'Vstretching', S.Vstretching);
-  [status]=nc_write(CLMname, 'theta_s',     S.theta_s);
-  [status]=nc_write(CLMname, 'theta_b',     S.theta_b);
-  [status]=nc_write(CLMname, 'Tcline',      S.Tcline);
-  [status]=nc_write(CLMname, 'hc',          S.hc);
+[status]=nc_write(CLMname,   'Vtransform',  S.Vtransform);
+[status]=nc_write(CLMname,   'Vstretching', S.Vstretching);
+[status]=nc_write(CLMname,   'theta_s',     S.theta_s);
+[status]=nc_write(CLMname,   'theta_b',     S.theta_b);
+[status]=nc_write(CLMname,   'Tcline',      S.Tcline);
+[status]=nc_write(CLMname,   'hc',          S.hc);
 
-  [status]=nc_write(CLMname, 's_rho',       S.s_rho);
-  [status]=nc_write(CLMname, 's_w',         S.s_w);
-  [status]=nc_write(CLMname, 'Cs_r',        S.Cs_r);
-  [status]=nc_write(CLMname, 'Cs_w',        S.Cs_w);
+[status]=nc_write(CLMname,   's_rho',       S.s_rho);
+[status]=nc_write(CLMname,   's_w',         S.s_w);
+[status]=nc_write(CLMname,   'Cs_r',        S.Cs_r);
+[status]=nc_write(CLMname,   'Cs_w',        S.Cs_w);
 
-  [status]=nc_write(CLMname, 'h',           S.h);
+[status]=nc_write(CLMname,   'h',           S.h);
 
 if (S.spherical),
   [status]=nc_write(CLMname, 'lon_rho',     S.lon_rho);

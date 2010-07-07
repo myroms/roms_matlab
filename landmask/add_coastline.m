@@ -80,31 +80,37 @@ if (define.Clon | define.Clat),
 
   [ncglobal]=mexnc('parameter','nc_global');
   [ncdouble]=mexnc('parameter','nc_double');
-  [ncfloat]=mexnc('parameter','nc_float');
-  [ncchar]=mexnc('parameter','nc_char');
+  [ncfloat ]=mexnc('parameter','nc_float');
+  [ncchar  ]=mexnc('parameter','nc_char');
 
 %  Open GRID NetCDF file.
 
-  [ncid]=mexnc('ncopen',Gname,'nc_write');
-  if (ncid == -1),
-    error(['ADD_COASTLINE: ncrefdef - unable to open file: ', Gname]);
+  [ncid,status]=mexnc('open',Gname,'nc_write');
+  if (status ~= 0),
+    disp('  ');
+    disp(mexnc('strerror',status));
+    error(['ADD_COASTLINE: OPEN - unable to open file: ', Gname]);
     return
   end,
 
 %  Put GRID NetCDF file into define mode.
 
-  [status]=mexnc('ncredef',ncid);
-  if (status == -1),
-    error(['ADD_COASTLINE: ncrefdef - unable to put into define mode.']);
+  [status]=mexnc('redef',ncid);
+  if (status ~= 0),
+    disp('  ');
+    disp(mexnc('strerror',status));
+    error(['ADD_COASTLINE: REFDEF - unable to put into define mode.']);
     return
   end,
 
 %  Define "coast" dimension.
 
    if (~got.coast),
-     [did.Clon]=mexnc('ncdimdef',ncid,Dname.Clon,length(Clon));
-     if (did.Clon == -1),
-      error(['ADD_COASTLINE: ncdimdef - unable to define dimension: ',...
+     [did.Clon,status]=mexnc('def_dim',ncid,Dname.Clon,length(Clon));
+     if (status ~= 0),
+      disp('  ');
+      disp(mexnc('strerror',status));
+      error(['ADD_COASTLINE: DEF_DIM - unable to define dimension: ',...
               Dname.Clon])
      end,
      did.Clat=did.Clon;
@@ -113,22 +119,22 @@ if (define.Clon | define.Clat),
 %  Define coastline longitude.
 
   if (define.Clon),
-    Var.name =Vname.Clon;
-    Var.type =ncdouble;
-    Var.dimid=did.Clon;
-    Var.long ='Coastline longitude';
-    Var.units='degree_east';
+    Var.name      =  Vname.Clon;
+    Var.type      =  ncdouble;
+    Var.dimid     =  did.Clon;
+    Var.long_name = 'Coastline longitude';
+    Var.units     = 'degree_east';
 
     [varid,status]=nc_vdef(ncid,Var);
     clear Var
   end,
 
   if (define.Clat),
-    Var.name =Vname.Clat;
-    Var.type =ncdouble;
-    Var.dimid=did.Clat;
-    Var.long ='Coastline latitude';
-    Var.units='degree_north';
+    Var.name      = Vname.Clat;
+    Var.type      = ncdouble;
+    Var.dimid     = did.Clat;
+    Var.long_name = 'Coastline latitude';
+    Var.units     = 'degree_north';
 
     [varid,status]=nc_vdef(ncid,Var);
     clear Var
@@ -136,16 +142,16 @@ if (define.Clon | define.Clat),
 
 %  Leave definition mode.
 
-  [status]=mexnc('ncendef',ncid);
-  if (status == -1),
-    error(['ADD_COASTLINE: ncendef - unable to leave definition mode.']);
+  [status]=mexnc('enddef',ncid);
+  if (status ~= 0),
+    error(['ADD_COASTLINE: ENDDEF - unable to leave definition mode.']);
   end,
 
 %  Close GRID NetCDF file.
 
-  [status]=mexnc('ncclose',ncid);
-  if (status == -1),
-    error(['ADD_COASTLINE: ncclose - unable to close NetCDF file: ', Gname]);
+  [status]=mexnc('close',ncid);
+  if (status ~= 0),
+    error(['ADD_COASTLINE: CLOSE - unable to close NetCDF file: ', Gname]);
   end,
 
 end,

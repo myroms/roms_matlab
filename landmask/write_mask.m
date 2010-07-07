@@ -109,31 +109,35 @@ if (define.pmask | define.rmask | define.umask | define.pmask),
 
 %  Open GRID NetCDF file.
 
-  [ncid]=mexnc('ncopen',Gname,'nc_write');
-  if (ncid == -1),
-    error(['WRITE_MASK: ncrefdef - unable to open file: ', Gname]);
+  [ncid,status]=mexnc('open',Gname,'nc_write');
+  if (status ~= 0),
+    disp('  ');
+    disp(mexnc('strerror',status));
+    error(['WRITE_MASK: OPEN - unable to open file: ', Gname]);
     return
   end,
 
 
 %  Put GRID NetCDF file into define mode.
 
-  [status]=mexnc('ncredef',ncid);
-  if (status == -1),
-    error(['WRITE_MASK: ncrefdef - unable to put into define mode.']);
+  [status]=mexnc('redef',ncid);
+  if (status ~= 0),
+    disp('  ');
+    disp(mexnc('strerror',status));
+    error(['WRITE_MASK: REDEF - unable to put into define mode.']);
     return
   end,
 
 %  Define Land/Sea mask on RHO-points.
 
   if (define.rmask),
-    Var.name =Vname.rmask;
-    Var.type =ncdouble;
-    Var.dimid=[did.yr did.xr];
-    Var.long ='mask on RHO-points';
-    Var.opt_0='land';
-    Var.opt_1='sea';
-    Var.units='nondimensional';
+    Var.name          = Vname.rmask;
+    Var.type          = ncdouble;
+    Var.dimid         = [did.yr did.xr];
+    Var.long_name     = 'mask on RHO-points';
+    Var.flag_values   = [0.0 1.0];
+    Var.flag_meanings = ['land', blanks(1), ...
+                         'water'];
 
     [varid,status]=nc_vdef(ncid,Var);
     clear Var
@@ -142,13 +146,13 @@ if (define.pmask | define.rmask | define.umask | define.pmask),
 %  Define Land/Sea mask on PSI-points.
 
   if (define.pmask),
-    Var.name =Vname.pmask;
-    Var.type =ncdouble;
-    Var.dimid=[did.yp did.xp];
-    Var.long ='mask on PSI-points';
-    Var.opt_0='land';
-    Var.opt_1='sea';
-    Var.units='nondimensional';
+    Var.name          = Vname.pmask;
+    Var.type          = ncdouble;
+    Var.dimid         = [did.yp did.xp];
+    Var.long_name     = 'mask on PSI-points';
+    Var.flag_values   = [0.0 1.0];
+    Var.flag_meanings = ['land', blanks(1), ...
+                         'water'];
 
     [varid,status]=nc_vdef(ncid,Var);
     clear Var
@@ -157,13 +161,13 @@ if (define.pmask | define.rmask | define.umask | define.pmask),
 %  Define Land/Sea mask on U-points.
 
   if (define.umask),
-    Var.name =Vname.umask;
-    Var.type =ncdouble;
-    Var.dimid=[did.yu did.xu];
-    Var.long ='mask on U-points';
-    Var.opt_0='land';
-    Var.opt_1='sea';
-    Var.units='nondimensional';
+    Var.name          = Vname.umask;
+    Var.type          = ncdouble;
+    Var.dimid         = [did.yu did.xu];
+    Var.long_name     = 'mask on U-points';
+    Var.flag_values   = [0.0 1.0];
+    Var.flag_meanings = ['land', blanks(1), ...
+                         'water'];
 
     [varid,status]=nc_vdef(ncid,Var);
     clear Var
@@ -172,13 +176,13 @@ if (define.pmask | define.rmask | define.umask | define.pmask),
 %  Define Land/Sea mask on V-points.
 
   if (define.vmask),
-    Var.name =Vname.vmask;
-    Var.type =ncdouble;
-    Var.dimid=[did.yv did.xv];
-    Var.long ='mask on V-points';
-    Var.opt_0='land';
-    Var.opt_1='sea';
-    Var.units='nondimensional';
+    Var.name          = Vname.vmask;
+    Var.type          = ncdouble;
+    Var.dimid         = [did.yv did.xv];
+    Var.long_name     = 'mask on V-points';
+    Var.flag_values   = [0.0 1.0];
+    Var.flag_meanings = ['land', blanks(1), ...
+                         'water'];
 
     [varid,status]=nc_vdef(ncid,Var);
     clear Var
@@ -186,16 +190,20 @@ if (define.pmask | define.rmask | define.umask | define.pmask),
 
 %  Leave definition mode.
 
-  [status]=mexnc('ncendef',ncid);
-  if (status == -1),
-    error(['WRITE_MASK: ncendef - unable to leave definition mode.']);
+  [status]=mexnc('enddef',ncid);
+  if (status ~= 0),
+    disp('  ');
+    disp(mexnc('strerror',status));
+    error(['WRITE_MASK: ENDDEF - unable to leave definition mode.']);
   end,
 
 %  Close GRID NetCDF file.
 
-  [status]=mexnc('ncclose',ncid);
-  if (status == -1),
-    error(['WRITE_MASK: ncclose - unable to close NetCDF file: ', Gname]);
+  [status]=mexnc('close',ncid);
+  if (status ~= 0),
+    disp('  ');
+    disp(mexnc('strerror',status));
+    error(['WRITE_MASK: CLOSE - unable to close NetCDF file: ', Gname]);
   end,
 
 end,

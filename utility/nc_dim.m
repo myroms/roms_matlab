@@ -1,4 +1,4 @@
-function [dnames,dsizes]=nc_dim(fname);
+function [dnames,dsizes,recdim]=nc_dim(fname);
 
 %
 % NC_DIM:  Inquire about the dimensions in a NetCDF file
@@ -16,6 +16,7 @@ function [dnames,dsizes]=nc_dim(fname);
 %
 %    dnames     Dimension names (string array)
 %    dsizes     Dimension sizes
+%    recdim     Unlimited record dimension
 %
 
 % svn $Id$
@@ -29,24 +30,22 @@ function [dnames,dsizes]=nc_dim(fname);
 %  Open NetCDF file.
 %---------------------------------------------------------------------------
  
-[ncid]=mexnc('OPEN',fname,'nc_nowrite');
-if (ncid == -1),
+[ncid,status]=mexnc('open',fname,'nc_nowrite');
+if (status ~= 0),
+  disp('  ');
+  disp(mexnc('strerror',status));
   error(['NC_DIM: ncopen - unable to open file: ', fname]);
   return
 end
  
 %---------------------------------------------------------------------------
-%  Supress all error messages from NetCDF.
-%---------------------------------------------------------------------------
- 
-[ncopts]=mexnc('setopts',0);
-
-%---------------------------------------------------------------------------
 % Inquire about contents.
 %---------------------------------------------------------------------------
 
-[ndims,nvars,natts,recdim,status]=mexnc('INQ',ncid);
-if (status == -1),
+[ndims,nvars,natts,recdim,status]=mexnc('inq',ncid);
+if (status ~= 0),
+  disp('  ');
+  disp(mexnc('strerror',status));
   error(['NC_DIM: INQ - cannot inquire file: ',fname]);
 end,
 
@@ -55,8 +54,10 @@ end,
 %---------------------------------------------------------------------------
 
 for n=1:ndims;
-  [name,size,status]=mexnc('INQ_DIM',ncid,n-1);
-  if (status == -1),
+  [name,size,status]=mexnc('inq_dim',ncid,n-1);
+  if (status ~= 0),
+    disp('  ');
+    disp(mexnc('strerror',status));
     error(['NC_DIM: INQ_DIM - unable to inquire about dimension ID: ',...
           num2str(n)]);
   else,
@@ -70,8 +71,10 @@ end,
 % Close NetCDF file.
 %---------------------------------------------------------------------------
 
-[status]=mexnc('CLOSE',ncid);
-if (status == -1),
+[status]=mexnc('close',ncid);
+if (status ~= 0),
+  disp('  ');
+  disp(mexnc('strerror',status));
   error(['NC_DIM: CLOSE - unable to close file: ', fname]);
   return
 end,

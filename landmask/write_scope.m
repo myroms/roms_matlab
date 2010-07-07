@@ -97,31 +97,35 @@ if (define.Rscope | define.Uscope | define.Vscope),
 
 %  Open GRID NetCDF file.
 
-  [ncid]=mexnc('ncopen',Gname,'nc_write');
-  if (ncid == -1),
-    error(['WRITE_MASK: ncrefdef - unable to open file: ', Gname]);
+  [ncid,status]=mexnc('open',Gname,'nc_write');
+  if (status ~= 0),
+    disp('  ');
+    disp(mexnc('strerror',status));
+    error(['WRITE_MASK: OPEN - unable to open file: ', Gname]);
     return
   end,
 
 
 %  Put GRID NetCDF file into define mode.
 
-  [status]=mexnc('ncredef',ncid);
-  if (status == -1),
-    error(['WRITE_MASK: ncrefdef - unable to put into define mode.']);
+  [status]=mexnc('redef',ncid);
+  if (status ~= 0),
+    disp('  ');
+    disp(mexnc('strerror',status));
+    error(['WRITE_MASK: REFDEF - unable to put into define mode.']);
     return
   end,
 
 %  Define scope mask on RHO-points.
 
   if (define.Rscope),
-    Var.name =Vname.Rscope;
-    Var.type =ncdouble;
-    Var.dimid=[did.yr did.xr];
-    Var.long ='adjoint sensitivity scope mask on RHO-points';
-    Var.opt_0='inactive';
-    Var.opt_1='active';
-    Var.units='nondimensional';
+    Var.name          = Vname.Rscope;
+    Var.type          = ncdouble;
+    Var.dimid         = [did.yr did.xr];
+    Var.long_name     = 'adjoint sensitivity scope mask on RHO-points';
+    Var.flag_values   = [0.0 1.0];
+    Var.flag_meanings = ['inactive', blanks(1), ...
+                         'active'];
 
     [varid,status]=nc_vdef(ncid,Var);
     clear Var
@@ -130,13 +134,13 @@ if (define.Rscope | define.Uscope | define.Vscope),
 %  Define scope mask on U-points.
 
   if (define.Uscope),
-    Var.name =Vname.Uscope;
-    Var.type =ncdouble;
-    Var.dimid=[did.yu did.xu];
-    Var.long ='adjoint sensitivity scope mask on U-points';
-    Var.opt_0='inactive';
-    Var.opt_1='active';
-    Var.units='nondimensional';
+    Var.name          = Vname.Uscope;
+    Var.type          = ncdouble;
+    Var.dimid         = [did.yu did.xu];
+    Var.long_name     = 'adjoint sensitivity scope mask on U-points';
+    Var.flag_values   = [0.0 1.0];
+    Var.flag_meanings = ['inactive', blanks(1), ...
+                         'active'];
 
     [varid,status]=nc_vdef(ncid,Var);
     clear Var
@@ -145,13 +149,13 @@ if (define.Rscope | define.Uscope | define.Vscope),
 %  Define scope mask on V-points.
 
   if (define.Vscope),
-    Var.name =Vname.Vscope;
-    Var.type =ncdouble;
-    Var.dimid=[did.yv did.xv];
-    Var.long ='adjoint sensitivity scope mask on V-points';
-    Var.opt_0='inactive';
-    Var.opt_1='active';
-    Var.units='nondimensional';
+    Var.name          = Vname.Vscope;
+    Var.type          = ncdouble;
+    Var.dimid         = [did.yv did.xv];
+    Var.long_name     = 'adjoint sensitivity scope mask on V-points';
+    Var.flag_values   = [0.0 1.0];
+    Var.flag_meanings = ['inactive', blanks(1), ...
+                         'active'];
 
     [varid,status]=nc_vdef(ncid,Var);
     clear Var
@@ -159,16 +163,20 @@ if (define.Rscope | define.Uscope | define.Vscope),
 
 %  Leave definition mode.
 
-  [status]=mexnc('ncendef',ncid);
-  if (status == -1),
-    error(['WRITE_MASK: ncendef - unable to leave definition mode.']);
+  [status]=mexnc('enddef',ncid);
+  if (status ~= 0),
+    disp('  ');
+    disp(mexnc('strerror',status));
+    error(['WRITE_MASK: ENDDEF - unable to leave definition mode.']);
   end,
 
 %  Close GRID NetCDF file.
 
-  [status]=mexnc('ncclose',ncid);
-  if (status == -1),
-    error(['WRITE_MASK: ncclose - unable to close NetCDF file: ', Gname]);
+  [status]=mexnc('close',ncid);
+  if (status ~= 0),
+    disp('  ');
+    disp(mexnc('strerror',status));
+    error(['WRITE_MASK: CLOSE - unable to close NetCDF file: ', Gname]);
   end,
 
 end,

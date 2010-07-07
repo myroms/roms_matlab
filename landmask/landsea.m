@@ -144,9 +144,11 @@ if (defmode),
 
 % Open GRID NetCDF file.
 
-  [ncid]=mexnc('ncopen',Gname,'nc_write');
-  if (ncid == -1),
-    error(['LANDSEA: ncopen - unable to open file: ', Gname])
+  [ncid,status]=mexnc('open',Gname,'nc_write');
+  if (status ~= 0),
+    disp('  ');
+    disp(mexnc('strerror',status));
+    error(['LANDSEA: OPEN - unable to open file: ', Gname])
     return
   end
 
@@ -158,23 +160,24 @@ if (defmode),
   [ncfloat ]=mexnc('parameter','nc_float');
   [ncchar  ]=mexnc('parameter','nc_char');
 
-  [status]=mexnc('ncredef',ncid);
-  if (status == -1),
-    error(['LANDSEA: ncrefdef - unable to put into define mode.'])
+  [status]=mexnc('redef',ncid);
+  if (status ~= 0),
+    disp('  ');
+    disp(mexnc('strerror',status));
+    error(['LANDSEA: REDEF - unable to put into define mode.'])
     return
   end
 
 % Define RHO-points mask.
 
   if (~got.rmask),
-    Var.name =Vname.rmask;
-    Var.type =ncfloat;
-    Var.dimid=[did.yr did.xr];
-    Var.long ='mask on RHO-points';
-    Var.units='nondimensional';
-    Var.opt_0='land';
-    Var.opt_1='water';
-    Var.fill =1;
+    Var.name          = Vname.rmask;
+    Var.type          = ncfloat;
+    Var.dimid         = [did.yr did.xr];
+    Var.long_name     = 'mask on RHO-points';
+    Var.flag_values   = [0.0 1.0];
+    Var.flag_meanings = ['land', blanks(1), ...
+                         'water'];
     [varid,status]=nc_vdef(ncid,Var);
     clear Var
   end,
@@ -182,14 +185,13 @@ if (defmode),
 % Define PSI-points mask.
 
   if (~got.pmask),
-    Var.name =Vname.pmask;
-    Var.type =ncfloat;
-    Var.dimid=[did.yp did.xp];
-    Var.long ='mask on PSI-points';
-    Var.units='nondimensional';
-    Var.opt_0='land';
-    Var.opt_1='water';
-    Var.fill =1;
+    Var.name          = Vname.pmask;
+    Var.type          = ncfloat;
+    Var.dimid         = [did.yp did.xp];
+    Var.long_name     = 'mask on PSI-points';
+    Var.flag_values   = [0.0 1.0];
+    Var.flag_meanings = ['land', blanks(1), ...
+                         'water'];
     [varid,status]=nc_vdef(ncid,Var);
     clear Var
   end,
@@ -197,14 +199,13 @@ if (defmode),
 % Define U-points mask.
 
   if (~got.umask),
-    Var.name =Vname.umask;
-    Var.type =ncfloat;
-    Var.dimid=[did.yu did.xu];
-    Var.long ='mask on U-points';
-    Var.units='nondimensional';
-    Var.opt_0='land';
-    Var.opt_1='water';
-    Var.fill =1;
+    Var.name          = Vname.umask;
+    Var.type          = ncfloat;
+    Var.dimid         = [did.yu did.xu];
+    Var.long_name     = 'mask on U-points';
+    Var.flag_values   = [0.0 1.0];
+    Var.flag_meanings = ['land', blanks(1), ...
+                         'water'];
     [varid,status]=nc_vdef(ncid,Var);
     clear Var
   end,
@@ -212,30 +213,33 @@ if (defmode),
 % Define V-points mask.
 
   if (~got.vmask),
-    Var.name =Vname.vmask;
-    Var.type =ncfloat;
-    Var.dimid=[did.yv did.xv];
-    Var.long ='mask on V-points';
-    Var.units='nondimensional';
-    Var.opt_0='land';
-    Var.opt_1='water';
-    Var.fill =1;
+    Var.name          = Vname.vmask;
+    Var.type          = ncfloat;
+    Var.dimid         = [did.yv did.xv];
+    Var.long_name     = 'mask on V-points';
+    Var.flag_values   = [0.0 1.0];
+    Var.flag_meanings = ['land', blanks(1), ...
+                         'water'];
     [varid,status]=nc_vdef(ncid,Var);
     clear Var
   end,
 
 % Leave definition mode.
 
-  [status]=mexnc('ncendef',ncid);
-  if (status == -1),
-    error(['LANDSEA: ncendef - unable to leave definition mode.'])
+  [status]=mexnc('enddef',ncid);
+  if (status ~= 0),
+    disp('  ');
+    disp(mexnc('strerror',status));
+    error(['LANDSEA: ENDDEF - unable to leave definition mode.'])
   end,
 
 % Close GRID NetCDF file.
 
-  [status]=mexnc('ncclose',ncid);
-  if (status == -1),
-    error(['LANDSEA: ncclose - unable to close NetCDF file: ', Gname])
+  [status]=mexnc('close',ncid);
+  if (status ~= 0),
+    disp('  ');
+    disp(mexnc('strerror',status));
+    error(['LANDSEA: CLOSE - unable to close NetCDF file: ', Gname])
   end,
 
 end,

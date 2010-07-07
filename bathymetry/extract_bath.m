@@ -13,7 +13,7 @@
 %===========================================================================%
 
 %job='seagrid';          %  prepare bathymetry for seagrid
- job='netcdf';           %  Extract a bathymetry NetCDF fille
+ job='netcdf';           %  Extract a bathymetry NetCDF file
 
 database='etopo5';
 
@@ -63,7 +63,7 @@ switch job,
   case 'netcdf'
     [Im,Jm]=size(h);  
     status=c_bath(Im,Jm,Oname);
-    status=nc_write(Oname,'spherical','T');
+    status=nc_write(Oname,'spherical',1);
     status=nc_write(Oname,'lon',lon);
     status=nc_write(Oname,'lat',lat);
     status=nc_write(Oname,'hraw',h,1);

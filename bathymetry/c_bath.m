@@ -32,6 +32,7 @@ function [status]=c_bath(Im, Jm, Bname);
 [ncglobal]=mexnc('parameter','nc_global');
 [ncdouble]=mexnc('parameter','nc_double');
 [ncunlim ]=mexnc('parameter','nc_unlimited');
+[ncint   ]=mexnc('parameter','nc_int');
 [ncfloat ]=mexnc('parameter','nc_float');
 [ncchar  ]=mexnc('parameter','nc_char');
 
@@ -41,7 +42,7 @@ function [status]=c_bath(Im, Jm, Bname);
 
 Dname.lon ='lon';   Dsize.lon =Im;       Vname.lon ='lon';
 Dname.lat ='lat';   Dsize.lat =Jm;       Vname.lat ='lat';
-Dname.bath='bath';  Dsize.bath=ncunlim;  Vname.bath='hraw'
+Dname.bath='bath';  Dsize.bath=ncunlim;  Vname.bath='hraw';
 
 %---------------------------------------------------------------------------
 %  Create topography NetCDF file.
@@ -49,6 +50,8 @@ Dname.bath='bath';  Dsize.bath=ncunlim;  Vname.bath='hraw'
 
 [ncid,status]=mexnc('nccreate',Bname,'nc_write');
 if (ncid == -1),
+  disp('  ');
+  disp(mexnc('strerror',status));
   error(['C_BATH: nccreate - unable to create file: ', Bname]);
   return
 end,
@@ -61,6 +64,8 @@ type='GRID file';
 lstr=max(size(type));
 [status]=mexnc('ncattput',ncid,ncglobal,'type',ncchar,lstr,type);
 if (status == -1),
+  disp('  ');
+  disp(mexnc('strerror',status));
   error(['C_BATH: ncattput - unable to global attribure: type.']);
   return
 end,
@@ -68,6 +73,8 @@ history=['GRID file using Matlab script: c_bath, ', date_stamp];
 lstr=max(size(history));
 [status]=mexnc('ncattput',ncid,ncglobal,'history',ncchar,lstr,history);
 if (status == -1),
+  disp('  ');
+  disp(mexnc('strerror',status));
   error(['C_BATH: ncattput - unable to global attribure: history.']);
   return
 end,
@@ -78,16 +85,22 @@ end,
 
 [did.lon]=mexnc('ncdimdef',ncid,Dname.lon,Dsize.lon);
 if (did.lon == -1),
+  disp('  ');
+  disp(mexnc('strerror',status));
   error(['C_BATH: ncdimdef - unable to define dimension: ',Dname.lon]);
 end,
 
 [did.lat]=mexnc('ncdimdef',ncid,Dname.lat,Dsize.lat);
 if (did.lat == -1),
+  disp('  ');
+  disp(mexnc('strerror',status));
   error(['C_BATH: ncdimdef - unable to define dimension: ',Dname.lat]);
 end,
 
 [did.bath]=mexnc('ncdimdef',ncid,Dname.bath,Dsize.bath);
 if (did.bath == -1),
+  disp('  ');
+  disp(mexnc('strerror',status));
   error(['C_BATH: ncdimdef - unable to define dimension: ',Dname.bath]);
 end,
 
@@ -97,45 +110,47 @@ end,
 
 % Define spherical switch.
 
-Var.name ='spherical';
-Var.type =ncchar;
-Var.dimid=[];
-Var.long ='grid type logical switch';
-Var.opt_T='spherical';
-Var.opt_F='Cartesian';
+Var.name          = 'spherical';
+Var.type          = ncint;
+Var.dimid         = [];
+Var.long_name     = 'grid type logical switch';
+Var.flag_values   = [0 1];
+Var.flag_meanings = ['Cartesian', blanks(1), ...
+                     'spherical'];
 [varid,status]=nc_vdef(ncid,Var);
+if (status ~= 0), return, end,
 clear Var
 
 %  Longitude.
 
-Var.name =Vname.lon;
-Var.type =ncdouble;
-Var.dimid=[did.lat did.lon];
-Var.long ='longitude';
-Var.units='degree_east';
-Var.field=[Vname.lon,', scalar'];
+Var.name          = Vname.lon;
+Var.type          = ncdouble;
+Var.dimid         = [did.lat did.lon];
+Var.long_name     = 'longitude';
+Var.units         = 'degree_east';
+Var.standard_name = 'longitude';
 [varid,status]=nc_vdef(ncid,Var);
 clear Var
 
 %  Latitude.
 
-Var.name =Vname.lat;
-Var.type =ncdouble;
-Var.dimid=[did.lat did.lon];
-Var.long ='latitute';
-Var.units='degree_north';
-Var.field=[Vname.lat,', scalar'];
+Var.name          = Vname.lat;
+Var.type          = ncdouble;
+Var.dimid         = [did.lat did.lon];
+Var.long_name     = 'latitute';
+Var.units         = 'degree_north';
+Var.standard_name = 'latitude';
 [varid,status]=nc_vdef(ncid,Var);
 clear Var
 
 %  Topography.
 
-Var.name =Vname.bath;
-Var.type =ncdouble;
-Var.dimid=[did.bath did.lat did.lon];
-Var.long ='topography';
-Var.units='meter';
-Var.field=[Vname.bath,', scalar'];
+Var.name          = Vname.bath;
+Var.type          = ncdouble;
+Var.dimid         = [did.bath did.lat did.lon];
+Var.long_name     = 'topography';
+Var.units         = 'meter';
+Var.coordinates   = strcat([Vname.lon,' ',Vname.lat]);
 [varid,status]=nc_vdef(ncid,Var);
 clear Var
 
@@ -145,12 +160,16 @@ clear Var
 
 [status]=mexnc('ncendef',ncid);
 if (status == -1),
+  disp('  ');
+  disp(mexnc('strerror',status));
   error(['C_BATH: ncendef - unable to leave definition mode.']);
   return
 end,
 
 [status]=mexnc('ncclose',ncid);
 if (status == -1),
+  disp('  ');
+  disp(mexnc('strerror',status));
   error(['C_BATH: ncclose - unable to close GRID NetCDF file: ', Bname]);
   return
 end,

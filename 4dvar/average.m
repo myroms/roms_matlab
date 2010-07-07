@@ -3,7 +3,7 @@ function [Favg]=average(Fname,Vname,Tstr,Tend);
 %
 % AVERAGE:  Computes the time average of requested NetCDF variable
 %
-% [Favg]=average(Fname,Vname)
+% [Favg]=average(Fname,Vname,Tstr,Tend)
 %
 % This function reads in requested variable from input NetCDF file
 % and computes its time average.
