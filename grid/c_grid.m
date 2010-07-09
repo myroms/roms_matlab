@@ -709,7 +709,6 @@ if (~gotVar.pmask),
   Var.flag_values   = [0.0 1.0];
   Var.flag_meanings = ['land', blanks(1), ...
                        'water'];
-  Var.field=[Vname.pmask,', scalar'];
   [varid,status]=nc_vdef(ncid,Var);
   clear Var
 end,
@@ -724,7 +723,6 @@ if (~gotVar.umask),
   Var.flag_values   = [0.0 1.0];
   Var.flag_meanings = ['land', blanks(1), ...
                        'water'];
-  Var.field=[Vname.umask,', scalar'];
   [varid,status]=nc_vdef(ncid,Var);
   clear Var
 end,
@@ -739,7 +737,6 @@ if (~gotVar.vmask),
   Var.flag_values   = [0.0 1.0];
   Var.flag_meanings = ['land', blanks(1), ...
                        'water'];
-  Var.field=[Vname.vmask,', scalar'];
   [varid,status]=nc_vdef(ncid,Var);
   clear Var
 end,

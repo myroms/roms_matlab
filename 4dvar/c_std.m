@@ -18,6 +18,8 @@ function [status]=c_std(S);
 %                  S.Lm               Number of interior RHO-points in X
 %                  S.Mm               Number of interior RHO-points in Y
 %                  S.N                Number of vertical levels
+%                  S.curvilinear      Curvilinear grid switch
+%                  S.masking          Land/sea masking switch
 %                  S.do_zeta          Switch to define free-surface
 %                  S.do_ubar          Switch to define 2D U-velocity
 %                  S.do_vbar          Switch to define 2D V-velocity
@@ -94,6 +96,14 @@ else,
           'in structure array S']);
 end,
 
+if (~isfield(S,'curvilinear')),
+  S.curvilinear=false;
+end,
+
+if (~isfield(S,'masking')),
+  S.masking=false;
+end,
+
 %----------------------------------------------------------------------------
 %  Set dimensions.
 %----------------------------------------------------------------------------
@@ -147,6 +157,13 @@ else,
   Vname.vx        = 'x_v';
   Vname.vy        = 'y_v';
 end,
+
+Vname.angle       = 'angle';
+
+Vname.rmask       = 'mask_rho';
+Vname.pmask       = 'mask_psi';
+Vname.umask       = 'mask_u';
+Vname.vmask       = 'mask_v';
 
 %  Initial conditions variables.
 
@@ -259,6 +276,40 @@ if (status ~= 0),
   disp(mexnc('strerror',status));
   error([ 'C_STD: PUT_ATT_TEXT - unable to global attribure: type.']);
   return
+end,
+
+if (isfield(S,'title')),
+  lstr=length(S.title);
+  [status]=mexnc('put_att_text',ncid,ncglobal,'title',ncchar,lstr,S.title);
+  if (status ~= 0),
+    disp('  ');
+    disp(mexnc('strerror',status));
+    error([ 'C_STD: PUT_ATT_TEXT - unable to global attribute: title.']);
+    return
+  end,
+end,
+
+str='CF-1.4';
+lstr=length(str);
+[status]=mexnc('put_att_text',ncid,ncglobal,'Conventions',ncchar,lstr,str);
+if (status ~= 0),
+  disp('  ');
+  disp(mexnc('strerror',status));
+  error([ 'C_STD: PUT_ATT_TEXT - unable to global attribute:', ...
+	  ' Conventions.']);
+  return
+end,
+
+if (isfield(S,'grd_file')),
+  lstr=length(S.grd_file);
+  [status]=mexnc('put_att_text',ncid,ncglobal,'grd_file',ncchar,lstr, ...
+		 S.grd_file);
+  if (status ~= 0),
+    disp('  ');
+    disp(mexnc('strerror',status));
+    error([ 'C_STD: PUT_ATT_TEXT - unable to global attribute: grd_file.']);
+    return
+  end,
 end,
 
 history=['Standard deviation file using Matlab script: c_std, ',date_stamp];
@@ -394,7 +445,6 @@ Var.valid_max         = 0;
 if (status ~= 0), return, end,
 clear Var
 
-
 %  Define bathymetry.
 
 Var.name              = Vname.h;
@@ -529,6 +579,52 @@ else,
   if (status ~= 0), return, end,
   clear Var
   
+end,
+
+%  Curvilinear rotation angle on RHO-points.
+
+if (S.curvilinear),
+  Var.name          = Vname.angle;
+  Var.type          = ncdouble;
+  Var.dimid         = [did.yr did.xr];
+  Var.long_name     = 'angle between XI-axis and EAST';
+  Var.units         = 'radians';
+  [varid,status]=nc_vdef(ncid,Var);
+  clear Var
+end,
+
+%  Land/sea masks.
+
+if (S.masking),
+  Var.name          = Vname.rmask;
+  Var.type          = ncdouble;
+  Var.dimid         = [did.yr did.xr];
+  Var.long_name     = 'mask on RHO-points';
+  Var.flag_values   = [0.0 1.0];
+  Var.flag_meanings = ['land', blanks(1), ...
+                       'water'];
+  [varid,status]=nc_vdef(ncid,Var);
+  clear Var
+
+  Var.name          = Vname.umask;
+  Var.type          = ncdouble;
+  Var.dimid         = [did.yu did.xu];
+  Var.long_name     = 'mask on U-points';
+  Var.flag_values   = [0.0 1.0];
+  Var.flag_meanings = ['land', blanks(1), ...
+                       'water'];
+  [varid,status]=nc_vdef(ncid,Var);
+  clear Var
+
+  Var.name          = Vname.vmask;
+  Var.type          = ncdouble;
+  Var.dimid         = [did.yv did.xv];
+  Var.long_name     = 'mask on V-points';
+  Var.flag_values   = [0.0 1.0];
+  Var.flag_meanings = ['land', blanks(1), ...
+                       'water'];
+  [varid,status]=nc_vdef(ncid,Var);
+  clear Var
 end,
 
 %----------------------------------------------------------------------------

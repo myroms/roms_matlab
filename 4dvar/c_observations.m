@@ -240,6 +240,19 @@ if (status ~= 0),
   return
 end,
 
+if (isfield(S,'grd_file')),
+  lstr=length(S.grd_file);
+  [status]=mexnc('put_att_text',ncid,ncglobal,'grd_file',ncchar,lstr, ...
+		 S.grd_file);
+  if (status ~= 0),
+    disp('  ');
+    disp(mexnc('strerror',status));
+    error([ 'C_OBSERVATIONS: PUT_ATT_TEXT - unable to global attribute:', ...
+	   ' grd_file.']);
+    return
+  end,
+end,
+
 if (isfield(S,'global_variables')),
   lstr=length(S.global_variables);
   [status]=mexnc('put_att_text',ncid,ncglobal,'state_variables',ncchar, ...
