@@ -1,14 +1,14 @@
-function [status]=c_std(S);
+function [status]=c_std_bry(S);
 
 %
-% C_STD:  Creates ROMS error covariance initial condition or model error
-%         standard deviation NetCDF file
+% C_STD_FRC:  Creates ROMS open boundary conditions error covariance
+%             standard deviation NetCDF file
 %
-% [status]=c_std(S)
+% [status]=c_std_bry(S)
 %
-% This function creates ROMS 4DVar initial conditions or model error
-% (weak constraint) standard deviation NetCDF file using specified
-% parameters in structure array, S.
+% This function creates ROMS 4D-Var open boundary conditions error
+% covariance standard deviation NetCDF file using specified parameters
+% in structure array, S.
 %
 % On Input:
 %
@@ -22,13 +22,6 @@ function [status]=c_std(S);
 %                  S.N                Number of vertical levels
 %                  S.curvilinear      Curvilinear grid switch
 %                  S.masking          Land/sea masking switch
-%                  S.do_zeta          Switch to define free-surface
-%                  S.do_ubar          Switch to define 2D U-velocity
-%                  S.do_vbar          Switch to define 2D V-velocity
-%                  S.do_u             Switch to define 3D U-velocity
-%                  S.do_v             Switch to define 3D V-velocity
-%                  S.do_temp          Switch to define temperature
-%                  S.do_salt          Switch to define salinity
 %
 % On Output:
 %
@@ -53,15 +46,17 @@ function [status]=c_std(S);
 [ncfloat  ]=mexnc('parameter', 'nc_float');
 [ncchar   ]=mexnc('parameter', 'nc_char');
 
+vartype=ncdouble;
+
 %----------------------------------------------------------------------------
-%  Get error covariance standard deviation creation parameters.
+%  Get standard deviation creation parameters.
 %----------------------------------------------------------------------------
 
 if (isfield(S,'ncname')),
   ncname=S.ncname;
 else,
-  error([ 'C_STD - Cannot find dimension parameter: ncname, ', ...
-	  'in structure array S']);
+  error([ 'C_STD_BRY - Cannot find dimension parameter: ncname, ', ...
+          'in structure array S']);
 end,
 
 if (isfield(S,'spherical')),
@@ -73,28 +68,28 @@ end,
 if (isfield(S,'Vtransform')),
   Vtransform=S.Vtransform;
 else,
-  error([ 'C_STD - Cannot find dimension parameter: Vtransform, ', ...
-	  'in structure array S']);
+  error([ 'C_STD_BRY - Cannot find dimension parameter: Vtransform, ', ...
+          'in structure array S']);
 end,
 
 if (isfield(S,'Lm')),
   Lp=S.Lm+2;
 else,
-  error([ 'C_STD - Cannot find dimension parameter: Lm, ', ...
-	  'in structure array S']);
+  error([ 'C_STD_BRY - Cannot find dimension parameter: Lm, ', ...
+          'in structure array S']);
 end,
 
 if (isfield(S,'Mm')),
   Mp=S.Mm+2;
 else,
-  error([ 'C_STD - Cannot find dimension parameter: Mm, ', ...
+  error([ 'C_STD_BRY - Cannot find dimension parameter: Mm, ', ...
           'in structure array S']);
 end,
 
 if (isfield(S,'N')),
   N=S.N;
 else,
-  error([ 'C_STD - Cannot find dimension parameter: N, ', ...
+  error([ 'C_STD_BRY - Cannot find dimension parameter: N, ', ...
           'in structure array S']);
 end,
 
@@ -118,9 +113,11 @@ Dname.yr   = 'eta_rho';      Dsize.yr   = Mp;
 Dname.yu   = 'eta_u';        Dsize.yu   = Mp;
 Dname.yv   = 'eta_v';        Dsize.yv   = Mp-1;
 Dname.yp   = 'eta_psi';      Dsize.yp   = Mp-1;
+Dname.IorJ = 'IorJ';         Dsize.IorJ = max([Lp Mp]);
 Dname.Nr   = 's_rho';        Dsize.Nr   = N;
 Dname.Nw   = 's_w';          Dsize.Nw   = N+1;
-Dname.time = 'ocean_time';   Dsize.time = ncunlim;
+Dname.bry  = 'boundary';     Dsize.bry  = 4;
+Dname.time = 'bry_time';     Dsize.time = ncunlim;
 
 %----------------------------------------------------------------------------
 %  Set Variables.
@@ -167,26 +164,30 @@ Vname.pmask       = 'mask_psi';
 Vname.umask       = 'mask_u';
 Vname.vmask       = 'mask_v';
 
-%  Standard deviations variables.
+%  Open boundary conditions standard deviations variables.
 
-Vname.time        = 'ocean_time';
-Vname.zeta        = 'zeta';
-Vname.ubar        = 'ubar';
-Vname.vbar        = 'vbar';
-Vname.u           = 'u';
-Vname.v           = 'v';
-Vname.temp        = 'temp';
-Vname.salt        = 'salt';
+Vname.time        = 'bry_time';
+Vname.zeta        = 'zeta_obc';
+Vname.ubar        = 'ubar_obc';
+Vname.vbar        = 'vbar_obc';
+Vname.u           = 'u_obc';
+Vname.v           = 'v_obc';
+Vname.temp        = 'temp_obc';
+Vname.salt        = 'salt_obc';
+
+%  Set boundary string to append to long name.
+
+Blong = ['open boundaries conditions standard deviation'];
 
 %----------------------------------------------------------------------------
-%  Create standard deviation NetCDF file.
+%  Create initial conditions NetCDF file.
 %----------------------------------------------------------------------------
 
 [ncid,status]=mexnc('create',ncname,'clobber');
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: CREATE - unable to create file: ', ncname]);
+  error([ 'C_STD_BRY: CREATE - unable to create file: ', ncname]);
   return
 end,
 
@@ -198,7 +199,7 @@ end,
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: ncdimdef - unable to define dimension: ',Dname.xr]);
+  error([ 'C_STD_BRY: ncdimdef - unable to define dimension: ',Dname.xr]);
   return
 end,
 
@@ -206,7 +207,7 @@ end,
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: DEF_DIM - unable to define dimension: ',Dname.xu]);
+  error([ 'C_STD_BRY: DEF_DIM - unable to define dimension: ',Dname.xu]);
   return
 end,
 
@@ -214,7 +215,7 @@ end,
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: DEF_DIM - unable to define dimension: ',Dname.xv]);
+  error([ 'C_STD_BRY: DEF_DIM - unable to define dimension: ',Dname.xv]);
   return
 end,
 
@@ -222,7 +223,7 @@ end,
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error(['C_STD: DEF_DIM - unable to define dimension: ',Dname.yr]);
+  error(['C_STD_BRY: DEF_DIM - unable to define dimension: ',Dname.yr]);
   return
 end,
 
@@ -230,7 +231,7 @@ end,
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: DEF_DIM - unable to define dimension: ',Dname.yu]);
+  error([ 'C_STD_BRY: DEF_DIM - unable to define dimension: ',Dname.yu]);
   return
 end,
 
@@ -238,7 +239,15 @@ end,
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: DEF_DIM - unable to define dimension: ',Dname.yv]);
+  error([ 'C_STD_BRY: DEF_DIM - unable to define dimension: ',Dname.yv]);
+  return
+end,
+
+[did.IorJ,status]=mexnc('def_dim',ncid,Dname.IorJ,Dsize.IorJ);
+if (status ~= 0),
+  disp('  ');
+  disp(mexnc('strerror',status));
+  error([ 'C_STD_BRY: DEF_DIM - unable to define dimension: ',Dname.IorJ]);
   return
 end,
 
@@ -246,7 +255,7 @@ end,
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: DEF_DIM - unable to define dimension: ',Dname.Nr]);
+  error([ 'C_STD_BRY: DEF_DIM - unable to define dimension: ',Dname.Nr]);
   return
 end,
 
@@ -254,7 +263,15 @@ end,
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: DEF_DIM - unable to define dimension: ',Dname.Nw]);
+  error([ 'C_STD_BRY: DEF_DIM - unable to define dimension: ',Dname.Nw]);
+  return
+end,
+
+[did.bry,status]=mexnc('def_dim',ncid,Dname.bry,Dsize.bry);
+if (status ~= 0),
+  disp('  ');
+  disp(mexnc('strerror',status));
+  error([ 'C_STD_BRY: DEF_DIM - unable to define dimension: ',Dname.bry]);
   return
 end,
 
@@ -262,7 +279,7 @@ end,
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: DEF_DIM - unable to define dimension: ',Dname.time]);
+  error([ 'C_STD_BRY: DEF_DIM - unable to define dimension: ',Dname.time]);
   return
 end,
 
@@ -270,13 +287,14 @@ end,
 %  Create global attributes.
 %----------------------------------------------------------------------------
 
-type='4D-Var error covariance standard deviation';
+type=['4D-Var open boundary conditions error covariance ', ...
+      'standard deviation file'];
 lstr=max(size(type));
 [status]=mexnc('PUT_ATT_TEXT',ncid,ncglobal,'type',ncchar,lstr,type);
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: PUT_ATT_TEXT - unable to global attribure: type.']);
+  error([ 'C_STD_BRY: PUT_ATT_TEXT - unable to global attribure: type.']);
   return
 end,
 
@@ -289,6 +307,17 @@ if (isfield(S,'title')),
     error([ 'C_STD: PUT_ATT_TEXT - unable to global attribute: title.']);
     return
   end,
+end,
+
+str='West=1, South=2, East=3, North=4';
+lstr=length(str);
+[status]=mexnc('put_att_text',ncid,ncglobal,'boundary_index',ncchar,lstr,str);
+if (status ~= 0),
+  disp('  ');
+  disp(mexnc('strerror',status));
+  error([ 'C_STD: PUT_ATT_TEXT - unable to global attribute:', ...
+	  ' boundary_index.']);
+  return
 end,
 
 str='CF-1.4';
@@ -314,13 +343,14 @@ if (isfield(S,'grd_file')),
   end,
 end,
 
-history=['Standard deviation file using Matlab script: c_std, ',date_stamp];
+history=['Standard deviation file using Matlab script: c_std_bry, ', ...
+         date_stamp];
 lstr=max(size(history));
 [status]=mexnc('put_att_text',ncid,ncglobal,'history',ncchar,lstr,history);
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: PUT_ATT_TEXT - unable to global attribure: history.']);
+  error([ 'C_STD_BRY: PUT_ATT_TEXT - unable to global attribure: history.']);
   return
 end,
 
@@ -330,119 +360,119 @@ end,
 
 % Define spherical switch.
 
-Var.name              = Vname.spherical;
-Var.type              = ncint;
-Var.dimid             = [];
-Var.long_name         = 'grid type logical switch';
-Var.flag_values       = [0 1];
-Var.flag_meanings     = ['Cartesian', blanks(1), ...
-                         'spherical'];
+Var.name                = Vname.spherical;
+Var.type                = ncint;
+Var.dimid               = [];
+Var.long_name           = 'grid type logical switch';
+Var.flag_values         = [0 1];
+Var.flag_meanings       = ['Cartesian', blanks(1), ...
+                           'spherical'];
 [varid,status]=nc_vdef(ncid,Var);
 if (status ~= 0), return, end,
 clear Var
 
 % Define vertical coordinate variables.
 
-Var.name              = Vname.Vtransform;
-Var.type              = ncint;
-Var.dimid             = [];
-Var.long_name         = 'vertical terrain-following transformation equation';
+Var.name                = Vname.Vtransform;
+Var.type                = ncint;
+Var.dimid               = [];
+Var.long_name           = 'vertical terrain-following transformation equation';
 [varid,status]=nc_vdef(ncid,Var);
 if (status ~= 0), return, end,
 clear Var
 
-Var.name              = Vname.Vstretching;
-Var.type              = ncint;
-Var.dimid             = [];
-Var.long_name         = 'vertical terrain-following stretching function';
+Var.name                = Vname.Vstretching;
+Var.type                = ncint;
+Var.dimid               = [];
+Var.long_name           = 'vertical terrain-following stretching function';
 [varid,status]=nc_vdef(ncid,Var);
 if (status ~= 0), return, end,
 clear Var
 
-Var.name              = Vname.theta_s;
-Var.type              = ncdouble;
-Var.dimid             = [];
-Var.long_name         = 'S-coordinate surface control parameter';
+Var.name                = Vname.theta_s;
+Var.type                = ncdouble;
+Var.dimid               = [];
+Var.long_name           = 'S-coordinate surface control parameter';
 [varid,status]=nc_vdef(ncid,Var);
 if (status ~= 0), return, end,
 clear Var
 
-Var.name              = Vname.theta_b;
-Var.type              = ncdouble;
-Var.dimid             = [];
-Var.long_name         = 'S-coordinate bottom control parameter';
+Var.name                = Vname.theta_b;
+Var.type                = ncdouble;
+Var.dimid               = [];
+Var.long_name           = 'S-coordinate bottom control parameter';
 [varid,status]=nc_vdef(ncid,Var);
 if (status ~= 0), return, end,
 clear Var
 
-Var.name              = Vname.Tcline;
-Var.type              = ncdouble;
-Var.dimid             = [];
-Var.long_name         = 'S-coordinate surface/bottom layer width';
-Var.units             = 'meter';
+Var.name                = Vname.Tcline;
+Var.type                = ncdouble;
+Var.dimid               = [];
+Var.long_name           = 'S-coordinate surface/bottom layer width';
+Var.units               = 'meter';
 [varid,status]=nc_vdef(ncid,Var);
 if (status ~= 0), return, end,
 clear Var
 
-Var.name              = Vname.hc;
-Var.type              = ncdouble;
-Var.dimid             = [];
-Var.long_name         = 'S-coordinate parameter, critical depth';
-Var.units             = 'meter';
+Var.name                = Vname.hc;
+Var.type                = ncdouble;
+Var.dimid               = [];
+Var.long_name           = 'S-coordinate parameter, critical depth';
+Var.units               = 'meter';
 [varid,status]=nc_vdef(ncid,Var);
 if (status ~= 0), return, end,
 clear Var
 
-Var.name              = Vname.s_rho;
-Var.type              = ncdouble;
-Var.dimid             = [did.Nr];
-Var.long_name         = 'S-coordinate at RHO-points';
-Var.valid_min         = -1;
-Var.valid_max         = 0;
-Var.positive          = 'up';
+Var.name                = Vname.s_rho;
+Var.type                = ncdouble;
+Var.dimid               = [did.Nr];
+Var.long_name           = 'S-coordinate at RHO-points';
+Var.valid_min           = -1;
+Var.valid_max           = 0;
+Var.positive            = 'up';
 if (Vtransform == 1),
- Var.standard_name    = 'ocena_s_coordinate_g1';
+  Var.standard_name     = 'ocena_s_coordinate_g1';
 elseif (Vtransform == 2),
- Var.standard_name    = 'ocena_s_coordinate_g2';
+  Var.standard_name     = 'ocena_s_coordinate_g2';
 end,
-Var.formula_terms     = 's: s_rho C: Cs_r eta: zeta depth: h depth_c: hc';
+Var.formula_terms       = 's: s_rho C: Cs_r eta: zeta depth: h depth_c: hc';
 [varid,status]=nc_vdef(ncid,Var);
 if (status ~= 0), return, end,
 clear Var
 
-Var.name              = Vname.s_w;
-Var.type              = ncdouble;
-Var.dimid             = [did.Nw];
-Var.long_name         = 'S-coordinate at W-points';
-Var.valid_min         = -1;
-Var.valid_max         = 0;
-Var.positive          = 'up';
+Var.name                = Vname.s_w;
+Var.type                = ncdouble;
+Var.dimid               = [did.Nw];
+Var.long_name           = 'S-coordinate at W-points';
+Var.valid_min           = -1;
+Var.valid_max           = 0;
+Var.positive            = 'up';
 if (Vtransform == 1),
- Var.standard_name    = 'ocena_s_coordinate_g1';
+  Var.standard_name     = 'ocena_s_coordinate_g1';
 elseif (Vtransform == 2),
- Var.standard_name    = 'ocena_s_coordinate_g2';
+  Var.standard_name     = 'ocena_s_coordinate_g2';
 end,
-Var.formula_terms     = 's: s_w C: Cs_w eta: zeta depth: h depth_c: hc';
+Var.formula_terms       = 's: s_w C: Cs_w eta: zeta depth: h depth_c: hc';
 [varid,status]=nc_vdef(ncid,Var);
 if (status ~= 0), return, end,
 clear Var
 
-Var.name              = Vname.Cs_r;
-Var.type              = ncdouble;
-Var.dimid             = [did.Nr];
-Var.long_name         = 'S-coordinate stretching function at RHO-points';
-Var.valid_min         = -1;
-Var.valid_max         = 0;
+Var.name                = Vname.Cs_r;
+Var.type                = ncdouble;
+Var.dimid               = [did.Nr];
+Var.long_name           = 'S-coordinate stretching function at RHO-points';
+Var.valid_min           = -1;
+Var.valid_max           = 0;
 [varid,status]=nc_vdef(ncid,Var);
 if (status ~= 0), return, end,
 clear Var
 
-Var.name              = Vname.Cs_w;
-Var.type              = ncdouble;
-Var.dimid             = [did.Nw];
-Var.long_name         = 'S-coordinate stretching function at W-points';
-Var.valid_min         = -1;
-Var.valid_max         = 0;
+Var.name                = Vname.Cs_w;
+Var.type                = ncdouble;
+Var.dimid               = [did.Nw];
+Var.long_name           = 'S-coordinate stretching function at W-points';
+Var.valid_min           = -1;
+Var.valid_max           = 0;
 [varid,status]=nc_vdef(ncid,Var);
 if (status ~= 0), return, end,
 clear Var
@@ -630,150 +660,86 @@ if (S.masking),
 end,
 
 %----------------------------------------------------------------------------
-%  Define standard deviation variables.
+%  Define open boundary conditions standard deviation variables.
 %----------------------------------------------------------------------------
 
-Var.name              = Vname.time;
-Var.type              = ncdouble;
-Var.dimid             = [did.time];
-Var.long_name         = 'time since initialization';
-Var.units             = 'seconds';
+Var.name                = Vname.time;
+Var.type                = ncdouble;
+Var.dimid               = [did.time];
+Var.long_name           = 'time since initialization';
+Var.units               = 'seconds';
 [varid,status]=nc_vdef(ncid,Var);
 if (status ~= 0), return, end,
 clear Var
 
-if (isfield(S,'do_zeta')),
-  if (S.do_zeta),
-    Var.name          = Vname.zeta;
-    Var.type          = ncdouble;
-    Var.dimid         = [did.time did.yr did.xr];
-    Var.long_name     = 'free-surface  standard deviation';
-    Var.units         = 'meter';
-    Var.time          = Vname.time;
-    if (spherical),
-      Var.coordinates = strcat([Vname.rlon,' ',Vname.rlat,' ',Vname.time]); 
-    else,
-      Var.coordinates = strcat([Vname.rx,' ',Vname.ry,' ',Vname.time]); 
-    end,
-    [varid,status]=nc_vdef(ncid,Var);
-    if (status ~= 0), return, end,
-    clear Var
-  end,
-end,
+Var.name            = Vname.zeta;
+Var.type            = vartype;
+Var.dimid           = [did.time did.bry did.IorJ];
+Var.long_name       = ['free-surface, ',Blong];
+Var.units           = 'meter';
+Var.time            = Vname.time;
+[varid,status]=nc_vdef(ncid,Var);
+if (status ~= 0), return, end,
+clear Var
 
-if (isfield(S,'do_ubar')),
-  if (S.do_ubar),
-    Var.name          = Vname.ubar;
-    Var.type          = ncdouble;
-    Var.dimid         = [did.time did.yu did.xu];
-    Var.long_name     = 'vertically integrated u-momentum component standard deviation';
-    Var.units         = 'meter second-1';
-    Var.time          = Vname.time;
-    if (spherical),
-      Var.coordinates = strcat([Vname.ulon,' ',Vname.ulat,' ',Vname.time]); 
-    else,
-      Var.coordinates = strcat([Vname.ux,' ',Vname.uy,' ',Vname.time]); 
-    end,
-    [varid,status]=nc_vdef(ncid,Var);
-    if (status ~= 0), return, end,
-    clear Var
-  end,
-end,
+Var.name            = Vname.ubar;
+Var.type            = vartype;
+Var.dimid           = [did.time did.bry did.IorJ];
+Var.long_name       = ['vertically integrated u-momentum component, ',Blong];
+Var.units           = 'meter second-1';
+Var.time            = Vname.time;
+[varid,status]=nc_vdef(ncid,Var);
+if (status ~= 0), return, end,
+clear Var
 
-if (isfield(S,'do_vbar')),
-  if (S.do_vbar),
-    Var.name          = Vname.vbar;
-    Var.type          = ncdouble;
-    Var.dimid         = [did.time did.yv did.xv];
-    Var.long_name     = 'vertically integrated v-momentum component standard deviation';
-    Var.units         = 'meter second-1';
-    Var.time          = Vname.time;
-    if (spherical),
-      Var.coordinates = strcat([Vname.vlon,' ',Vname.vlat,' ',Vname.time]); 
-    else,
-      Var.coordinates = strcat([Vname.vx,' ',Vname.vy,' ',Vname.time]); 
-    end,
-    [varid,status]=nc_vdef(ncid,Var);
-    if (status ~= 0), return, end,
-    clear Var
-  end,
-end,
+Var.name            = Vname.vbar;
+Var.type            = vartype;
+Var.dimid           = [did.time did.bry did.IorJ];
+Var.long_name       = ['vertically integrated v-momentum component, ',Blong];
+Var.units           = 'meter second-1';
+Var.time            = Vname.time;
+[varid,status]=nc_vdef(ncid,Var);
+if (status ~= 0), return, end,
+clear Var
 
-if (isfield(S,'do_u')),
-  if (S.do_u),
-    Var.name          = Vname.u;
-    Var.type          = ncdouble;
-    Var.dimid         = [did.time did.Nr did.yu did.xu];
-    Var.long_name     = 'u-momentum component standard deviation';
-    Var.units         = 'meter second-1';
-    Var.time          = Vname.time;
-    if (spherical),
-      Var.coordinates = strcat([Vname.ulon,' ',Vname.ulat,' ',Vname.s_rho,' ',Vname.time]); 
-    else,
-      Var.coordinates = strcat([Vname.ux,' ',Vname.uy,' ',Vname.s_rho,' ',Vname.time]); 
-    end,
-    [varid,status]=nc_vdef(ncid,Var);
-    if (status ~= 0), return, end,
-    clear Var
-  end,
-end,
+Var.name            = Vname.u;
+Var.type            = vartype;
+Var.dimid           = [did.time did.Nr did.bry did.IorJ];
+Var.long_name       = ['u-momentum component, ',Blong];
+Var.units           = 'meter second-1';
+Var.time            = Vname.time;
+[varid,status]=nc_vdef(ncid,Var);
+if (status ~= 0), return, end,
+clear Var
 
+Var.name            = Vname.v;
+Var.type            = vartype;
+Var.dimid           = [did.time did.Nr did.bry did.IorJ];
+Var.long_name       = ['v-momentum component, ',Blong];
+Var.units           = 'meter second-1';
+Var.time            = Vname.time;
+[varid,status]=nc_vdef(ncid,Var);
+if (status ~= 0), return, end,
+clear Var
 
-if (isfield(S,'do_v')),
-  if (S.do_v),
-    Var.name          = Vname.v;
-    Var.type          = ncdouble;
-    Var.dimid         = [did.time did.Nr did.yv did.xv];
-    Var.long_name     = 'v-momentum component standard deviation';
-    Var.units         = 'meter second-1';
-    Var.time          = Vname.time;
-    if (spherical),
-      Var.coordinates = strcat([Vname.vlon,' ',Vname.vlat,' ',Vname.s_rho,' ',Vname.time]); 
-    else,
-      Var.coordinates = strcat([Vname.vx,' ',Vname.vy,' ',Vname.s_rho,' ',Vname.time]); 
-    end,
-    [varid,status]=nc_vdef(ncid,Var);
-    if (status ~= 0), return, end,
-    clear Var
-  end,
-end,
+Var.name            = Vname.temp;
+Var.type            = vartype;
+Var.dimid           = [did.time did.Nr did.bry did.IorJ];
+Var.long_name       = ['potential temperature, ',Blong];
+Var.units           = 'Celsius';
+Var.time            = Vname.time;
+[varid,status]=nc_vdef(ncid,Var);
+if (status ~= 0), return, end,
+clear Var
 
-if (isfield(S,'do_temp')),
-  if (S.do_temp),
-    Var.name          = Vname.temp;
-    Var.type          = ncdouble;
-    Var.dimid         = [did.time did.Nr did.yr did.xr];
-    Var.long_name     = 'potential temperature standard deviation';
-    Var.units         = 'Celsius';
-    Var.time          = Vname.time;
-    if (spherical),
-      Var.coordinates = strcat([Vname.rlon,' ',Vname.rlat,' ',Vname.s_rho,' ',Vname.time]); 
-    else,
-      Var.coordinates = strcat([Vname.rx,' ',Vname.ry,' ',Vname.s_rho,' ',Vname.time]); 
-    end,
-    [varid,status]=nc_vdef(ncid,Var);
-    if (status ~= 0), return, end,
-    clear Var
-  end,
-end,
-
-if (isfield(S,'do_salt')),
-  if (S.do_salt),
-    Var.name          = Vname.salt;
-    Var.type          = ncdouble;
-    Var.dimid         = [did.time did.Nr did.yr did.xr];
-    Var.long_name     = 'salinity  standard deviation';
-    Var.time          = Vname.time;
-    if (spherical),
-      Var.coordinates = strcat([Vname.rlon,' ',Vname.rlat,' ',Vname.s_rho,' ',Vname.time]); 
-    else,
-      Var.coordinates = strcat([Vname.rx,' ',Vname.ry,' ',Vname.s_rho,' ',Vname.time]); 
-    end,
-    [varid,status]=nc_vdef(ncid,Var);
-    if (status ~= 0), return, end,
-    clear Var
-  end,
-end,
+Var.name            = Vname.salt;
+Var.type            = vartype;
+Var.dimid           = [did.time did.Nr did.bry did.IorJ];
+Var.long_name       = ['salinity, ',Blong];
+Var.time            = Vname.time;
+[varid,status]=nc_vdef(ncid,Var);
+if (status ~= 0), return, end,
+clear Var
 
 %----------------------------------------------------------------------------
 %  Leave definition mode and close NetCDF file.
@@ -783,7 +749,7 @@ end,
 if (status == -1),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: ENDDEF - unable to leave definition mode.']);
+  error([ 'C_STD_BRY: ENDDEF - unable to leave definition mode.']);
   return
 end,
 
@@ -791,7 +757,7 @@ end,
 if (status == -1),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: CLOSE - unable to close NetCDF file: ', ncname]);
+  error([ 'C_STD_BRY: CLOSE - unable to close NetCDF file: ', ncname]);
   return
 end,
 

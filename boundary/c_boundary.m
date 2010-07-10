@@ -1,7 +1,7 @@
 function [status]=c_boundary(S);
 
 %
-% C_BOUNDARY:  Create a ROMS boundary conditions NetCDF file
+% C_BOUNDARY:  Create a ROMS lateral boundary conditions NetCDF file
 %
 % [status]=c_boundary(S)
 %
@@ -10,7 +10,7 @@ function [status]=c_boundary(S);
 %
 % On Input:
 %
-%    S           Initial condidions creation parameters (structure array):
+%    S           Boundary condidions creation parameters (structure array):
 %
 %                  S.ncname           NetCDF file name
 %                  S.boundary(:)      Boundary edge switch to process
@@ -47,7 +47,7 @@ function [status]=c_boundary(S);
 vartype=ncfloat;
 
 %----------------------------------------------------------------------------
-%  Get initial condition creation parameters.
+%  Get lateral boundary condition creation parameters.
 %----------------------------------------------------------------------------
 
 if (isfield(S,'ncname')),
@@ -134,7 +134,7 @@ Vname.s_w         = 's_w';
 Vname.Cs_r        = 'Cs_r';
 Vname.Cs_w        = 'Cs_w';
 
-%  Initial conditions variables.
+%  Open boundary conditions variables.
 
 Vname.time        = 'bry_time';
 Vname.zeta        = 'zeta';
@@ -171,7 +171,7 @@ else,
 end,
 
 %----------------------------------------------------------------------------
-%  Create initial conditions NetCDF file.
+%  Create open boundary conditions NetCDF file.
 %----------------------------------------------------------------------------
 
 [ncid,status]=mexnc('create',ncname,'clobber');
@@ -564,7 +564,7 @@ else,
 end,
 
 %----------------------------------------------------------------------------
-%  Define initial conditions variables.
+%  Define open boundary conditions variables.
 %----------------------------------------------------------------------------
 
 Var.name                = Vname.time;

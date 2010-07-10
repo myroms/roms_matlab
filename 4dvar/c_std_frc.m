@@ -1,14 +1,14 @@
-function [status]=c_std(S);
+function [status]=c_std_frc(S);
 
 %
-% C_STD:  Creates ROMS error covariance initial condition or model error
-%         standard deviation NetCDF file
+% C_STD_FRC:  Creates ROMS surface forcing error covariance standard
+%             deviation NetCDF file
 %
-% [status]=c_std(S)
+% [status]=c_std_frc(S)
 %
-% This function creates ROMS 4DVar initial conditions or model error
-% (weak constraint) standard deviation NetCDF file using specified
-% parameters in structure array, S.
+% This function creates ROMS 4D-Var surface forcing error covariance
+% standard deviation NetCDF file using specified parameters in structure
+% array, S.
 %
 % On Input:
 %
@@ -22,13 +22,10 @@ function [status]=c_std(S);
 %                  S.N                Number of vertical levels
 %                  S.curvilinear      Curvilinear grid switch
 %                  S.masking          Land/sea masking switch
-%                  S.do_zeta          Switch to define free-surface
-%                  S.do_ubar          Switch to define 2D U-velocity
-%                  S.do_vbar          Switch to define 2D V-velocity
-%                  S.do_u             Switch to define 3D U-velocity
-%                  S.do_v             Switch to define 3D V-velocity
-%                  S.do_temp          Switch to define temperature
-%                  S.do_salt          Switch to define salinity
+%                  S.do_sustr         Switch to define surface wind u-stress
+%                  S.do_svstr         Switch to define surface wind v-stress
+%                  S.do_shflux        Switch to define surface heat flux
+%                  S.do_ssflux        Switch to define surface salt flux
 %
 % On Output:
 %
@@ -60,7 +57,7 @@ function [status]=c_std(S);
 if (isfield(S,'ncname')),
   ncname=S.ncname;
 else,
-  error([ 'C_STD - Cannot find dimension parameter: ncname, ', ...
+  error([ 'C_STD_FRC - Cannot find dimension parameter: ncname, ', ...
 	  'in structure array S']);
 end,
 
@@ -73,28 +70,28 @@ end,
 if (isfield(S,'Vtransform')),
   Vtransform=S.Vtransform;
 else,
-  error([ 'C_STD - Cannot find dimension parameter: Vtransform, ', ...
+  error([ 'C_STD_FRC - Cannot find dimension parameter: Vtransform, ', ...
 	  'in structure array S']);
 end,
 
 if (isfield(S,'Lm')),
   Lp=S.Lm+2;
 else,
-  error([ 'C_STD - Cannot find dimension parameter: Lm, ', ...
+  error([ 'C_STD_FRC - Cannot find dimension parameter: Lm, ', ...
 	  'in structure array S']);
 end,
 
 if (isfield(S,'Mm')),
   Mp=S.Mm+2;
 else,
-  error([ 'C_STD - Cannot find dimension parameter: Mm, ', ...
+  error([ 'C_STD_FRC - Cannot find dimension parameter: Mm, ', ...
           'in structure array S']);
 end,
 
 if (isfield(S,'N')),
   N=S.N;
 else,
-  error([ 'C_STD - Cannot find dimension parameter: N, ', ...
+  error([ 'C_STD_FRC - Cannot find dimension parameter: N, ', ...
           'in structure array S']);
 end,
 
@@ -167,16 +164,13 @@ Vname.pmask       = 'mask_psi';
 Vname.umask       = 'mask_u';
 Vname.vmask       = 'mask_v';
 
-%  Standard deviations variables.
+%  Initial conditions variables.
 
 Vname.time        = 'ocean_time';
-Vname.zeta        = 'zeta';
-Vname.ubar        = 'ubar';
-Vname.vbar        = 'vbar';
-Vname.u           = 'u';
-Vname.v           = 'v';
-Vname.temp        = 'temp';
-Vname.salt        = 'salt';
+Vname.sustr       = 'sustr';
+Vname.svstr       = 'svstr';
+Vname.shflux      = 'shflux';
+Vname.ssflux      = 'ssflux';
 
 %----------------------------------------------------------------------------
 %  Create standard deviation NetCDF file.
@@ -186,7 +180,7 @@ Vname.salt        = 'salt';
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: CREATE - unable to create file: ', ncname]);
+  error([ 'C_STD_FRC: CREATE - unable to create file: ', ncname]);
   return
 end,
 
@@ -198,7 +192,7 @@ end,
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: ncdimdef - unable to define dimension: ',Dname.xr]);
+  error([ 'C_STD_FRC: ncdimdef - unable to define dimension: ',Dname.xr]);
   return
 end,
 
@@ -206,7 +200,7 @@ end,
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: DEF_DIM - unable to define dimension: ',Dname.xu]);
+  error([ 'C_STD_FRC: DEF_DIM - unable to define dimension: ',Dname.xu]);
   return
 end,
 
@@ -214,7 +208,7 @@ end,
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: DEF_DIM - unable to define dimension: ',Dname.xv]);
+  error([ 'C_STD_FRC: DEF_DIM - unable to define dimension: ',Dname.xv]);
   return
 end,
 
@@ -222,7 +216,7 @@ end,
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error(['C_STD: DEF_DIM - unable to define dimension: ',Dname.yr]);
+  error(['C_STD_FRC: DEF_DIM - unable to define dimension: ',Dname.yr]);
   return
 end,
 
@@ -230,7 +224,7 @@ end,
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: DEF_DIM - unable to define dimension: ',Dname.yu]);
+  error([ 'C_STD_FRC: DEF_DIM - unable to define dimension: ',Dname.yu]);
   return
 end,
 
@@ -238,7 +232,7 @@ end,
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: DEF_DIM - unable to define dimension: ',Dname.yv]);
+  error([ 'C_STD_FRC: DEF_DIM - unable to define dimension: ',Dname.yv]);
   return
 end,
 
@@ -246,7 +240,7 @@ end,
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: DEF_DIM - unable to define dimension: ',Dname.Nr]);
+  error([ 'C_STD_FRC: DEF_DIM - unable to define dimension: ',Dname.Nr]);
   return
 end,
 
@@ -254,7 +248,7 @@ end,
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: DEF_DIM - unable to define dimension: ',Dname.Nw]);
+  error([ 'C_STD_FRC: DEF_DIM - unable to define dimension: ',Dname.Nw]);
   return
 end,
 
@@ -262,7 +256,7 @@ end,
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: DEF_DIM - unable to define dimension: ',Dname.time]);
+  error([ 'C_STD_FRC: DEF_DIM - unable to define dimension: ',Dname.time]);
   return
 end,
 
@@ -270,13 +264,13 @@ end,
 %  Create global attributes.
 %----------------------------------------------------------------------------
 
-type='4D-Var error covariance standard deviation';
+type='ROMS/TOMS 4D-Var surface forcing error covariance standard deviation';
 lstr=max(size(type));
 [status]=mexnc('PUT_ATT_TEXT',ncid,ncglobal,'type',ncchar,lstr,type);
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: PUT_ATT_TEXT - unable to global attribure: type.']);
+  error([ 'C_STD_FRC: PUT_ATT_TEXT - unable to global attribure: type.']);
   return
 end,
 
@@ -286,7 +280,7 @@ if (isfield(S,'title')),
   if (status ~= 0),
     disp('  ');
     disp(mexnc('strerror',status));
-    error([ 'C_STD: PUT_ATT_TEXT - unable to global attribute: title.']);
+    error([ 'C_STD_FRC: PUT_ATT_TEXT - unable to global attribute: title.']);
     return
   end,
 end,
@@ -297,7 +291,7 @@ lstr=length(str);
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: PUT_ATT_TEXT - unable to global attribute:', ...
+  error([ 'C_STD_FRC: PUT_ATT_TEXT - unable to global attribute:', ...
 	  ' Conventions.']);
   return
 end,
@@ -309,18 +303,18 @@ if (isfield(S,'grd_file')),
   if (status ~= 0),
     disp('  ');
     disp(mexnc('strerror',status));
-    error([ 'C_STD: PUT_ATT_TEXT - unable to global attribute: grd_file.']);
+    error([ 'C_STD_FRC: PUT_ATT_TEXT - unable to global attribute: grd_file.']);
     return
   end,
 end,
 
-history=['Standard deviation file using Matlab script: c_std, ',date_stamp];
+history=['Standard deviation file using Matlab script: c_std_frc, ',date_stamp];
 lstr=max(size(history));
 [status]=mexnc('put_att_text',ncid,ncglobal,'history',ncchar,lstr,history);
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: PUT_ATT_TEXT - unable to global attribure: history.']);
+  error([ 'C_STD_FRC: PUT_ATT_TEXT - unable to global attribure: history.']);
   return
 end,
 
@@ -642,32 +636,13 @@ Var.units             = 'seconds';
 if (status ~= 0), return, end,
 clear Var
 
-if (isfield(S,'do_zeta')),
-  if (S.do_zeta),
-    Var.name          = Vname.zeta;
-    Var.type          = ncdouble;
-    Var.dimid         = [did.time did.yr did.xr];
-    Var.long_name     = 'free-surface  standard deviation';
-    Var.units         = 'meter';
-    Var.time          = Vname.time;
-    if (spherical),
-      Var.coordinates = strcat([Vname.rlon,' ',Vname.rlat,' ',Vname.time]); 
-    else,
-      Var.coordinates = strcat([Vname.rx,' ',Vname.ry,' ',Vname.time]); 
-    end,
-    [varid,status]=nc_vdef(ncid,Var);
-    if (status ~= 0), return, end,
-    clear Var
-  end,
-end,
-
-if (isfield(S,'do_ubar')),
-  if (S.do_ubar),
-    Var.name          = Vname.ubar;
+if (isfield(S,'do_sustr')),
+  if (S.do_sustr),
+    Var.name          = Vname.sustr;
     Var.type          = ncdouble;
     Var.dimid         = [did.time did.yu did.xu];
-    Var.long_name     = 'vertically integrated u-momentum component standard deviation';
-    Var.units         = 'meter second-1';
+    Var.long_name     = 'surface u-momentum stress standard deviation';
+    Var.units         = 'newton meter-2';
     Var.time          = Vname.time;
     if (spherical),
       Var.coordinates = strcat([Vname.ulon,' ',Vname.ulat,' ',Vname.time]); 
@@ -680,13 +655,13 @@ if (isfield(S,'do_ubar')),
   end,
 end,
 
-if (isfield(S,'do_vbar')),
-  if (S.do_vbar),
-    Var.name          = Vname.vbar;
+if (isfield(S,'do_svstr')),
+  if (S.do_svstr),
+    Var.name          = Vname.svstr;
     Var.type          = ncdouble;
     Var.dimid         = [did.time did.yv did.xv];
-    Var.long_name     = 'vertically integrated v-momentum component standard deviation';
-    Var.units         = 'meter second-1';
+    Var.long_name     = 'surface v-momentum stress standard deviation';
+    Var.units         = 'newton meter-2';
     Var.time          = Vname.time;
     if (spherical),
       Var.coordinates = strcat([Vname.vlon,' ',Vname.vlat,' ',Vname.time]); 
@@ -699,18 +674,20 @@ if (isfield(S,'do_vbar')),
   end,
 end,
 
-if (isfield(S,'do_u')),
-  if (S.do_u),
-    Var.name          = Vname.u;
+if (isfield(S,'do_shflux')),
+  if (S.do_shflux),
+    Var.name          = Vname.shflux;
     Var.type          = ncdouble;
-    Var.dimid         = [did.time did.Nr did.yu did.xu];
-    Var.long_name     = 'u-momentum component standard deviation';
-    Var.units         = 'meter second-1';
+    Var.dimid         = [did.time did.yr did.xr];
+    Var.long_name     = 'surface net heat flux standard deviation';
+    Var.units         = 'watt meter-2';
+    Var.negative      = 'upward flux, cooling';
+    Var.positive      = 'downward flux, heating';
     Var.time          = Vname.time;
     if (spherical),
-      Var.coordinates = strcat([Vname.ulon,' ',Vname.ulat,' ',Vname.s_rho,' ',Vname.time]); 
+      Var.coordinates = strcat([Vname.rlon,' ',Vname.rlat,' ',Vname.time]); 
     else,
-      Var.coordinates = strcat([Vname.ux,' ',Vname.uy,' ',Vname.s_rho,' ',Vname.time]); 
+      Var.coordinates = strcat([Vname.rx,' ',Vname.ry,' ',Vname.time]); 
     end,
     [varid,status]=nc_vdef(ncid,Var);
     if (status ~= 0), return, end,
@@ -718,56 +695,18 @@ if (isfield(S,'do_u')),
   end,
 end,
 
-
-if (isfield(S,'do_v')),
-  if (S.do_v),
-    Var.name          = Vname.v;
+if (isfield(S,'do_ssflux')),
+  if (S.do_ssflux),
+    Var.name          = Vname.ssflux;
     Var.type          = ncdouble;
-    Var.dimid         = [did.time did.Nr did.yv did.xv];
-    Var.long_name     = 'v-momentum component standard deviation';
-    Var.units         = 'meter second-1';
+    Var.dimid         = [did.time did.yr did.xr];
+    Var.long_name     = 'surface net salt flux (E-P)*SALT standard deviation';
+    Var.units         = 'meter second=1';
     Var.time          = Vname.time;
     if (spherical),
-      Var.coordinates = strcat([Vname.vlon,' ',Vname.vlat,' ',Vname.s_rho,' ',Vname.time]); 
+      Var.coordinates = strcat([Vname.rlon,' ',Vname.rlat,' ',Vname.time]); 
     else,
-      Var.coordinates = strcat([Vname.vx,' ',Vname.vy,' ',Vname.s_rho,' ',Vname.time]); 
-    end,
-    [varid,status]=nc_vdef(ncid,Var);
-    if (status ~= 0), return, end,
-    clear Var
-  end,
-end,
-
-if (isfield(S,'do_temp')),
-  if (S.do_temp),
-    Var.name          = Vname.temp;
-    Var.type          = ncdouble;
-    Var.dimid         = [did.time did.Nr did.yr did.xr];
-    Var.long_name     = 'potential temperature standard deviation';
-    Var.units         = 'Celsius';
-    Var.time          = Vname.time;
-    if (spherical),
-      Var.coordinates = strcat([Vname.rlon,' ',Vname.rlat,' ',Vname.s_rho,' ',Vname.time]); 
-    else,
-      Var.coordinates = strcat([Vname.rx,' ',Vname.ry,' ',Vname.s_rho,' ',Vname.time]); 
-    end,
-    [varid,status]=nc_vdef(ncid,Var);
-    if (status ~= 0), return, end,
-    clear Var
-  end,
-end,
-
-if (isfield(S,'do_salt')),
-  if (S.do_salt),
-    Var.name          = Vname.salt;
-    Var.type          = ncdouble;
-    Var.dimid         = [did.time did.Nr did.yr did.xr];
-    Var.long_name     = 'salinity  standard deviation';
-    Var.time          = Vname.time;
-    if (spherical),
-      Var.coordinates = strcat([Vname.rlon,' ',Vname.rlat,' ',Vname.s_rho,' ',Vname.time]); 
-    else,
-      Var.coordinates = strcat([Vname.rx,' ',Vname.ry,' ',Vname.s_rho,' ',Vname.time]); 
+      Var.coordinates = strcat([Vname.rx,' ',Vname.ry,' ',Vname.time]); 
     end,
     [varid,status]=nc_vdef(ncid,Var);
     if (status ~= 0), return, end,
@@ -783,7 +722,7 @@ end,
 if (status == -1),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: ENDDEF - unable to leave definition mode.']);
+  error([ 'C_STD_FRC: ENDDEF - unable to leave definition mode.']);
   return
 end,
 
@@ -791,7 +730,7 @@ end,
 if (status == -1),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_STD: CLOSE - unable to close NetCDF file: ', ncname]);
+  error([ 'C_STD_FRC: CLOSE - unable to close NetCDF file: ', ncname]);
   return
 end,
 

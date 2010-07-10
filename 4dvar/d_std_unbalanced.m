@@ -70,9 +70,9 @@ for n=1:nvars,
       S.spherical = nc_read(HisFile1, 'spherical');
       if (ischar(S.spherical)),
         if (S.spherical == 'T' | S.spherical == 't');
-          S.spherical = true;
+          S.spherical = 1;
         else,
-          S.spherical = false;
+          S.spherical = 0;
         end,
       end,
     case 'Vtransform'

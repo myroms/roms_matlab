@@ -31,11 +31,21 @@
 %                        from specified 4D-Var observations NetCDF file.
 %
 %   d_ssh_obs        - Driver template to extract SSH observations for
-%                        AVISO, create and write observation file. Then,
-%                        it computes super observations and creates and
-%                        write super observations NetCDF file.
-%   load_ssh_data    - Extracts AVISO sea level anomaly for the period of
+%                        AVISO. It creates and writes observation file.
+%                        Then, it computes super observations and creates
+%                        and writes super observations NetCDF file.
+%   d_sst_obs        - Driver template to extract SST observations from
+%                        satellite data. It creates and writes observation
+%                        file. Then, it computes super observations and
+%                        creates and writes super observations NetCDF file.
+%   load_ssh_aviso   - Extracts AVISO sea level anomaly for the period of
 %                        interest and specified region from ROMS Grid file.
+%   load_sst_pfeg    - Extracts satellite sea surface temperature for the
+%                         period of interest and specified region from
+%                         ROMS Grid file. The SST data is from the OpenDAP
+%                         catalog maintained by NOAA PFEG Coastwatch in
+%                         California. The resolution is 0.1 degree global
+%                         5-day average composite.
 %
 % Error Covariance Matrix:
 %
@@ -69,11 +79,20 @@
 %
 % Error Covariance standard deviation:
 %
-%   c_std            - Creates 4D-Var standard deviation NetCDF file.
+%   c_std            - Creates 4D-Var initial conditions or model error
+%                        standard deviation NetCDF file.
+%   c_std_bry        - Creates 4D-Var open boundary conditions standard
+%                        deviations NetCDF file.
+%   c_std_frc        - Creates 4D-Var surface forcing standard deviations
+%                        NetCDF file.
 %   d_std            - Driver template to compute and write 4D-Var
-%                        standard deviations.
+%                        standard deviations for initial conditions or
+%                        model error.
+%   d_std_frc        - Driver template to compute and write 4D-Var
+%                        standard deviations for surface forcing.
 %   d_std_unbalanced - Driver template to compute and write 4D-Var
-%                        unbalanced standard deviations.
+%                        unbalanced standard deviations for initial
+%                        conditions.
 %
 
 % svn $Id$

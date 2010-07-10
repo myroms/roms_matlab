@@ -1,0 +1,133 @@
+function [data]=load_sst_pfeg(GRDfile, StartDay, EndDay)
+
+%
+% LOAD_SST_PFEG:  Loads SST data for the region and time period
+%
+% [DATA]=load_sst_pfeg(GRDfile, StartDay, EndDay)
+% 
+%  Given a ROMS grid NetCDF, this function loads the SST data from the
+%  extensive OpenDAP catalog maintained by NOAA PFEG Coastwatch in
+%  California. The SST are 0.1 degree global 5-day average composite.
+%  The data are a combination of microwave AMSR-E (which has only
+%  coverage > 25 km from the coast) with infrared observations from
+%  AVHRR and MODIS (polar orbiting) and GOES (geostationary) via
+%  GHRSST.
+%   
+% On Input:
+%
+%    GRDname       NetCDF grid file name (string)
+%
+%    StartDay      Starting period of interest (date number)
+%
+%                    Example:   startday=datenum(2004,1, 1)=731947
+%
+%    EndDay        Ending   period of interest (date number)
+%
+%                    Example:   startday=datenum(2004,1,15)=731961
+%
+%                    See Matlab intrinsic datenum(Y,Mo,D,H,Mi,S)
+%                    for details.
+%
+% On Output:
+%
+%    data          Composite SST data (structure array):
+%
+%                    Data.time     time of extracted data (date number)
+%                    Data.lon      longitude of extracted data
+%                    Data.lat      latitude  of extracted data
+%                    Data.sst      sea surface temperatures
+%
+% Warning: This function uses 'nc_varget' from SNCTOOLS with OpenDAP
+%          to read NetCDF data.
+%
+
+% svn $Id$
+%===========================================================================%
+%  Copyright (c) 2002-2010 The ROMS/TOMS Group                              %
+%    Licensed under a MIT/X style license                                   %
+%    See License_ROMS.txt                           John Wilkin             %
+%===========================================================================%
+
+%  Check arguments.
+
+if (nargin < 3),
+  error([' LOAD_SST_PFEG: You must specify a grid file along with', ...
+         ' starting and ending times']);
+end,
+
+if (StartDay > EndDay),
+  error([' LOAD_SST_PFEG: Your starting time must be greater than', ...
+         ' the ending time']);
+end,
+
+data=[];
+
+%----------------------------------------------------------------------------
+%  Extract SST data for the period of interest.
+%----------------------------------------------------------------------------
+
+%  Source of SST data.
+
+url = ['http://thredds1.pfeg.noaa.gov:8080/thredds/dodsC/' ...
+       'satellite/BA/ssta/5day'];
+
+%  Find the time period of interest.
+
+epoch = datenum([1970 1 1 0 0 0]);
+sst_time = epoch + nc_varget(url,'time')/86400;
+T = find(sst_time >= StartDay & sst_time <= EndDay);
+
+if (isempty(T)),
+  disp([' LOAD_SST_PFEG: no data found for period of interest.']);
+  return;
+end
+
+T = T - 1;            %  substract 1 because SNCTOOLS is 0-based.
+
+data.time = sst_time(T);
+
+%  Read SST longitudes and latitudes.
+
+sst_lon = nc_varget(url,'lon');
+sst_lat = nc_varget(url,'lat');
+
+%  Read in application grid longitude and latitude.
+
+rlon = nc_varget(GRDfile,'lon_rho');
+rlat = nc_varget(GRDfile,'lat_rho');
+
+MinLon = min(rlon(:))-0.5;
+MaxLon = max(rlon(:))+0.5;
+MinLat = min(rlat(:))-0.5;
+MaxLat = max(rlat(:))+0.5;
+
+%  Check how western longitudes are handled.
+
+if (MaxLon < 0),
+  ind = find(sst_lon > 180);
+  sst_lon(ind) = sst_lon(ind) - 360;
+end,
+
+%  Grab the indices for the application grid.
+
+I = find(sst_lon >= MinLon & sst_lon <= MaxLon);
+J = find(sst_lat >= MinLat & sst_lat <= MaxLat);
+
+if (isempty(I) | isempty(J))
+  disp([' LOAD_SST_PFEG: no data found for application grid.']);
+  return;
+end,
+
+I = I - 1;            %  substract 1 because SNCTOOLS is 0-based.
+J = J - 1;            %  substract 1 because SNCTOOLS is 0-based.
+
+data.lon = sst_lon(I);
+data.lat = sst_lat(J);
+
+%  Get the SST data. The data are actually 4D with second coordinate
+%  being altitude.
+
+data.sst = nc_varget(url, 'BAssta', [T(1) 0 J(1) I(1)], ...
+                                    [length(T) 1 length(J) length(I)]);   
+
+return

@@ -1,10 +1,12 @@
 %
-%  D_SSH_OBS:  Driver script to create a 4D-Var SSH observations file.
+%  D_SST_OBS:  Driver script to create a 4D-Var SST observations file.
 %
 %  This a user modifiable script that can be used to prepare ROMS 4D-Var
-%  SSH observations NetCDF file. The SSH observations are extracted from
-%  AVISO dataset using script 'load_ssh_aviso.m'. USERS can use this as
-%  a prototype for their application.
+%  SST observations NetCDF file. The SST data is extracted from the
+%  extensive OpenDAP catalog maintained by NOAA PFEG Coastwatch in
+%  California using script 'load_sst_pfeg.m'. The SST are 0.1 degree
+%  global 5-day average composite. USERS can use this as a prototype
+%  for their application.
 %
 
 % svn $Id$
@@ -19,8 +21,8 @@
  my_root = '/home/arango/ocean/toms/repository/test';
 
  GRDfile = fullfile(my_root, 'WC13/Data', 'wc13_grd.nc');
- OBSfile = 'wc13_ssh_obs.nc';
- SUPfile = 'wc13_ssh_super_obs.nc';
+ OBSfile = 'wc13_sst_obs.nc';
+ SUPfile = 'wc13_sst_super_obs.nc';
 
 %  Set ROMS state variable type classification.
 
@@ -50,14 +52,15 @@ provenance.Sctd_CalC = 9;    % CTD salinity from CalCOFI
 provenance.Tctd_GLOB = 10;   % CTD temperature from GLOBEC
 provenance.Sctd_GLOB = 10;   % CTD salinity from GLOBEC
 
-%  Set data error to 2 cm. Square the values since we  need variances.
+%  Set data error to 0.4 degrees Celsius.  Square values since we
+%  need variances.
 
-error.zeta = 0.02;        error.zeta = error.zeta ^2;
+error.zeta = 0;           error.zeta = error.zeta ^2;
 error.ubar = 0;           error.ubar = error.ubar ^2;
 error.vbar = 0;           error.vbar = error.ubar ^2;
 error.u    = 0;           error.u    = error.u ^2;
 error.v    = 0;           error.v    = error.u ^2;
-error.temp = 0;           error.temp = error.temp ^2;
+error.temp = 0.4;         error.temp = error.temp ^2;
 error.salt = 0;           error.salt = error.salt ^2;
 
 %  Set number of vertical levels in application. The depth of the
@@ -75,33 +78,33 @@ obs.spherical = 1;
 
 % The 'load_ssh_data' stores SSH data as:   D.ssh, D.time, D.lon, D.lat.
 
-StartDay = datenum(2004,1,1);
-EndDay   = datenum(2004,2,1);
+StartDay = datenum(2004,1, 1);
+EndDay   = datenum(2004,1,15);
 
-D = load_ssh_aviso(GRDfile, StartDay, EndDay);
+D = load_sst_pfeg(GRDfile, StartDay, EndDay);
 
 %  Convert data to one-dimenension array and replicate the data to
 %  the same dimension of D.ssh. Notice that we get the following
-%  dimensions after running 'load_ssh_aviso':
+%  dimensions after running 'load_ssh_data':
 %
-%       D.ssh (time,lat,lon)
 %       D.time(time)           already sorted in increased time order
-%       D.lon (lat,lon)
-%       D.lat (lat,lon
+%       D.lon (lon)
+%       D.lat (lat)
+%       D.ssh (time,lat,lon)
 
-[it,Jm,Im] = size(D.ssh);
+[it,Jm,Im] = size(D.sst);
 
 obs.time = repmat(D.time,[1 Jm Im]);
-obs.lon  = permute(repmat(D.lon,[1 1 it]),[3 1 2]);
-obs.lat  = permute(repmat(D.lat,[1 1 it]),[3 1 2]);
+obs.lon  = permute(repmat(repmat(D.lon',[Jm 1]),[1 1 it]),[3 1 2]);
+obs.lat  = permute(repmat(repmat(D.lat ,[1 Im]),[1 1 it]),[3 1 2]);
 
 obs.time  = obs.time(:);           % no time sorting is necessary
 obs.lon   = obs.lon(:);
 obs.lat   = obs.lat(:);
-obs.value = D.ssh(:).*0.01;        % convert from cm to m
+obs.value = D.sst(:);
 
 ind = find(isnan(obs.value));
-if (~isempty(ind));                % remove NaN's from data
+if (~isempty(ind));                % remove NaN's from data, if any
   obs.time (ind) = [];
   obs.lon  (ind) = [];
   obs.lat  (ind) = [];
@@ -111,7 +114,7 @@ end,
 %  Compute observation fractional grid coordinates in term
 %  of ROMS grid.
 
-[obs.Xgrid, obs.Ygrid] = obs_ijpos(GRDfile, obs.lon, obs.lat, 1);
+[obs.Xgrid, obs.Ygrid] = obs_ijpos(GRDfile, obs.lon, obs.lat, 0);
 
 ind = find(isnan(obs.Xgrid) & isnan(obs.Ygrid));
 if (~isempty(ind));                % remove NaN's from data
@@ -125,13 +128,13 @@ end,
 
 %  Assign ROMS associated state variable and provenance.
 
-obs.type = ones(size(obs.value)) .* state.zeta;
+obs.type = ones(size(obs.value)) .* state.temp;
 
-obs.provenance = ones(size(obs.value)) .* provenance.ssh_aviso;
+obs.provenance = ones(size(obs.value)) .* provenance.sst_blend;
 
 %  Determine number of unique surveys times and number of
 %  observation per survey.  They are already sorted in
-%  incresed time order.
+%  increased time order.
 
 obs.survey_time = unique(obs.time);
 obs.Nsurvey     = length(obs.survey_time);
@@ -153,13 +156,13 @@ obs.Zgrid = zeros(size(obs.value));
 
 %  Set observation error covariance (squared units).
 
-obs.error=ones(size(obs.value)) .* error.zeta;
+obs.error = ones(size(obs.value)) .* error.temp;
 
 %  Initialize global variance per state variables.
 
-obs.variance=zeros([1 Nstate]);
+obs.variance = zeros([1 Nstate]);
 
-obs.variance(state.zeta) = error.zeta;
+obs.variance(state.temp) = error.temp;
 
 %---------------------------------------------------------------------------
 %  Set observation file creation parameter in structure array, S.
