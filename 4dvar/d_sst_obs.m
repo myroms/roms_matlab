@@ -68,6 +68,14 @@ error.salt = 0;           error.salt = error.salt ^2;
 
 Nsur=30;
 
+%  Set 'grid_Lm_Mm_N' global attribute. It needs to be integer. We need
+%  to have this attribute for data quality control (like binning) in other
+%  programs.
+
+[Lr Mr]=size(nc_read(GRDfile,'h'));
+
+S.grid_Lm_Mm_N = int32([Lr-2 Mr-2 Nsur]);
+
 %---------------------------------------------------------------------------
 %  Extract SSH observations from AVISO, store it into structure array D.
 %---------------------------------------------------------------------------
@@ -340,7 +348,7 @@ avalue='days since 1968-05-23 00:00:00 GMT';
 %  cell and create a super observation. The following script just do
 %  that and saves everything in observation structure OBS.
 
-[OBS]=super_obs(OBSfile);
+[OBS]=super_obs_jw(OBSfile);
 
 %  Write new structure to a new NetCDF.
 

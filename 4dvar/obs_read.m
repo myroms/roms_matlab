@@ -156,6 +156,20 @@ if (~isempty(Avalue)),
   S.title=Avalue;
 end,
 
+% Read in 'grd_file' global attribute.
+
+Avalue=nc_getatt(ncfile,'grd_file');
+if (~isempty(Avalue)),
+  S.grd_file=Avalue;
+end,
+
+% Read in 'grid_Lm_Mm_N' global attribute.
+
+Avalue=nc_getatt(ncfile,'grid_Lm_Mm_N');
+if (~isempty(Avalue)),
+  S.grid_Lm_Mm_N=int32(Avalue);
+end,
+
 % Read in 'state_variables' global attribute.
 
 Avalue=nc_getatt(ncfile,'state_variables');

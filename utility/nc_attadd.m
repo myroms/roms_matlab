@@ -60,14 +60,14 @@ end
 
 %  Put open file into define mode.
 
-  [status]=mexnc('redef',ncid);
-  if (status < 0),
-    disp('  ');
-    disp(mexnc('strerror',status));
-    [status]=mexnc('close',ncid);
-    error(['NC_ATTADD: redef - unable to put in definition mode: ',fname]);
-    return
-  end,
+[status]=mexnc('redef',ncid);
+if (status < 0),
+  disp('  ');
+  disp(mexnc('strerror',status));
+  [status]=mexnc('close',ncid);
+  error(['NC_ATTADD: redef - unable to put in definition mode: ',fname]);
+  return
+end,
 
 %---------------------------------------------------------------------------
 %  Add/modify a variable attribute.
@@ -223,14 +223,35 @@ else,
   
 %  Add/modify character attribute.
 
-  if ischar(avalue),
+  if (ischar(avalue)),
     lstr=length(avalue);
     [status]=mexnc('put_att_text',ncid,ncglobal,aname,ncchar,lstr,avalue);
     if (status < 0),
       disp('  ');
       disp(mexnc('strerror',status));
       error(['NC_ATTADD: put_att_text - unable to define attribute ',...
-               '"',aname,'"in file: ',fname,'.']);
+             '"',aname,'"in file: ',fname,'.']);
+    end,
+  elseif (isinteger(avalue)),
+    nval=length(avalue); 
+    [status]=mexnc('put_att_int',ncid,ncglobal,aname,ncint,nval,avalue);
+    if (status ~= 0),
+      disp('  ');
+      disp(mexnc('strerror',status));
+      error(['NC_ATTADD: PUT_ATT_INT - unable to define attribute: ',...
+             '"',aname,'"in file: ',fname,'.']);
+      return,
+    end,
+  elseif (isfloat(avalue)),
+    nval=length(avalue);
+    [status]=mexnc('put_att_double',ncid,ncglobal,aname,ncdouble,nval, ...
+		   double(avalue));
+    if (status ~= 0),
+      disp('  ');
+      disp(mexnc('strerror',status));
+      error(['NC_ATTADD: PUT_ATT_FLOAT - unable to define attribute: ',...
+             '"',aname,'"in file: ',fname,'.']);
+      return,
     end,
   end,
   

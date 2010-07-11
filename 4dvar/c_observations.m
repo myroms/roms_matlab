@@ -253,6 +253,19 @@ if (isfield(S,'grd_file')),
   end,
 end,
 
+if (isfield(S,'grid_Lm_Mm_N')),
+  nval=length(S.grid_Lm_Mm_N);
+  [status]=mexnc('put_att_int',ncid,ncglobal,'grid_Lm_Mm_N',ncint,nval, ...
+		 int32(S.grid_Lm_Mm_N));
+  if (status ~= 0),
+    disp('  ');
+    disp(mexnc('strerror',status));
+    error([ 'C_OBSERVATIONS: PUT_ATT_TEXT - unable to global attribute:', ...
+	   ' grd_Lm_Mm_N.']);
+    return
+  end,
+end,
+
 if (isfield(S,'global_variables')),
   lstr=length(S.global_variables);
   [status]=mexnc('put_att_text',ncid,ncglobal,'state_variables',ncchar, ...

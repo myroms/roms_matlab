@@ -205,6 +205,30 @@ else,
           error(['NC_GETATT: get_att_text - unable to read global ',...
                  'attribute: "',aname,'".']);
         end,
+      case (ncint)
+        [avalue,status]=mexnc('get_att_int', ncid,ncglobal,aname);
+        if (status < 0),
+          disp('  ');
+          disp(mexnc('strerror',status));
+          error(['NC_GETATT: get_att_int - unable to read global ',...
+                 'attribute: "',aname,'".']);
+        end,
+      case (ncfloat)
+        [avalue,status]=mexnc('get_att_float',ncid,ncglobal,aname);
+        if (status < 0),
+          disp('  ');
+          disp(mexnc('strerror',status));
+          error(['NC_GETATT: get_att_float - unable to read global ',...
+                 'attribute: "',aname,'".']);
+        end,
+      case (ncdouble)
+        [avalue,status]=mexnc('get_att_double',ncid,ncglobal,aname);
+        if (status < 0),
+          disp('  ');
+          disp(mexnc('strerror',status));
+          error(['NC_GETATT: get_att_double - unable to read global ',...
+                 'attribute: "',aname,'".']);
+        end,
     end,
   end,
   

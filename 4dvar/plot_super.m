@@ -96,7 +96,7 @@ end,
 
 %  Create super observations, if necessary.
 
-[S] = super_obs(O);
+[S] = super_obs_jw(O);
 
 %  Plot original (O) and new (S) observations.
 
@@ -108,8 +108,15 @@ ind_o = find(O.type == state_var & O.time == survey_time);
 
 if (~isempty(ind_o)),
   Olon = O.lon(ind_o);
-  Olat = O.lat(ind_o);
+  lat = O.lat(ind_o);
   Oval = O.value(ind_o);
+else
+  disp(' ');
+  disp(['   PlOT_SUPER: No observations found for state variable = ', ...
+        num2str(state_var)]);
+  disp(['               at survey ', num2str(survey), ' = ', ...
+        num2str(survey_time)]);
+  return
 end,
 
 ind_s = find(S.type == state_var & S.time == survey_time);

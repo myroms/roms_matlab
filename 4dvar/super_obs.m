@@ -41,8 +41,7 @@ function [Sout]=super_obs(Sinp);
 %              Sout.lat          observation latitude
 % 
 % To Do:  I need to provide logic for 3D data (include Zgrid) in the
-%         sparce matrix.  For this, we need number of vertical levels
-%         in application.
+%         sparce matrix.
 %
 % The nice and efficient sparse matrix approach is based on Bartolome
 % Garau gliders data binning scripts.
@@ -61,6 +60,10 @@ function [Sout]=super_obs(Sinp);
 if (ischar(Sinp)),
   Sinp=obs_read(Sinp);
 end,
+
+Lm = Sinp.grid_Lm_Mm_N(1);
+Mm = Sinp.grid_Lm_Mm_N(2);
+N  = Sinp.grid_Lm_Mm_N(3);
 
 %  Check if 'provenace', 'lon', and 'lat' fields are available.
 
@@ -145,6 +148,10 @@ for m=1:Nsurvey,
 
     ind_v=find(T.type == state_vars(n));
 
+    if isempty(ind_v),
+      continue
+    end,
+
     V.type  = T.type (ind_v);
     V.time  = T.time (ind_v);
     V.depth = T.depth(ind_v);
@@ -171,9 +178,13 @@ for m=1:Nsurvey,
     Ymin = min(V.Ygrid);
     Ymax = max(V.Ygrid);
 
+    Zmin = min(V.Zgrid);
+    Zmax = max(V.Zgrid);
+
     dx = 1.0;
     dy = 1.0;
-
+    dz = 1.0;
+    
     minObs= 1;
 
 %  Compute the index in each dimension of the grid cell in
@@ -181,11 +192,13 @@ for m=1:Nsurvey,
 
     Xbin = 1.0 + floor((V.Xgrid - Xmin) ./ dx);
     Ybin = 1.0 + floor((V.Ygrid - Ymin) ./ dy);
+    Zbin = 1.0 + floor((V.Zgrid - Zmin) ./ dz);
 
 %  Similarly, compute the maximum averaging grid size.
 
     Xsize = 1.0 + floor((Xmax - Xmin) ./ dx);
     Ysize = 1.0 + floor((Ymax - Ymin) ./ dy);
+    Zsize = 1.0 + floor((Zmax - Zmin) ./ dz);
     
     matsize = [Ysize, Xsize];
 
@@ -312,6 +325,14 @@ end,
 
 if (isfield(Sinp,'origin_flag_meanings'));
   Sout.origin_flag_meanings = Sinp.origin_flag_meanings;
+end,
+
+if (isfield(Sinp,'grd_file'));
+  Sout.grd_file = Sinp.grd_file;
+end,
+
+if (isfield(Sinp,'grid_Lm_Mm_N'));
+  Sout.grid_Lm_Mm_N = Sinp.grid_Lm_Mm_N;
 end,
 
 if (isfield(Sinp,'global_variables'));

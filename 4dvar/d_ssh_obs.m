@@ -61,9 +61,17 @@ error.temp = 0;           error.temp = error.temp ^2;
 error.salt = 0;           error.salt = error.salt ^2;
 
 %  Set number of vertical levels in application. The depth of the
-%  satellite data is assign to the surface level.
+%  satellite data is assigned to the surface level.
 
 Nsur=30;
+
+%  Set 'grid_Lm_Mm_N' global attribute. It needs to be integer. We need
+%  to have this attribute for data quality control (like binning) in other
+%  programs.
+
+[Lr Mr]=size(nc_read(GRDfile,'h'));
+
+S.grid_Lm_Mm_N = int32([Lr-2 Mr-2 Nsur]);
 
 %---------------------------------------------------------------------------
 %  Extract SSH observations from AVISO, store it into structure array D.
