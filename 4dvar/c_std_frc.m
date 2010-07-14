@@ -701,7 +701,7 @@ if (isfield(S,'do_ssflux')),
     Var.type          = ncdouble;
     Var.dimid         = [did.time did.yr did.xr];
     Var.long_name     = 'surface net salt flux (E-P)*SALT standard deviation';
-    Var.units         = 'meter second=1';
+    Var.units         = 'meter second-1';
     Var.time          = Vname.time;
     if (spherical),
       Var.coordinates = strcat([Vname.rlon,' ',Vname.rlat,' ',Vname.time]); 

@@ -108,7 +108,7 @@ ind_o = find(O.type == state_var & O.time == survey_time);
 
 if (~isempty(ind_o)),
   Olon = O.lon(ind_o);
-  lat = O.lat(ind_o);
+  Olat = O.lat(ind_o);
   Oval = O.value(ind_o);
 else
   disp(' ');
