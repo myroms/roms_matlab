@@ -704,7 +704,7 @@ clear Var
 
 Var.name            = Vname.u;
 Var.type            = vartype;
-Var.dimid           = [did.time did.Nr did.bry did.IorJ];
+Var.dimid           = [did.time did.bry did.Nr did.IorJ];
 Var.long_name       = ['u-momentum component, ',Blong];
 Var.units           = 'meter second-1';
 Var.time            = Vname.time;
@@ -714,7 +714,7 @@ clear Var
 
 Var.name            = Vname.v;
 Var.type            = vartype;
-Var.dimid           = [did.time did.Nr did.bry did.IorJ];
+Var.dimid           = [did.time did.bry did.Nr did.IorJ];
 Var.long_name       = ['v-momentum component, ',Blong];
 Var.units           = 'meter second-1';
 Var.time            = Vname.time;
@@ -724,7 +724,7 @@ clear Var
 
 Var.name            = Vname.temp;
 Var.type            = vartype;
-Var.dimid           = [did.time did.Nr did.bry did.IorJ];
+Var.dimid           = [did.time did.bry did.Nr did.IorJ];
 Var.long_name       = ['potential temperature, ',Blong];
 Var.units           = 'Celsius';
 Var.time            = Vname.time;
@@ -734,7 +734,7 @@ clear Var
 
 Var.name            = Vname.salt;
 Var.type            = vartype;
-Var.dimid           = [did.time did.Nr did.bry did.IorJ];
+Var.dimid           = [did.time did.bry did.Nr did.IorJ];
 Var.long_name       = ['salinity, ',Blong];
 Var.time            = Vname.time;
 [varid,status]=nc_vdef(ncid,Var);
