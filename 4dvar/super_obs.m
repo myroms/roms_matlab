@@ -40,9 +40,6 @@ function [Sout]=super_obs(Sinp);
 %              Sout.lon          observation longitude
 %              Sout.lat          observation latitude
 % 
-% To Do:  I need to provide logic for 3D data (include Zgrid) in the
-%         sparce matrix.
-%
 % The nice and efficient sparse matrix approach is based on Bartolome
 % Garau gliders data binning scripts.
 %
@@ -200,12 +197,12 @@ for m=1:Nsurvey,
     Ysize = 1.0 + floor((Ymax - Ymin) ./ dy);
     Zsize = 1.0 + floor((Zmax - Zmin) ./ dz);
     
-    matsize = [Ysize, Xsize];
+    matsize = [Ysize, Xsize, Zsize];
 
 %  Combine the indexes in each dimension into one index. It
 %  is like stacking all the matrix in one column vector.
 
-    varInd    = sub2ind(matsize, Ybin, Xbin);
+    varInd    = sub2ind(matsize, Ybin, Xbin, Zbin);
     onesCol   = ones(size(varInd));
     maxVarInd = max(varInd);
 
@@ -233,6 +230,7 @@ for m=1:Nsurvey,
 
     Xsum = sparse(varInd, onesCol, V.Xgrid, maxVarInd, 1);
     Ysum = sparse(varInd, onesCol, V.Ygrid, maxVarInd, 1);
+    Zsum = sparse(varInd, onesCol, V.Zgrid, maxVarInd, 1);
 
 %  Compute the mean of the observations:
 %
@@ -244,6 +242,7 @@ for m=1:Nsurvey,
 
     YmeanMat = Ysum(nonzeroIdx) ./ binCounter(nonzeroIdx);
     XmeanMat = Xsum(nonzeroIdx) ./ binCounter(nonzeroIdx);
+    ZmeanMat = Zsum(nonzeroIdx) ./ binCounter(nonzeroIdx);
 
     clear dummy*;
 
@@ -251,6 +250,7 @@ for m=1:Nsurvey,
 
     Sout.Xgrid = [Sout.Xgrid, transpose(full(XmeanMat))];
     Sout.Ygrid = [Sout.Ygrid, transpose(full(YmeanMat))];
+    Sout.Zgrid = [Sout.Zgrid, transpose(full(YmeanMat))];
 
     Nsuper=length(full(XmeanMat));
     
@@ -276,10 +276,6 @@ for m=1:Nsurvey,
     FmeanMat   = Fsum(nonzeroIdx) ./ binCounter(nonzeroIdx);
     Sout.depth = [Sout.depth, transpose(full(FmeanMat))];
 
-    Fsum       = sparse(varInd, onesCol, V.Zgrid, maxVarInd, 1);
-    FmeanMat   = Fsum(nonzeroIdx) ./ binCounter(nonzeroIdx);
-    Sout.Zgrid = [Sout.Zgrid, transpose(full(FmeanMat))];
-    
     Fsum       = sparse(varInd, onesCol, V.error, maxVarInd, 1);
     FmeanMat   = Fsum(nonzeroIdx) ./ binCounter(nonzeroIdx);
     Sout.error = [Sout.error, transpose(full(FmeanMat))];

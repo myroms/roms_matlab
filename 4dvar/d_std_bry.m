@@ -224,7 +224,7 @@ end,
 
 rec = 1;
   
-s = nc_write(S.ncname, 'bry_time', 0, rec);
+s = nc_write(S.ncname, 'ocean_time', 0, rec);
 
 s = nc_write(S.ncname, 'zeta_obc', S.zeta_std, rec);
 s = nc_write(S.ncname, 'ubar_obc', S.ubar_std, rec);

@@ -417,7 +417,7 @@ end,
 %----------------------------------------------------------------------------
 
 if (got_FillValue),
-  ind=find(f >= spval);
+  ind=find(abs(f) >= abs(spval));
   if (~isempty(ind)),
     f(ind)=FillValue;
   end,

@@ -16,6 +16,8 @@
 %   obs_write        - Writes all observation data in structure array into
 %                        an existing NetCDF file.
 %
+%   obs_depth        - Computes the fraction z-grid locations of the 
+%                        observations.
 %   obs_merge        - Merges data from several 4D-Var observations NetCDF
 %                        files.
 %

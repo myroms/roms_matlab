@@ -117,7 +117,7 @@ Dname.IorJ = 'IorJ';         Dsize.IorJ = max([Lp Mp]);
 Dname.Nr   = 's_rho';        Dsize.Nr   = N;
 Dname.Nw   = 's_w';          Dsize.Nw   = N+1;
 Dname.bry  = 'boundary';     Dsize.bry  = 4;
-Dname.time = 'bry_time';     Dsize.time = ncunlim;
+Dname.time = 'ocean_time';   Dsize.time = ncunlim;
 
 %----------------------------------------------------------------------------
 %  Set Variables.
