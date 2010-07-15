@@ -77,14 +77,14 @@ Nsur=30;
 S.grid_Lm_Mm_N = int32([Lr-2 Mr-2 Nsur]);
 
 %---------------------------------------------------------------------------
-%  Extract SSH observations from AVISO, store it into structure array D.
+%  Extract SST observations and store them into structure array D.
 %---------------------------------------------------------------------------
 
 %  Set spherical switch.
 
 obs.spherical = 1;
 
-% The 'load_ssh_data' stores SSH data as:   D.ssh, D.time, D.lon, D.lat.
+% The 'load_sst_pfeg' stores SST data as:   D.sst, D.time, D.lon, D.lat.
 
 StartDay = datenum(2004,1, 1);
 EndDay   = datenum(2004,1,15);
@@ -92,13 +92,13 @@ EndDay   = datenum(2004,1,15);
 D = load_sst_pfeg(GRDfile, StartDay, EndDay);
 
 %  Convert data to one-dimenension array and replicate the data to
-%  the same dimension of D.ssh. Notice that we get the following
-%  dimensions after running 'load_ssh_data':
+%  the same dimension of D.sst. Notice that we get the following
+%  dimensions after running 'load_sst_pfeg':
 %
 %       D.time(time)           already sorted in increased time order
 %       D.lon (lon)
 %       D.lat (lat)
-%       D.ssh (time,lat,lon)
+%       D.sst (time,lat,lon)
 
 [it,Jm,Im] = size(D.sst);
 
@@ -154,7 +154,7 @@ for n=1:obs.Nsurvey,
 end,
 
 %  Set depths and fractional z-grid coordinates for the observations.
-%  The SSH data is a the surface.  Therefore, we need to assign
+%  The SST data is a the surface.  Therefore, we need to assign
 %  'obs_depth' to surface level and 'obs_Zgrid' to zero.  ROMS will
 %  compute the value of 'obs_zgrid' when relevant.
 

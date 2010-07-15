@@ -81,7 +81,7 @@ S.grid_Lm_Mm_N = int32([Lr-2 Mr-2 Nsur]);
 
 obs.spherical = 1;
 
-% The 'load_ssh_data' stores SSH data as:   D.ssh, D.time, D.lon, D.lat.
+% The 'load_ssh_aviso' stores SSH data as:   D.ssh, D.time, D.lon, D.lat.
 
 StartDay = datenum(2004,1,1);
 EndDay   = datenum(2004,2,1);

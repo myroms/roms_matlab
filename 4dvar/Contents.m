@@ -10,10 +10,14 @@
 %   c_observations   - Creates 4D-Var observation NetCDF file.
 %   d_observations   - Driver to process 4D-Var observation NetCDF file.
 %
+%
 %   obs_read         - Reads observation NetCDF file and load all data
 %                        into a structure array.
 %   obs_write        - Writes all observation data in structure array into
 %                        an existing NetCDF file.
+%
+%   obs_merge        - Merges data from several 4D-Var observations NetCDF
+%                        files.
 %
 %   inside           - Checks if a point is strictly inside of the region
 %                        defined by a polygon. This is an old Matlab
@@ -88,6 +92,9 @@
 %   d_std            - Driver template to compute and write 4D-Var
 %                        standard deviations for initial conditions or
 %                        model error.
+%   d_std_bry        - Driver template to extract and write open boundary
+%                        standard deviations. The data is extracted from
+%                        the initial standard deviation file.
 %   d_std_frc        - Driver template to compute and write 4D-Var
 %                        standard deviations for surface forcing.
 %   d_std_unbalanced - Driver template to compute and write 4D-Var
