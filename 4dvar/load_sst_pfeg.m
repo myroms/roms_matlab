@@ -84,8 +84,6 @@ end
 
 T = T - 1;            %  substract 1 because SNCTOOLS is 0-based.
 
-data.time = sst_time(T);
-
 %  Read SST longitudes and latitudes.
 
 sst_lon = nc_varget(url,'lon');
@@ -103,9 +101,14 @@ MaxLat = max(rlat(:))+0.5;
 
 %  Check how western longitudes are handled.
 
-if (MaxLon < 0),
-  ind = find(sst_lon > 180);
+ind = find(sst_lon > MaxLon);
+if (~isempty(ind)),
   sst_lon(ind) = sst_lon(ind) - 360;
+end,
+
+ind = find(sst_lon < MinLon);
+if (~isempty(ind)),
+  sst_lon(ind) = sst_lon(ind) + 360;
 end,
 
 %  Grab the indices for the application grid.
@@ -121,8 +124,22 @@ end,
 I = I - 1;            %  substract 1 because SNCTOOLS is 0-based.
 J = J - 1;            %  substract 1 because SNCTOOLS is 0-based.
 
-data.lon = sst_lon(I);
-data.lat = sst_lat(J);
+%  Read again coordinates for the selected region and time period to
+%  be safe.
+
+data.time = nc_varget(url,'time',T(1), length(T));
+data.lon  = nc_varget(url,'lon' ,I(1), length(I));
+data.lat  = nc_varget(url,'lat' ,J(1), length(J));
+
+ind = find(data.lon > MaxLon);
+if (~isempty(ind)),
+  data.lon(ind) = data.lon(ind) - 360;
+end,
+
+ind = find(data.lon < MinLon);
+if (~isempty(ind)),
+  data.lon(ind) = data.lon(ind) + 360;
+end,
 
 %  Get the SST data. The data are actually 4D with second coordinate
 %  being altitude.

@@ -105,9 +105,14 @@ MaxLat = max(rlat(:))+0.5;
 
 %  Check how western longitudes are handled.
 
-if (MaxLon < 0),
-  ind = find(ssh_lon > 180);
+ind = find(ssh_lon > MaxLon);
+if (~isempty(ind)),
   ssh_lon(ind) = ssh_lon(ind) - 360;
+end,
+
+ind = find(ssh_lon < MinLon);
+if (~isempty(ind)),
+  ssh_lon(ind) = ssh_lon(ind) + 360;
 end,
 
 % Grab the indices for the application grid.
