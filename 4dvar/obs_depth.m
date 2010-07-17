@@ -1,22 +1,24 @@
-function [S]=obs_depth(ncfile,S,zflag);
+function [S]=obs_depth(ncfile, S, zflag);
 
 %
 % OBS_DEPTH:  Computes the observations fractional z-grid locations
 %
-% [S]=obs_read(ncfile)
+% [S]=obs_depth(ncfile, S, zflag)
 %
-% This function computes the observation fractional z-grid locations. The
-% application vertical coordinates parameters are extracted from provided
-% ROMS history file.
+% This function computes the observation fractional z-grid locations. It
+% removes vertical outliers. The application vertical grid parameters are
+% extracted from provided ROMS history file.
 %
 % On Input:
 %
 %    ncfile  ROMS history file name (string)
-%    S       Observations strcuture data or NetCDF file name:
-%    zflag   Flag to compute ROMS depths:
+%
+%    S       Observations structure data or NetCDF file name:
+%
+%    zflag   Flag to compute ROMS depths (integer):
 %
 %              zflag = 0        use zero free-surface
-%              zflag > 1        use zflag record for free-surface
+%              zflag > 0        read zflag history record for free-surface
 %
 % On Output:
 %
@@ -88,17 +90,29 @@ end,
 
 Nsurvey=length(S.survey_time);
 
+%  Set observations dynamical fields (cell array) in structure, S.
+
+field_list = {'Xgrid', 'Ygrid', 'Zgrid', 'depth', 'error', 'value'};
+
+if (has.lonlat),
+  field_list = [field_list, 'lon', 'lat'];
+end,
+
+if (has.provenance),
+  field_list = [field_list, 'provenance'];
+end,
+
 %----------------------------------------------------------------------------
 %  Compute depths of ROMS application.
 %----------------------------------------------------------------------------
 
 igrid = 5;                                  % depth of W-points
-tindex = zflag;                             % use zflag record for zeta
+tindex = abs(zflag);                        % use zflag record for zeta
 
 switch ( zflag ),
-  case 0
+  case 0,
     Zw=depths(ncfile, ncfile, igrid, 0, 0);
-  case 1
+  otherwise,
     Zw=depths(ncfile, ncfile, igrid, 0, tindex);
 end,
 
@@ -111,6 +125,21 @@ Nr = Nw -1;
 %  cells.
 %----------------------------------------------------------------------------
 
+%  Initialize.
+
+S.Zgrid = S.depth;
+
+%  Check zero values. It is assume that zero value maybe assigned to
+%  surface observations like satellite data.
+
+ind = find(S.depth == 0);
+
+if (~isempty(ind)),
+  S.Zgrid(ind) = Nr;
+end,
+
+%  Interpolate negative depth values to model fractional z-grid location.
+
 ind = find(S.depth < 0);
 
 if (~isempty(ind));
@@ -119,7 +148,7 @@ if (~isempty(ind));
     I = 1.0 + floor(S.Xgrid(iobs));
     J = 1.0 + floor(S.Ygrid(iobs));
     z = reshape(Zw(I,J,:),1,Nw);
-    S.Zgrid = interp1(z, [0:1:Nr], S.depth(iobs));
+    S.Zgrid(iobs) = interp1(z, [0:1:Nr], S.depth(iobs));
   end,
 end,
 
@@ -136,37 +165,25 @@ end,
 
 ind = find((Nr < S.Zgrid) & (S.Zgrid <= Nr+0.5));
 if (~isempty(ind));
-  S.Zgrid(ind) = 1.0;
+  S.Zgrid(ind) = Nr;
 end,
 
-%  Remove NaNs from the vertical interpolation.
+%  Remove NaNs from the vertical interpolation in all dynamical fields
+%  in the observation structure.
 
 ind = find(isnan(S.Zgrid));
 
 if (~isempty(ind)),
-  S.type(ind)  = [];
-  S.time(ind)  = []; 
-  S.depth(ind) = [];
-  S.Xgrid(ind) = [];
-  S.Ygrid(ind) = [];
-  S.Zgrid(ind) = [];
-  S.error(ind) = [];
-  S.value(ind) = [];
+  for value = field_list,
+    field = char(value);             % convert from cell to string
+    S.(field) = [];                  % remove NaN's
+  end,
 
   disp(' ');
-  disp([' Number of removed outlier obserbations = ', ...
-	num2str(length(ind))]);
+  disp([' Number of vertical outlier observations removed = ', ...
+        num2str(length(ind))]);
   disp(' ');
   
-  if (has.lonlat),
-    S.lat(ind) = [];
-    S.lon(ind) = [];
-  end,
-
-  if (has.provenance),
-    S.provenance(ind) = [];
-  end,
-
   for i=1:S.Nsurvey,
     ind=find(S.time == S.survey_time(i));
     S.Nobs(i)=length(ind);
