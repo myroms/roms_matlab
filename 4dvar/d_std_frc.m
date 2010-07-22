@@ -23,6 +23,10 @@
 %    See License_ROMS.txt                           Hernan G. Arango        %
 %===========================================================================%
 
+%---------------------------------------------------------------------------
+%  User tunable parameters.
+%---------------------------------------------------------------------------
+
 %  Set standard deviation NetCDF file. The file name is edited and the
 %  month will be appended as *i_jan.nc:
 
@@ -46,6 +50,29 @@ HISdir  = fullfile(my_root, 'WC13/STD/Data');
 HISfile = dir(fullfile(HISdir, 'wc*.nc'));
 
 nfiles = length(HISfile);
+
+%  Set surface forcing state variables dynamical fields (cell array)
+%  to process.
+
+field_list = {'sustr', 'svstr', 'shflux', 'ssflux'};
+
+%  Set grid variables dynamical fields (cell array) to write in
+%  output file(s).
+
+grid_list  = {'theta_s', 'theta_b', 'Tcline' , 'hc'     , 's_rho'  , ...
+              's_w'    , 'Cs_r'   , 'Cs_w'   , 'h'      , 'lon_rho', ...
+              'lat_rho', 'lon_u'  , 'lat_u'  , 'lon_v'  , 'lat_v'};
+
+%  Initialize working structure.
+
+S.title = 'California Current System, 1/3 degree resolution (WC13)';
+
+S.grd_file  = GRDfile;              % application grid
+
+S.do_sustr  = true;                 % surface u-momentum stress
+S.do_svstr  = true;                 % surface v-momentum stress
+S.do_shflux = true;                 % surface net heat flux
+S.do_ssflux = true;                 % surface salt flux (E-P)*SALT
 
 %---------------------------------------------------------------------------
 %  Compute monthly averages and standard deviations.
@@ -91,20 +118,21 @@ for n=1:nvars,
   end,
 end,
 
-S.title = 'California Current System, 1/3 degree resolution (WC13)';
+if (S.curvilinear),
+  grid_list = [grid_list, 'angle'];
+end,
+  
+if (S.masking),
+  grid_list = [grid_list, 'mask_rho', 'mask_u', 'mask_v'];
+end,
 
-S.grd_file = GRDfile;
+%  Get grid size.
 
 [Lr,Mr,Nr] = size(nc_read(HisFile1, 'temp', 1));
 
 S.Lm = Lr - 2;                      % number of interior RHO x-points
 S.Mm = Mr - 2;                      % number of interior RHO y-points
 S.N  = Nr;                          % number of vertical RHO levels
-
-S.do_sustr  = true;                 % surface u-momentum stress
-S.do_svstr  = true;                 % surface v-momentum stress
-S.do_shflux = true;                 % surface net heat flux
-S.do_ssflux = true;                 % surface salt flux (E-P)*SALT
 
 %  Read in grid.
 
@@ -128,30 +156,30 @@ for m=1:12,
   
 %  Initialize mean and variance arrays.
 
-  Navg = 0;
-  Nvar = 0;
-  rec  = 1;
+  Rcount = 0;                         % record counter
+  rec    = 1;                         % initialization record
 
   S.month = m;
 
-  try,
-    S.sustr_avg  = zeros(size(nc_read(HisFile1, 'sustr' ,rec)));
-    S.svstr_avg  = zeros(size(nc_read(HisFile1, 'svstr' ,rec)));
-    S.shflux_avg = zeros(size(nc_read(HisFile1, 'shflux',rec)));
-    S.ssflux_avg = zeros(size(nc_read(HisFile1, 'ssflux',rec)));
-  catch,
-    disp([' D_STD: error while processing, rec = ', num2str(rec)]);
-    didp(['        in file: ', HisFile1]);
-    return
+  for fval = field_list,
+    field     = char(fval);
+    field_avg = [field, '_avg'];
+    field_std = [field, '_std'];
+  
+    try,
+      S.(field_avg) = zeros(size(nc_read(HisFile1, field, rec))); 
+      S.(field_std) = S.(field_avg);
+    catch,
+      disp([' D_STD_FRC: error while processing, rec = ', num2str(rec)]);
+      disp(['            for variable : ', field]);
+      didp(['            in file: ', HisFile1]);
+      return
+    end,
   end,
 
-  S.sustr_std  = S.sustr_avg;
-  S.svstr_std  = S.svstr_avg;
-  S.shflux_std = S.shflux_avg;
-  S.ssflux_std = S.ssflux_avg;
-
   disp(' ');
-  disp([ 'Computing mean fields, month = ', num2str(m), ' ...']);
+  disp([ 'Computing mean and standard deviation fields, month = ', ...
+        num2str(m), ' ...']);
   disp(' ');
 
 %  Accumulate montly fields.
@@ -170,19 +198,26 @@ for m=1:12,
       if (month == m),
 
         mydate=datestr(datenum(1968,5,23) + time(rec)/86400);
-        disp([ '*** Processing Averages: ', mydate]);
+        disp([ '*** Processing Fields: ', mydate]);
 
-        try,
-          S.sustr_avg  = S.sustr_avg  + nc_read(ncfile, 'sustr' , rec);
-          S.svstr_avg  = S.svstr_avg  + nc_read(ncfile, 'svstr' , rec);
-          S.shflux_avg = S.shflux_avg + nc_read(ncfile, 'shflux', rec);
-          S.ssflux_avg = S.ssflux_avg + nc_read(ncfile, 'ssflux', rec);
+        for fval = field_list,
+          field     = char(fval);           % convert cell to string
+          field_avg = [field, '_avg'];      % average field 
+          field_std = [field, '_std'];      % standard deviation field
 
-          Navg = Navg + 1;
-        catch,
-          disp([' D_STD: error while processing, rec = ', num2str(rec)]);
-          disp(['        in file: ', ncfile]);
-          return
+          try,
+            F = nc_read(ncfile, field, rec);
+
+            Rcount = Rcount + 1;
+          catch,
+            disp([' D_STD_FRC: error while processing, rec = ', num2str(rec)]);
+            disp(['            for variable : ', field]);
+            didp(['            in file: ', HisFile1]);
+            return
+          end,
+
+          S.(field_avg) = S.(field_avg) + F;
+          S.(field_std) = S.(field_std) + F.^2;
         end,
       
       end,
@@ -191,64 +226,22 @@ for m=1:12,
   
   end,
 
-%  Compute monthly mean fields.
+%  Compute monthly mean and standard deviation fields. Use an
+%  unbiased estimate for variance:
+%
+%    var = [(sum(Xi ^2), i=1:N) / (N-1)] - N * Xmean / (N-1)
 
-  S.sustr_avg  = S.sustr_avg  ./ Navg;
-  S.svstr_avg  = S.svstr_avg  ./ Navg;
-  S.shflux_avg = S.shflux_avg ./ Navg;
-  S.ssflux_avg = S.ssflux_avg ./ Navg;
+  fac1 = 1 / max(1,Rcount-1);
+  fac2 = fac1 * Rcount;
 
-%  Accumulate monthly variance fields.
+  for fval = field_list,
+    field     = char(fval);                 % convert cell to string
+    field_avg = [field, '_avg'];            % average field 
+    field_std = [field, '_std'];            % standard deviation field
 
-  disp(' ');
-  disp([ 'Computing standard deviation, month = ', num2str(m), ' ...']);
-  disp(' ');
-
-  for n=1:nfiles,
-
-    ncfile = fullfile(HISdir, HISfile(n).name);
-
-    time = nc_read(ncfile,'ocean_time');
-    Nrec = length(time);
-
-    for rec=1:Nrec,
-
-      [year,month,day]=datevec(datenum(1968,5,23) + time(rec)/86400);
-      
-      if (month == m),
-
-        mydate=datestr(datenum(1968,5,23) + time(rec)/86400);
-        disp([ '*** Processing Variance: ', mydate]);
-
-        try,
-          S.sustr_std  = S.sustr_std + ...
-                         (nc_read(ncfile,'sustr' ,rec) - S.sustr_avg)  .^ 2;
-          S.svstr_std  = S.svstr_std + ...
-                         (nc_read(ncfile,'svstr' ,rec) - S.svstr_avg)  .^ 2;
-          S.shflux_std = S.shflux_std + ...
-                         (nc_read(ncfile,'shflux',rec) - S.shflux_avg) .^ 2;
-          S.ssflux_std = S.ssflux_std + ...
-                         (nc_read(ncfile,'ssflux',rec) - S.ssflux_avg) .^ 2;
-
-          Nvar = Nvar + 1;
-        catch,
-          disp([' D_STD: error while processing, rec = ', num2str(rec)]);
-          disp(['        in file: ', ncfile]);
-          return        
-        end,
-      
-      end,
-    
-    end,
-  
+    S.(field_avg) = S.(field_avg) ./ Rcount;
+    S.(field_std) = sqrt(fac1 * S.(field_std) - fac2 * S.(field_avg) .^ 2);
   end,
-
-%  Compute standard deviations.
-
-  S.sustr_std  = sqrt(S.sustr_std  ./ (Nvar - 1));
-  S.svstr_std  = sqrt(S.svstr_std  ./ (Nvar - 1));
-  S.shflux_std = sqrt(S.shflux_std ./ (Nvar - 1));
-  S.ssflux_std = sqrt(S.ssflux_std ./ (Nvar - 1));
 
 %---------------------------------------------------------------------------
 %  Write out surface forcing standard deviation fields.
@@ -262,38 +255,16 @@ for m=1:12,
 
   s = c_std_frc(S);
 
-
 %  Write out grid data.
 
   v = 'spherical';    s = nc_write(S.ncname, v, S.spherical);
   v = 'Vtransform';   s = nc_write(S.ncname, v, S.Vtransform);
   v = 'Vstretching';  s = nc_write(S.ncname, v, S.Vstretching);
 
-  v = 'theta_s';      f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
-  v = 'theta_b';      f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
-  v = 'Tcline';       f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
-  v = 'hc';           f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
-  v = 's_rho';        f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
-  v = 's_w';          f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
-  v = 'Cs_r';         f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
-  v = 'Cs_w';         f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
-  v = 'h';            f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
+  for fval = grid_list,
+    field = char(fval);                     % convert cell to string
 
-  v = 'lon_rho';      s = nc_write(S.ncname, v, S.rlon);
-  v = 'lat_rho';      s = nc_write(S.ncname, v, S.rlat);
-  v = 'lon_u';        s = nc_write(S.ncname, v, S.ulon);
-  v = 'lat_u';        s = nc_write(S.ncname, v, S.ulat);
-  v = 'lon_v';        s = nc_write(S.ncname, v, S.vlon);
-  v = 'lat_v';        s = nc_write(S.ncname, v, S.vlat);
-
-  if (S.curvilinear),
-    v='angle';        s = nc_write(S.ncname, v, S.angle);
-  end,
-  
-  if (S.masking),
-    v='mask_rho';     s = nc_write(S.ncname, v, S.rmask);
-    v='mask_u';       s = nc_write(S.ncname, v, S.umask);
-    v='mask_v';       s = nc_write(S.ncname, v, S.vmask);
+    f = nc_read(HisFile1, field);  s = nc_write(S.ncname, field, f);
   end,
     
 % Write out surface forcing standard deviation data.
@@ -302,11 +273,17 @@ for m=1:12,
   
   s = nc_write(S.ncname, 'ocean_time', 0, rec);
 
-  s = nc_write(S.ncname, 'sustr' , S.sustr_std , rec);
-  s = nc_write(S.ncname, 'svstr' , S.svstr_std , rec);
-  s = nc_write(S.ncname, 'shflux', S.shflux_std, rec);
-  s = nc_write(S.ncname, 'ssflux', S.ssflux_std, rec);
+  for fval = field_list,
+    field     = char(fval);                 % convert cell to string
+    field_std = [field, '_std'];            % standard deviation field
+
+    s = nc_write(S.ncname, field, S.(field_std), rec);
+  end,
 
 % Process next month.
 
 end,
+
+disp(' ');
+disp('Done.');
+disp(' ');

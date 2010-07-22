@@ -46,6 +46,8 @@ function [S]=plot_super(GRDfile, OBSfile, state_var, survey)
 %                   S.error        observation error
 %                   S.value        observation value
 %
+%                   S.std          binning observation standard deviation
+%
 %                 The following optional variables will be processed if
 %                 available:
 %

@@ -3,7 +3,7 @@ function [status]=obs_write(ncfile,S);
 %
 % OBS_WRITE:  Writes 4D-Var observation data into existing NetCDF file
 %
-% [status]=obs_write(S)
+% [status]=obs_write(ncfile,S)
 %
 % This function writes all observation data in structure array S into
 % a existing ROMS 4D-Var observation NetCDF file.
@@ -92,6 +92,7 @@ if (unlimit == -1),
 end,
 
 disp(' ');
+disp(['*** Writing observations into:  ', ncfile]);
 
 %----------------------------------------------------------------------------
 %  Write all available variables in the structure.

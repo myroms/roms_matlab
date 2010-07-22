@@ -3,7 +3,7 @@ function [status]=c_observations(S,file);
 %
 % C_OBSERVATIONS:  Creates 4D-Var observations NetCDF file
 %
-% [status]=c_observations(S)
+% [status]=c_observations(S,file)
 %
 % This function creates ROMS 4D-Var observation NetCDF file using specified
 % in structure array, S.
@@ -162,6 +162,9 @@ Vname.value      = 'obs_value';
 %----------------------------------------------------------------------------
 %  Create 4D-Var observation NetCDF file.
 %----------------------------------------------------------------------------
+
+disp(' ');
+disp(['*** Creating observations file:  ', ncfile]);
 
 [ncid,status]=mexnc('create',ncfile,'nc_clobber');
 if (status ~= 0),

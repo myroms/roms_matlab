@@ -166,7 +166,7 @@ Vname.vmask       = 'mask_v';
 
 %  Open boundary conditions standard deviations variables.
 
-Vname.time        = 'bry_time';
+Vname.time        = 'ocean_time';
 Vname.zeta        = 'zeta_obc';
 Vname.ubar        = 'ubar_obc';
 Vname.vbar        = 'vbar_obc';

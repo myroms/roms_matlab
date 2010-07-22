@@ -76,6 +76,16 @@ Nsur=30;
 
 S.grid_Lm_Mm_N = int32([Lr-2 Mr-2 Nsur]);
 
+%  Set switch to apply small correction due to spherical/curvilinear
+%  grids (see "obs_ijpos.m").
+
+Correction = true;
+
+%  Set switch to include observations on the applicationopen boundary
+%  edge (see "obs_ijpos.m").
+
+obc_edge = false;
+
 %---------------------------------------------------------------------------
 %  Extract SST observations and store them into structure array D.
 %---------------------------------------------------------------------------
@@ -100,6 +110,10 @@ D = load_sst_pfeg(GRDfile, StartDay, EndDay);
 %       D.lat (lat)
 %       D.sst (time,lat,lon)
 
+if (length(D.time) == 1),
+  D.sst = reshape(D.sst, [1, size(D.sst)]);  % add singleton dimension
+end,                                         % for time
+
 [it,Jm,Im] = size(D.sst);
 
 obs.time = repmat(D.time,[1 Jm Im]);
@@ -122,7 +136,8 @@ end,
 %  Compute observation fractional grid coordinates in term
 %  of ROMS grid.
 
-[obs.Xgrid, obs.Ygrid] = obs_ijpos(GRDfile, obs.lon, obs.lat, 0);
+[obs.Xgrid, obs.Ygrid] = obs_ijpos(GRDfile, obs.lon, obs.lat, ...
+                                   Correction, obc_edge);
 
 ind = find(isnan(obs.Xgrid) & isnan(obs.Ygrid));
 if (~isempty(ind));                % remove NaN's from data
@@ -336,7 +351,7 @@ avalue='days since 1968-05-23 00:00:00 GMT';
 %  Write 4D-Var observations NetCDF file.
 %---------------------------------------------------------------------------
 
-[status]=obs_write(OBSfile,obs);
+[status]=obs_write(OBSfile, obs);
 
 %---------------------------------------------------------------------------
 %  Super observations.
@@ -348,7 +363,12 @@ avalue='days since 1968-05-23 00:00:00 GMT';
 %  cell and create a super observation. The following script just do
 %  that and saves everything in observation structure OBS.
 
-[OBS]=super_obs_jw(OBSfile);
+[OBS]=super_obs(OBSfile);
+
+%  Meld inital observation error with the values computed when binning
+%  the data into super observations. Take the larger value.
+
+OBS.error = max(OBS.error, OBS.std);
 
 %  Write new structure to a new NetCDF.
 
@@ -363,3 +383,8 @@ avalue='days since 1968-05-23 00:00:00 GMT';
 [status]=nc_attadd(SUPfile,'calendar','gregorian','obs_time');
 
 [status]=obs_write(SUPfile,OBS);
+
+disp(' ');
+disp('Done.');
+disp(' ');
+

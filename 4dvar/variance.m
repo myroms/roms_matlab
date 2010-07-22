@@ -46,12 +46,12 @@ if (nargin < 4),
   Tend=Nrec;
 end,
 
-% Read in field and compute the variance from its time mean.
+% Read in field and compute the variance from its time mean (unbiased
+% estimate since we are dividing by (ic-1).
 
-Fvar=nc_read(Fname,Vname,Tstr);
-Fvar=zeros(size(Fvar));
+Fvar=zeros(size(nc_read(Fname,Vname,Tstr)));
 
-ic=1;
+ic=0;
 
 for n=Tstr:Tend,
   f=nc_read(Fname,Vname,n);
@@ -59,6 +59,6 @@ for n=Tstr:Tend,
   ic=ic+1;
 end,
 
-Fvar=Fvar./(ic-1);
+Fvar=Fvar./max(1,ic-1);
 
 return

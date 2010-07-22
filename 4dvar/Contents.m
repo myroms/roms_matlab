@@ -21,13 +21,10 @@
 %   obs_merge        - Merges data from several 4D-Var observations NetCDF
 %                        files.
 %
-%   inside           - Checks if a point is strictly inside of the region
-%                        defined by a polygon. This is an old Matlab
-%                        function which is not longer supported. It is
-%                        very useful to find outliers observations.
 %   obs_ijpos        - Computes observations locations in ROMS fractional
-%                        coordinates. It uses the 'inside' deprecated
-%                        Matlab function.
+%                        coordinates. It uses the 'inpolygon' intrinsic
+%                        Matlab function to check if the observations are
+%                        inside or at the egde of the application grid.
 %
 %   super_obs        - Checks the provided observation data (4D-Var NetCDF
 %                        file or structure) and creates super observations if
@@ -49,7 +46,7 @@
 %   load_sst_pfeg    - Extracts satellite sea surface temperature for the
 %                         period of interest and specified region from
 %                         ROMS Grid file. The SST data is from the OpenDAP
-%                         catalog maintained by NOAA PFEG Coastwatch in
+%                         catalog maintained by NOAA PFEG CoastWatch in
 %                         California. The resolution is 0.1 degree global
 %                         5-day average composite.
 %

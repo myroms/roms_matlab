@@ -12,7 +12,7 @@ function [K]=balance_4dvar(A);
 % observed data.
 %
 % If follows the approach proposed by Weaver et al. (2005). The state
-% vector is split between balanced and unbalanced components, except
+% vector is split into balanced and unbalanced components, except
 % for temperature, which is used to stablish the balanced part of
 % other state variables.
 %
@@ -62,8 +62,10 @@ function [K]=balance_4dvar(A);
 %                               compute dT/dz in "s_balance.m" (3D array)
 %              A.salt         Basic state salinity used to compute
 %                               dS/dz in "s_balance.m" (3D array)
-%              A.deltaT       Given temperature (Celsius) anomaly from a
+%              A.temp_ano     Given temperature (Celsius) anomaly from a
 %                               time mean (temp-temp_avg), 3D array
+%              A.salt_ano     Given salinity anomaly from a
+%                               time mean (salt-salt_avg), 3D array
 %              A.zeta_guess   Free-surface first guess for elliptic
 %                               equation, 2D array. Only needed if
 %                               A.elliptic=1
@@ -119,12 +121,14 @@ function [K]=balance_4dvar(A);
 %              ............................................................
 %
 %              K.ssh_ref      Basic state reference sea-surface height (m)
-%              K.zeta_b       Balanced, baroclinic free-surface anomaly (m)
-%              K.deltaT       Given temperature anomlay (Celsius)
-%              K.deltaS_b     Balanced salinity anomaly
-%              K.deltaR_b     Balanced density anomaly (kg/m3)
-%              K.deltaU_b     Balanced, baroclinic U-momentum anomaly (m/s)
-%              K.deltaV_b     Balanced, baroclinic V-momentum anomaly (m/s)
+%              K.rho_ano      Basic state linear density anomaly (kg/m3)
+%              K.temp_bal     Balanced zero temperature anomaly (Celsius)
+%              K.salt_bal     Balanced salinity anomaly
+%              K.u_bal        Balanced, baroclinic U-momentum anomaly (m/s)
+%              K.v_bal        Balanced, baroclinic V-momentum anomaly (m/s)
+%              K.ubar_bal     Balanced, barotropic U-momentum anomaly (m/s)
+%              K.vbar_bal     Balanced, barotropic V-momentum anomaly (m/s)
+%              K.zeta_bal     Balanced, baroclinic free-surface anomaly (m)
 %
 % Calls:
 %
@@ -145,6 +149,9 @@ function [K]=balance_4dvar(A);
 %    uv_balance     Computes balanced, baroclinic U- and V-momentum
 %                   anomalies (m/s) using the geostrophic balance.
 %
+%    uv_barotropic  Computes vertically integrated U- and V-momentum
+%                   components (m/s).
+%
 %    zeta_balance   Computes balanced, baroclinic free-surface anomaly
 %                   by solving an elliptical equation OR integrating
 %                   the hydrostatic equation from surface to bottom.
@@ -162,56 +169,72 @@ function [K]=balance_4dvar(A);
 if (~isfield(A,'Gname')),
   disp(' ');
   error(['BALANCE_4DVAR - unable to find ROMS Grid NetCDF file name ',   ...
-         'variable: Gname']);
+         'variable: A.Gname']);
   return
 end,
 
 if (~isfield(A,'Hname')),
   disp(' ');
   error(['BALANCE_4DVAR - unable to find ROMS History NetCDF file ',     ...
-         'name variable: Hname']);
+         'name variable: A.Hname']);
   return
 end,
 
 if (~isfield(A,'elliptic')),
   disp(' ');
   error(['BALANCE_4DVAR - unable to find elliptic equation switch: ',    ...
-         'elliptic']);
+         'A.elliptic']);
   return
 end,
 
+if (~A.elliptic),
+  if (~isfield(A,'LNM_depth')),
+    disp(' ');
+    error(['BALANCE_4DVAR - unable to find level of no motion flag: ',   ...
+           'A.LNM_depth']);
+    return
+  end,
+end,
+  
 if (~isfield(A,'HisTimeRec')),
   disp(' ');
   error(['BALANCE_4DVAR - unable to find History time record to use: ',  ...
-         'HisTimeRec']);
+         'A.HisTimeRec']);
   return
 end,
 
 if (~isfield(A,'temp')),
   disp(' ');
   error(['BALANCE_4DVAR - unable to find basic state temperature ',      ...
-         'variable: temp']);
+         'variable: A.temp']);
   return
 end,
 
 if (~isfield(A,'salt')),
   disp(' ');
   error(['BALANCE_4DVAR - unable to find basic state salinity ',         ...
-         'variable: salt']);
+         'variable: A.salt']);
   return
 end,
 
-if (~isfield(A,'deltaT')),
+if (~isfield(A,'temp_ano')),
   disp(' ');
   error(['BALANCE_4DVAR - unable to find given temperature anomaly ',    ...
-         'variable: deltaT']);
+         'variable: A.temp_ano']);
+  return
+end,
+
+if (~isfield(A,'salt_ano')),
+  disp(' ');
+  error(['BALANCE_4DVAR - unable to find given salinity anomaly ',       ...
+         'variable: A.salt_ano']);
   return
 end,
 
 if (~isfield(A,'zeta_guess'));
   disp(' ');
-  error(['BALANCE_4DVAR - unable to find first guess free-surface ',    ...
-         'variable: zeta_guess']);
+  error(['BALANCE_4DVAR - unable to find first guess free-surface ',     ...
+         'variable: A.zeta_guess']);
   return
 end,  
 
@@ -225,37 +248,42 @@ end,
 % Check few input OPTIONAL parameters.
 
 if (~isfield(A,'ml_depth')),
-  ml_depth=K.ml_depth;                % use default
+  ml_depth = K.ml_depth;              % use default
 else,
-  K.ml_depth=A.ml_depth;              % over-write default
+  K.ml_depth = A.ml_depth;            % over-write default
 end,
 
 if (~isfield(A,'dTdz_min')),
-  dTdz_min=K.dTdz_min;                % use default
+  dTdz_min = K.dTdz_min;              % use default
 else,
-  K.dTdz_min=A.dTdz_min;              % over-write default
+  K.dTdz_min = A.dTdz_min;            % over-write default
 end,
 
 if (~isfield(A,'Niter')),
-  Niter=K.Niter;                      % use default
+  Niter = K.Niter;                    % use default
 else,
-  K.Niter=A.Niter;                    % over-write default
-  Niter=A.Niter;
+  K.Niter = A.Niter;                  % over-write default
+  Niter = A.Niter;
+end,
+
+%  Set level of no motion flag, if appropriate.
+
+if (~A.elliptic),
+  K.LNM_depth = abs(A.LNM_depth);
 end,
 
 %---------------------------------------------------------------------------
-% Given temperature anomaly, deltaT = temp - temp_avg, compute balanced
+% Given temperature anomaly, temp_ano = temp - temp_avg, compute balanced
 % salinity anomaly using T-S empirical formula.
 %---------------------------------------------------------------------------
 
-[deltaS_b]=s_balance(K,A.temp,A.salt,A.deltaT,ml_depth,dTdz_min);
+[K.salt_bal]=s_balance(K, A.temp, A.salt, A.temp_ano, ml_depth, dTdz_min);
 
 %---------------------------------------------------------------------------
-%  Compute balanced density anomaly (kg/m3) using a linear equation of
-%  state.
+%  Compute density anomaly (kg/m3) using a linear equation of state.
 %---------------------------------------------------------------------------
 
-[deltaR_b]=rho_balance(K,A.deltaT,A.deltaS);
+[K.rho_ano]=rho_balance(K, A.temp_ano, A.salt_ano);
 
 %---------------------------------------------------------------------------
 %  Compute balanced, baroclinic U- and V-momentum anomalies (m/s) using
@@ -263,7 +291,7 @@ end,
 %  "prsgrd31.h" algorithm.
 %---------------------------------------------------------------------------
 
-[deltaU_b,deltaV_b,zeta_rhs]=uv_balance(K,deltaR_b);
+[K.u_bal, K.v_bal, K.zeta_rhs]=uv_balance(K, K.rho_ano);
 
 %---------------------------------------------------------------------------
 %  Compute basic state, reference sea surface height (m), solve elliptic
@@ -271,7 +299,7 @@ end,
 %---------------------------------------------------------------------------
 
 if (A.elliptic),
-  [K.ssh_ref,K.ssh_err]=ssh_reference(K,K.rho,A.zeta_guess,Niter);  
+  [K.ssh_ref, K.ssh_err]=ssh_reference(K, K.rho, A.zeta_guess, Niter);  
 end,
 
 %---------------------------------------------------------------------------
@@ -283,31 +311,31 @@ if (A.elliptic),
 %  Solve SSH elliptic equation as in Fukumori et al. (1998) and
 %  Weaver et al. (2005).
 
-  [deltaZ_b,err]=zeta_balance(K,A.elliptic,zeta_rhs,A.zeta_guess,Niter);
-
-  K.zeta_error=err;
-  
+  [K.zeta_bal, K.zeta_err]=zeta_balance(K, A.elliptic, K.zeta_rhs, ...
+                                        A.zeta_guess, Niter);
 else,
   
 %  Integrate hydrostatic equation from surface to bottom
 
-  [deltaZ_b,err]=zeta_balance(K,A.elliptic,deltaR_b);
+  [K.zeta_bal]=zeta_balance(K, A.elliptic, K.rho_ano);
 
 end,
 
 %---------------------------------------------------------------------------
-%  Load balanced quantities into structure array.
+%  Set the balanced temperature to zero since it is the same as the
+%  starting temperature ananomaly (A.temp_ano).  This facilitates the
+%  compact computation of the unbalanced contribution elsewhere with
+%  dynamical fields in the structure.
 %---------------------------------------------------------------------------
 
-K.zeta_rhs = zeta_rhs;
+K.temp_bal = zeros(size(A.temp_ano));
 
-K.deltaZ_b = deltaZ_b;
-K.deltaT   = A.deltaT;
-K.deltaS_b = deltaS_b;
-K.deltaR_b = deltaR_b;
-K.deltaU_b = deltaU_b;
-K.deltaV_b = deltaV_b;
+%---------------------------------------------------------------------------
+%  Vertically integrate balanced baroclinic momentum anomalies. This
+%  quantites are not used in 4D-Var but are computed here for diagnostic
+%  purposes.
+%---------------------------------------------------------------------------
 
-clear zeta_b deltaS_b deltaR_b deltaU_b deltaV_b
+[K.ubar_bal, K.vbar_bal]=uv_barotropic(K.u_bal, K.v_bal, K.Hz);
 
 return

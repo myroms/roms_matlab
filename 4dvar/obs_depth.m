@@ -92,7 +92,8 @@ Nsurvey=length(S.survey_time);
 
 %  Set observations dynamical fields (cell array) in structure, S.
 
-field_list = {'Xgrid', 'Ygrid', 'Zgrid', 'depth', 'error', 'value'};
+field_list = {'type', 'time', 'Xgrid', 'Ygrid', 'Zgrid', 'depth', ...
+              'error', 'value'};
 
 if (has.lonlat),
   field_list = [field_list, 'lon', 'lat'];
@@ -176,7 +177,7 @@ ind = find(isnan(S.Zgrid));
 if (~isempty(ind)),
   for value = field_list,
     field = char(value);             % convert from cell to string
-    S.(field) = [];                  % remove NaN's
+    S.(field) = [];                  % remove outliers
   end,
 
   disp(' ');

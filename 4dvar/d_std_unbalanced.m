@@ -22,6 +22,10 @@
 %    See License_ROMS.txt                           Hernan G. Arango        %
 %===========================================================================%
 
+%---------------------------------------------------------------------------
+%  User tunable parameters.
+%---------------------------------------------------------------------------
+
 %  Set standard deviation NetCDF file. The file name is edited and the
 %  month will be appended as *iu_jan.nc:
 
@@ -46,9 +50,66 @@ HISfile = dir(fullfile(HISdir, 'wc*.nc'));
 
 nfiles = length(HISfile);
 
+%  Initialize working structure.
+
+S.title = 'California Current System, 1/3 degree resolution (WC13)';
+
+S.grd_file = GRDfile;               % aplication grid
+
+S.do_zeta  = true;                  % free-surface
+S.do_ubar  = true;                  % vertically integrated u-momentum
+S.do_vbar  = true;                  % vertically integrated v-momentum
+S.do_u     = true;                  % u-momentum
+S.do_v     = true;                  % v-momentum
+S.do_temp  = true;                  % temperature
+S.do_salt  = true;                  % salinity
+
+%  Initialize balance operator parameters (B structure):
+
+B.Gname = GRDfile;      % application's grid
+
+%  Set switch for the computation of balanced, baroclinic free-surface
+%  using an elliptic equation (B.elliptic=true) or by integrating the
+%  hydrostatic equation (B.elliptic=false). If false, the integration
+%  is from bottom to surface (B.LNM_depth=0) or from level of no
+%  motion to the surface (B.LNM_depth>0).
+
+% B.elliptic = false;   % integrate hydrostatic equation
+  B.elliptic = true;    % solve SSH elliptic equation
+
+  if (B.elliptic),
+%   B.Niter = 300;      % Number of elliptical solver iterations
+  end,                  % (default 200)
+  
+  if (~B.elliptic),
+    B.LNM_depth = 0;    % integrate from bottom to surface
+%   B.LNM_depth = 500;  % integrate from z=-500 to surface
+  end,   
+    
+%  Internal parameters for the computation of the balanced salinity
+%  in terms of the temperature. These parameters are set in
+%  "ini_balance.m"
+
+% B.ml_depth=150;       % mixed-layer depth (m, positive)
+%                       % (default 100)
+
+% B.dTdz-min=0.0001;    % minimum dT/dz allowed (Celsius/m)
+%                       % (default 0.001)
+
 %---------------------------------------------------------------------------
 %  Compute monthly averages and standard deviations.
 %---------------------------------------------------------------------------
+
+%  Set state variables dynamical fields (cell array) to process.
+
+field_list = {'zeta', 'ubar', 'vbar', 'u', 'v', 'temp', 'salt'};
+
+%  Set grid variables dynamical fields (cell array) to write in
+%  output file(s).
+
+grid_list  = {'theta_s', 'theta_b', 'Tcline' , 'hc'     , 's_rho'  , ...
+              's_w'    , 'Cs_r'   , 'Cs_w'   , 'h'      , 'lon_rho', ...
+              'lat_rho', 'lon_u'  , 'lat_u'  , 'lon_v'  , 'lat_v'};
 
 %  Extract first history file name.
 
@@ -90,23 +151,21 @@ for n=1:nvars,
   end,
 end,
 
-S.title = 'California Current System, 1/3 degree resolution (WC13)';
+if (S.curvilinear),
+  grid_list = [grid_list, 'angle'];
+end,
+  
+if (S.masking),
+  grid_list = [grid_list, 'mask_rho', 'mask_u', 'mask_v'];
+end,
 
-S.grid_file = GRDfile;
+%  Get grid size.
 
 [Lr,Mr,Nr] = size(nc_read(HisFile1, 'temp', 1));
 
 S.Lm = Lr - 2;                      % number of interior RHO x-points
 S.Mm = Mr - 2;                      % number of interior RHO y-points
 S.N  = Nr;                          % number of vertical RHO levels
-
-S.do_zeta = true;                   % free-surface
-S.do_ubar = true;                   % vertically integrated u-momentum
-S.do_vbar = true;                   % vertically integrated v-momentum
-S.do_u    = true;                   % u-momentum
-S.do_v    = true;                   % v-momentum
-S.do_temp = true;                   % temperature
-S.do_salt = true;                   % salinity
 
 %  Read in grid.
 
@@ -130,32 +189,24 @@ for m=1:12,
   
 %  Initialize mean and variance arrays.
 
-  Navg = 0;
-  rec  = 1;
+  Rcount = 0;                         % record counter
+  rec    = 1;                         % initialization record
 
   S.month = m;
 
-  try,
-    S.zeta_avg = zeros(size(nc_read(HisFile1, 'zeta', rec)));
-    S.ubar_avg = zeros(size(nc_read(HisFile1, 'ubar', rec)));
-    S.vbar_avg = zeros(size(nc_read(HisFile1, 'vbar', rec)));
-    S.u_avg    = zeros(size(nc_read(HisFile1, 'u'   , rec)));
-    S.v_avg    = zeros(size(nc_read(HisFile1, 'v'   , rec)));
-    S.temp_avg = zeros(size(nc_read(HisFile1, 'temp', rec)));
-    S.salt_avg = zeros(size(nc_read(HisFile1, 'salt', rec)));
-  catch,
-    disp([' D_STD: error while processing, rec = ',num2str(rec)]);
-    didp(['        in file: ', HisFile1]);
-    return
-  end,
+  for fval = field_list,
+    field     = char(fval);
+    field_avg = [field, '_avg'];
 
-  S.zeta_std = S.zeta_avg;
-  S.ubar_std = S.ubar_avg;
-  S.vbar_std = S.vbar_avg;
-  S.u_std    = S.u_avg;
-  S.v_std    = S.v_avg;
-  S.temp_std = S.temp_avg;
-  S.salt_std = S.salt_avg;
+    try,
+      S.(field_avg) = zeros(size(nc_read(HisFile1, field, rec))); 
+    catch,
+      disp([' D_STD: error while processing, rec = ', num2str(rec)]);
+      disp(['        for variable : ', field]);
+      disp(['        in file: ', HisFile1]);
+      return
+    end,
+  end,
  
   disp(' ');
   disp([ 'Computing mean fields, month = ', num2str(m), ' ...']);
@@ -176,25 +227,27 @@ for m=1:12,
       
       if (month == m),
 
-        mydate=datestr(datenum(1968,5,23) + time(rec)/86400);
+        mydate=datestr(datenum(1968,5,23) + time(rec)/86400, 0);
         disp([ '*** Processing Averages: ', mydate]);
 
-        try,
-          S.zeta_avg = S.zeta_avg + nc_read(ncfile, 'zeta', rec);
-          S.ubar_avg = S.ubar_avg + nc_read(ncfile, 'ubar', rec);
-          S.vbar_avg = S.vbar_avg + nc_read(ncfile, 'vbar', rec);
-          S.u_avg    = S.u_avg    + nc_read(ncfile, 'u'   , rec);
-          S.v_avg    = S.v_avg    + nc_read(ncfile, 'v'   , rec);
-          S.temp_avg = S.temp_avg + nc_read(ncfile, 'temp', rec);
-          S.salt_avg = S.salt_avg + nc_read(ncfile, 'salt', rec);
+        for fval = field_list,
+          field     = char(fval);           % convert cell to string
+          field_avg = [field, '_avg'];      % average field 
 
-          Navg = Navg + 1;
-        catch,
-          disp([' D_STD: error while processing, rec = ', num2str(rec)]);
-          disp(['        in file: ', ncfile]);
-          return
+          try,
+            F = nc_read(ncfile, field, rec);
+
+            Rcount = Rcount + 1;
+          catch,
+            disp([' D_STD: error while processing, rec = ', num2str(rec)]);
+            disp(['        for variable : ', field]);
+            disp(['        in file: ', HisFile1]);
+            return
+          end,
+
+          S.(field_avg) = S.(field_avg) + F;
         end,
-      
+    
       end,
     
     end,
@@ -203,14 +256,12 @@ for m=1:12,
 
 %  Compute monthly mean fields.
 
-  S.zeta_avg = S.zeta_avg ./ Navg;
-  S.ubar_avg = S.ubar_avg ./ Navg;
-  S.vbar_avg = S.vbar_avg ./ Navg;
-  S.u_avg    = S.u_avg    ./ Navg;
-  S.v_avg    = S.v_avg    ./ Navg;
-  S.temp_avg = S.temp_avg ./ Navg;
-  S.salt_avg = S.salt_avg ./ Navg;
+  for fval = field_list,
+    field     = char(fval);                 % convert cell to string
+    field_avg = [field, '_avg'];            % average field 
 
+    S.(field_avg) = S.(field_avg) ./ Rcount;
+  end,
 
 %---------------------------------------------------------------------------
 %  Compute monthly unbalanced error covariance standard deviations.
@@ -229,37 +280,10 @@ for m=1:12,
   if (exist('A')),
     clear('A');         % clear structure A
   end,
-    
-  A.Gname = GRDfile;    % application's grid
 
-%  Set switch for the computation of balanced, baroclinic free-surface
-%  using an elliptic equation (A.elliptic=true) or by integrating the
-%  hydrostatic equation (A.elliptic=false). If false, the integration
-%  is from bottom to surface (A.LNM_depth=0) or from level of no
-%  motion to the surface (A.LNM_depth>0).
+%  Load balance operator parameters (stored in structure B).
 
-% A.elliptic = false;   % integrate hydrostatic equation
-  A.elliptic = true;    % solve SSH elliptic equation
-
-  if (A.elliptic),
-%   A.Niter = 300;      % Number of elliptical solver iterations
-  end,                  % (default 200)
-  
-  if (~A.elliptic),
-    A.LNM_depth = 0;    % integrate from bottom to surface
-%   A.LNM_depth = 500;  % integrate from z=-500 to surface
-  end,   
-    
-%  Internal parameters for the computation of the balanced salinity
-%  in terms of the temperature. These parameters are set in
-%  "ini_balance.m"
-
- 
-% A.ml_depth=150;       % mixed-layer depth (m, positive)
-%                       % (default 100)
-
-% A.dTdz-min=0.0001;    % minimum dT/dz allowed (Celsius/m)
-%                       % (default 0.001)
+  A = B;
 
 %  Process monthly fields.
 
@@ -278,7 +302,7 @@ for m=1:12,
       
       if (month == m),
 
-        mydate=datestr(datenum(1968,5,23) + time(rec)/86400);
+        mydate=datestr(datenum(1968,5,23) + time(rec)/86400, 0);
         disp([ '*** Processing Variance: ', mydate]);
 
 %  Set time record to use in the computation of the thermal expansion
@@ -293,29 +317,33 @@ for m=1:12,
 %  from History NetCDF file, "A.Hname". Only temperature and salinity are
 %  needed in "balance_4dbar.m".
 
-        try,
-          A.zeta = nc_read(A.Hname, 'zeta', A.HisTimeRec);
-          A.ubar = nc_read(A.Hname, 'vbar', A.HisTimeRec);
-          A.vbar = nc_read(A.Hname, 'ubar', A.HisTimeRec);
-          A.u    = nc_read(A.Hname, 'u'   , A.HisTimeRec);
-          A.v    = nc_read(A.Hname, 'v'   , A.HisTimeRec);
-          A.temp = nc_read(A.Hname, 'temp', A.HisTimeRec);
-          A.salt = nc_read(A.Hname, 'salt', A.HisTimeRec);
-        catch,
-          disp([' D_STD: error while processing, rec = ', num2str(rec)]);
-          disp(['        in file: ', ncfile]);
-          return        
+        for fval = field_list,
+          field = char(fval);           % convert cell to string
+
+          try,
+            A.(field) = nc_read(A.Hname, field, A.HisTimeRec);
+          catch,
+            disp([' D_STD_UNBALANCED: error while processing, rec = ', ...
+                  num2str(rec)]);
+            disp(['        for variable : ', field]);
+            disp(['        in file: ', HisFile1]);
+            return
+          end,
+        
+	end,
+
+%  Compute state anomalies from computed time mean.  Only temperature
+%  and salinity anomalies (A.temp_ano, A.salt_ano) are used in 
+%  "balanced_4dvar.m". The temperature anomaly is used to stablish
+%  the balance part of the other state variables.
+
+        for fval = field_list,
+          field     = char(fval);              % convert cell to string
+          field_ano = [field, '_ano'];         % anomaly field
+          field_avg = [field, '_avg'];         % average field
+
+	  A.(field_ano) = A.(field) - S.(field_avg);
         end,
-
-%  Compute state anomalies from computed time mean.  Notice that only the
-%  "A.deltaT" is used to stablish the balance part of the other state
-%  variables.
-
-        A.deltaZ = A.zeta - S.zeta_avg;
-        A.deltaU = A.u    - S.u_avg;
-        A.deltaV = A.v    - S.v_avg;
-        A.deltaT = A.temp - S.temp_avg;        % needed in balance_4dvar
-        A.deltaS = A.salt - S.salt_avg;
  
 %  Set first guess free-surface for elliptic equation.  It is only used
 %  when A.elliptic = 1. Use basic state values.
@@ -324,34 +352,48 @@ for m=1:12,
 
 %  Compute balanced state anomalies.
 
-        [K]=balance_4dvar(A);
+        [K] = balance_4dvar(A);
  
-%  Compute unbalanced state. Notice that the balaced operator is K^(-1). 
-%  The minus sign below accounts for the inverse operator.
+%  Compute unbalanced state by substracting the balanced term to the
+%  anomaly field. Notice that the balaced operator is K^(-1). The minus
+%  sign below accounts for the inverse operator.
+%
+%  Also notice that the balanced temperature anomaly (K.temp_bal) is set
+%  to zero in "balance_4dvar" since temperature is the starting point.
+%  This facilitates the dynamical field use in the "A" structure below
+%  and yields A.temp_unb = A.temp_ano.
 
-        A.deltaZ_u = A.deltaZ - K.deltaZ_b;
-        A.deltaU_u = A.deltaU - K.deltaU_b;
-        A.deltaV_u = A.deltaV - K.deltaV_b;
-        A.deltaS_u = A.deltaS - K.deltaS_b;
 
-%  Accumulate unbalanced error covariance matrix variance.
+        for fval = field_list,
+          field     = char(fval);              % convert cell to string
+          field_ano = [field, '_ano'];         % anomaly field
+          field_bal = [field, '_bal'];         % balanced field
+          field_unb = [field, '_unb'];         % unbalanced field
 
-        if (Nvar == 0),                         % initialize
-          zeta_var = zeros(size(A.zeta));
-          u_var    = zeros(size(A.u));
-          v_var    = zeros(size(A.v));
-          temp_var = zeros(size(A.temp));
-          salt_var = zeros(size(A.salt));
+          A.(field_unb) = A.(field_ano) - K.(field_bal);
         end,
+
+%  Accumulate unbalanced error covariance matrix standard deviation.
+
+        if (Nvar == 0),                        % initialize
+          for fval = field_list,
+            field     = char(fval);            % convert cell to string
+            field_std = [field, '_std'];       % standard deviation field
+
+            A.(field_std) = zeros(size(A.(field)));
+          end,
+	end,
 
         Nvar = Nvar + 1;
 
-        zeta_var = zeta_var + A.deltaZ_u .^ 2;
-        u_var    = u_var    + A.deltaU_u .^ 2;
-        v_var    = v_var    + A.deltaV_u .^ 2;
-        temp_var = temp_var + A.deltaT   .^ 2;
-        salt_var = salt_var + A.deltaS_u .^ 2;
-  
+        for fval = field_list,
+          field     = char(fval);              % convert cell to string
+          field_std = [field, '_std'];         % standard deviation field
+          field_unb = [field, '_unb'];         % unbalanced field
+
+          A.(field_std) = A.(field_std) + A.(field_unb) .^ 2;
+	end,
+
       end,
 
     end,
@@ -359,22 +401,24 @@ for m=1:12,
   end,
 
 %  Compute unbalanced error covariance matrix standard deviations.
+%  Notice that we are computing a unbiased estimate of the variance
+%  by dividing by (Nvar-1).
 
-  A.zeta_std = sqrt(zeta_var ./ (Nvar - 1));
-  A.u_std    = sqrt(u_var    ./ (Nvar - 1));
-  A.v_std    = sqrt(v_var    ./ (Nvar - 1));
-  A.temp_std = sqrt(temp_var ./ (Nvar - 1));
-  A.salt_std = sqrt(salt_var ./ (Nvar - 1));
+  fac = 1 / max(1, Nvar-1);
+  
+  for fval = field_list,
+    field     = char(fval);                    % convert cell to string
+    field_std = [field, '_std'];               % standard deviation field
 
-  A.ubar_std = zeros(size(A.ubar));       % Not used in 4D-Var
-  A.vbar_std = zeros(size(A.vbar));       % 3D applications
+    A.(field_std) = sqrt(fac * A.(field_std));
+  end,
 
 %---------------------------------------------------------------------------
 %  Write out standard deviation fields.
 %---------------------------------------------------------------------------
 
   disp(' ');
-  disp([ 'Writting out standard deviation, file = ', S.ncname]);
+  disp(['Writting out unbalanced standard deviation, file = ', S.ncname]);
   disp(' ');
 
 %  Create standard deviations NetCDF file.
@@ -387,47 +431,29 @@ for m=1:12,
   v = 'Vtransform';   s = nc_write(S.ncname, v, S.Vtransform);
   v = 'Vstretching';  s = nc_write(S.ncname, v, S.Vstretching);
 
-  v = 'theta_s';      f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
-  v = 'theta_b';      f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
-  v = 'Tcline';       f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
-  v = 'hc';           f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
-  v = 's_rho';        f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
-  v = 's_w';          f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
-  v = 'Cs_r';         f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
-  v = 'Cs_w';         f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
-  v = 'h';            f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
+  for fval = grid_list,
+    field = char(fval);                     % convert cell to string
 
-  v = 'lon_rho';      s = nc_write(S.ncname, v, S.rlon);
-  v = 'lat_rho';      s = nc_write(S.ncname, v, S.rlat);
-  v = 'lon_u';        s = nc_write(S.ncname, v, S.ulon);
-  v = 'lat_u';        s = nc_write(S.ncname, v, S.ulat);
-  v = 'lon_v';        s = nc_write(S.ncname, v, S.vlon);
-  v = 'lat_v';        s = nc_write(S.ncname, v, S.vlat);
+    f = nc_read(HisFile1, field);  s = nc_write(S.ncname, field, f);
+  end,
 
-  if (S.curvilinear),
-    v='angle';        s = nc_write(S.ncname, v, S.angle);
-  end,
-  
-  if (S.masking),
-    v='mask_rho';     s = nc_write(S.ncname, v, S.rmask);
-    v='mask_u';       s = nc_write(S.ncname, v, S.umask);
-    v='mask_v';       s = nc_write(S.ncname, v, S.vmask);
-  end,
-    
 % Write out standard deviation data.
 
   rec = 1;
   
   s = nc_write(S.ncname, 'ocean_time', 0 , rec);
 
-  s = nc_write(S.ncname, 'zeta', A.zeta_std, rec);
-  s = nc_write(S.ncname, 'ubar', A.ubar_std, rec);
-  s = nc_write(S.ncname, 'vbar', A.vbar_std, rec);
-  s = nc_write(S.ncname, 'u'   , A.u_std   , rec);
-  s = nc_write(S.ncname, 'v'   , A.v_std   , rec);
-  s = nc_write(S.ncname, 'temp', A.temp_std, rec);
-  s = nc_write(S.ncname, 'salt', A.salt_std, rec);
+  for fval = field_list,
+    field     = char(fval);                 % convert cell to string
+    field_std = [field, '_std'];            % standard deviation field
+
+    s = nc_write(S.ncname, field, A.(field_std), rec);
+  end,
 
 % Process next month.
 
 end,
+
+disp(' ');
+disp('Done.');
+disp(' ');

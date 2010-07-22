@@ -22,6 +22,10 @@
 %    See License_ROMS.txt                           Hernan G. Arango        %
 %===========================================================================%
 
+%---------------------------------------------------------------------------
+%  User tunable parameters.
+%---------------------------------------------------------------------------
+
 %  Set standard deviation NetCDF file. The file name is edited and the
 %  month will be appended as *i_jan.nc:
 
@@ -45,6 +49,31 @@ HISdir  = fullfile(my_root, 'WC13/STD/Data');
 HISfile = dir(fullfile(HISdir, 'wc*.nc'));
 
 nfiles = length(HISfile);
+
+%  Set state variables dynamical fields (cell array) to process.
+
+field_list = {'zeta', 'ubar', 'vbar', 'u', 'v', 'temp', 'salt'};
+
+%  Set grid variables dynamical fields (cell array) to write in
+%  output file(s).
+
+grid_list  = {'theta_s', 'theta_b', 'Tcline' , 'hc'     , 's_rho'  , ...
+              's_w'    , 'Cs_r'   , 'Cs_w'   , 'h'      , 'lon_rho', ...
+              'lat_rho', 'lon_u'  , 'lat_u'  , 'lon_v'  , 'lat_v'};
+
+%  Initialize working structure.
+
+S.title = 'California Current System, 1/3 degree resolution (WC13)';
+
+S.grd_file = GRDfile;               % aplication's grid
+
+S.do_zeta  = true;                  % free-surface
+S.do_ubar  = true;                  % vertically integrated u-momentum
+S.do_vbar  = true;                  % vertically integrated v-momentum
+S.do_u     = true;                  % u-momentum
+S.do_v     = true;                  % v-momentum
+S.do_temp  = true;                  % temperature
+S.do_salt  = true;                  % salinity
 
 %---------------------------------------------------------------------------
 %  Compute monthly averages and standard deviations.
@@ -90,23 +119,21 @@ for n=1:nvars,
   end,
 end,
 
-S.title = 'California Current System, 1/3 degree resolution (WC13)';
+if (S.curvilinear),
+  grid_list = [grid_list, 'angle'];
+end,
+  
+if (S.masking),
+  grid_list = [grid_list, 'mask_rho', 'mask_u', 'mask_v'];
+end,
 
-S.grd_file = GRDfile;
+%  Get grid size.
 
 [Lr,Mr,Nr] = size(nc_read(HisFile1, 'temp', 1));
 
 S.Lm = Lr - 2;                      % number of interior RHO x-points
 S.Mm = Mr - 2;                      % number of interior RHO y-points
 S.N  = Nr;                          % number of vertical RHO levels
-
-S.do_zeta = true;                   % free-surface
-S.do_ubar = true;                   % vertically integrated u-momentum
-S.do_vbar = true;                   % vertically integrated v-momentum
-S.do_u    = true;                   % u-momentum
-S.do_v    = true;                   % v-momentum
-S.do_temp = true;                   % temperature
-S.do_salt = true;                   % salinity
 
 %  Read in grid.
 
@@ -130,39 +157,33 @@ for m=1:12,
   
 %  Initialize mean and variance arrays.
 
-  Navg = 0;
-  Nvar = 0;
-  rec  = 1;
+  Rcount = 0;                         % record counter
+  rec    = 1;                         % initialization record
 
   S.month = m;
 
-  try,
-    S.zeta_avg = zeros(size(nc_read(HisFile1, 'zeta', rec)));
-    S.ubar_avg = zeros(size(nc_read(HisFile1, 'ubar', rec)));
-    S.vbar_avg = zeros(size(nc_read(HisFile1, 'vbar', rec)));
-    S.u_avg    = zeros(size(nc_read(HisFile1, 'u'   , rec)));
-    S.v_avg    = zeros(size(nc_read(HisFile1, 'v'   , rec)));
-    S.temp_avg = zeros(size(nc_read(HisFile1, 'temp', rec)));
-    S.salt_avg = zeros(size(nc_read(HisFile1, 'salt', rec)));
-  catch,
-    disp([' D_STD: error while processing, rec = ', num2str(rec)]);
-    didp(['        in file: ', HisFile1]);
-    return
-  end,
+  for fval = field_list,
+    field     = char(fval);
+    field_avg = [field, '_avg'];
+    field_std = [field, '_std'];
 
-  S.zeta_std = S.zeta_avg;
-  S.ubar_std = S.ubar_avg;
-  S.vbar_std = S.vbar_avg;
-  S.u_std    = S.u_avg;
-  S.v_std    = S.v_avg;
-  S.temp_std = S.temp_avg;
-  S.salt_std = S.salt_avg;
+    try,
+      S.(field_avg) = zeros(size(nc_read(HisFile1, field, rec))); 
+      S.(field_std) = S.(field_avg);
+    catch,
+      disp([' D_STD: error while processing, rec = ', num2str(rec)]);
+      disp(['        for variable : ', field]);
+      disp(['        in file: ', HisFile1]);
+      return
+    end,
+  end,
  
   disp(' ');
-  disp([ 'Computing mean fields, month = ', num2str(m), ' ...']);
+  disp([ 'Computing mean and standard deviation fields, month = ', ...
+        num2str(m), ' ...']);
   disp(' ');
 
-%  Accumulate montly fields.
+%  Accumulate montly fields (sum and sum of the squares).
 
   for n=1:nfiles,
 
@@ -178,100 +199,50 @@ for m=1:12,
       if (month == m),
 
         mydate=datestr(datenum(1968,5,23) + time(rec)/86400);
-        disp([ '*** Processing Averages: ', mydate]);
+        disp([ '*** Processing Fields: ', mydate]);
 
-        try,
-          S.zeta_avg = S.zeta_avg + nc_read(ncfile, 'zeta', rec);
-          S.ubar_avg = S.ubar_avg + nc_read(ncfile, 'ubar', rec);
-          S.vbar_avg = S.vbar_avg + nc_read(ncfile, 'vbar', rec);
-          S.u_avg    = S.u_avg    + nc_read(ncfile, 'u'   , rec);
-          S.v_avg    = S.v_avg    + nc_read(ncfile, 'v'   , rec);
-          S.temp_avg = S.temp_avg + nc_read(ncfile, 'temp', rec);
-          S.salt_avg = S.salt_avg + nc_read(ncfile, 'salt', rec);
+        for fval = field_list,
+          field     = char(fval);           % convert cell to string
+          field_avg = [field, '_avg'];      % average field 
+          field_std = [field, '_std'];      % standard deviation field
 
-          Navg = Navg + 1;
-        catch,
-          disp([' D_STD: error while processing, rec = ', num2str(rec)]);
-          disp(['        in file: ', ncfile]);
-          return
+          try,
+            F = nc_read(ncfile, field, rec);
+
+            Rcount = Rcount + 1;
+          catch,
+            disp([' D_STD: error while processing, rec = ', num2str(rec)]);
+            disp(['        for variable : ', field]);
+            disp(['        in file: ', HisFile1]);
+            return
+          end,
+
+          S.(field_avg) = S.(field_avg) + F;
+          S.(field_std) = S.(field_std) + F.^2;
         end,
-      
+
       end,
     
     end,
   
   end,
 
-%  Compute monthly mean fields.
+%  Compute monthly mean and standard deviation fields. Use an
+%  unbiased estimate for variance:
+%
+%    var = [(sum(Xi ^2), i=1:N) / (N-1)] - N * Xmean / (N-1)
 
-  S.zeta_avg = S.zeta_avg ./ Navg;
-  S.ubar_avg = S.ubar_avg ./ Navg;
-  S.vbar_avg = S.vbar_avg ./ Navg;
-  S.u_avg    = S.u_avg    ./ Navg;
-  S.v_avg    = S.v_avg    ./ Navg;
-  S.temp_avg = S.temp_avg ./ Navg;
-  S.salt_avg = S.salt_avg ./ Navg;
+  fac1 = 1 / max(1,Rcount-1);
+  fac2 = fac1 * Rcount;
 
-%  Accumulate monthly variance fields.
+  for fval = field_list,
+    field     = char(fval);                 % convert cell to string
+    field_avg = [field, '_avg'];            % average field 
+    field_std = [field, '_std'];            % standard deviation field
 
-  disp(' ');
-  disp([ 'Computing standard deviation, month = ', num2str(m), ' ...']);
-  disp(' ');
-
-  for n=1:nfiles,
-
-    ncfile = fullfile(HISdir, HISfile(n).name);
-
-    time = nc_read(ncfile,'ocean_time');
-    Nrec = length(time);
-
-    for rec=1:Nrec,
-
-      [year,month,day]=datevec(datenum(1968,5,23) + time(rec)/86400);
-      
-      if (month == m),
-
-        mydate=datestr(datenum(1968,5,23) + time(rec)/86400);
-        disp([ '*** Processing Variance: ', mydate]);
-
-        try,
-          S.zeta_std = S.zeta_std + ...
-                       (nc_read(ncfile,'zeta',rec) - S.zeta_avg) .^ 2;
-          S.ubar_std = S.ubar_std + ...
-                       (nc_read(ncfile,'ubar',rec) - S.ubar_avg) .^ 2;
-          S.vbar_std = S.vbar_std + ...
-                       (nc_read(ncfile,'vbar',rec) - S.vbar_avg) .^ 2;
-          S.u_std    = S.u_std    + ...
-                       (nc_read(ncfile,'u'   ,rec) - S.u_avg   ) .^ 2;
-          S.v_std    = S.v_std    + ...
-                       (nc_read(ncfile,'v'   ,rec) - S.v_avg   ) .^ 2;
-          S.temp_std = S.temp_std + ...
-                       (nc_read(ncfile,'temp',rec) - S.temp_avg) .^ 2;
-          S.salt_std = S.salt_std + ...
-                       (nc_read(ncfile,'salt',rec) - S.salt_avg) .^ 2;
-
-          Nvar = Nvar + 1;
-        catch,
-          disp([' D_STD: error while processing, rec = ', num2str(rec)]);
-          disp(['        in file: ', ncfile]);
-          return        
-        end,
-      
-      end,
-    
-    end,
-  
+    S.(field_avg) = S.(field_avg) ./ Rcount;
+    S.(field_std) = sqrt(fac1 * S.(field_std) - fac2 * S.(field_avg) .^ 2);
   end,
-
-%  Compute standard deviations.
-
-  S.zeta_std = sqrt(S.zeta_std ./ (Nvar - 1));
-  S.ubar_std = sqrt(S.ubar_std ./ (Nvar - 1));
-  S.vbar_std = sqrt(S.vbar_std ./ (Nvar - 1));
-  S.u_std    = sqrt(S.u_std    ./ (Nvar - 1));
-  S.v_std    = sqrt(S.v_std    ./ (Nvar - 1));
-  S.temp_std = sqrt(S.temp_std ./ (Nvar - 1));
-  S.salt_std = sqrt(S.salt_std ./ (Nvar - 1));
 
 %---------------------------------------------------------------------------
 %  Write out standard deviation fields.
@@ -285,54 +256,35 @@ for m=1:12,
 
   s = c_std(S);
 
-
 %  Write out grid data.
 
   v = 'spherical';    s = nc_write(S.ncname, v, S.spherical);
   v = 'Vtransform';   s = nc_write(S.ncname, v, S.Vtransform);
   v = 'Vstretching';  s = nc_write(S.ncname, v, S.Vstretching);
 
-  v = 'theta_s';      f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
-  v = 'theta_b';      f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
-  v = 'Tcline';       f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
-  v = 'hc';           f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
-  v = 's_rho';        f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
-  v = 's_w';          f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
-  v = 'Cs_r';         f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
-  v = 'Cs_w';         f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
-  v = 'h';            f = nc_read(HisFile1,v);  s = nc_write(S.ncname,v,f);
+  for fval = grid_list,
+    field = char(fval);                     % convert cell to string
 
-  v = 'lon_rho';      s = nc_write(S.ncname, v, S.rlon);
-  v = 'lat_rho';      s = nc_write(S.ncname, v, S.rlat);
-  v = 'lon_u';        s = nc_write(S.ncname, v, S.ulon);
-  v = 'lat_u';        s = nc_write(S.ncname, v, S.ulat);
-  v = 'lon_v';        s = nc_write(S.ncname, v, S.vlon);
-  v = 'lat_v';        s = nc_write(S.ncname, v, S.vlat);
-
-  if (S.curvilinear),
-    v='angle';        s = nc_write(S.ncname, v, S.angle);
+    f = nc_read(HisFile1, field);  s = nc_write(S.ncname, field, f);
   end,
   
-  if (S.masking),
-    v='mask_rho';     s = nc_write(S.ncname, v, S.rmask);
-    v='mask_u';       s = nc_write(S.ncname, v, S.umask);
-    v='mask_v';       s = nc_write(S.ncname, v, S.vmask);
-  end,
-    
 % Write out standard deviation data.
 
   rec = 1;
   
   s = nc_write(S.ncname, 'ocean_time', 0, rec);
 
-  s = nc_write(S.ncname, 'zeta', S.zeta_std, rec);
-  s = nc_write(S.ncname, 'ubar', S.ubar_std, rec);
-  s = nc_write(S.ncname, 'vbar', S.vbar_std, rec);
-  s = nc_write(S.ncname, 'u'   , S.u_std   , rec);
-  s = nc_write(S.ncname, 'v'   , S.v_std   , rec);
-  s = nc_write(S.ncname, 'temp', S.temp_std, rec);
-  s = nc_write(S.ncname, 'salt', S.salt_std, rec);
+  for fval = field_list,
+    field     = char(fval);                 % convert cell to string
+    field_std = [field, '_std'];            % standard deviation field
+
+    s = nc_write(S.ncname, field, S.(field_std), rec);
+  end,
 
 % Process next month.
 
 end,
+
+disp(' ');
+disp('Done.');
+disp(' ');

@@ -18,6 +18,11 @@
 %                     conditions from Mercator to ROMS grid boundary
 %                     edges.
 %
+%   extract_bry   - Reads requested variable from a ROMS NetCDF file
+%                     at the specified time record and extracts the
+%                     lateral boundary edges. No interpolation is
+%                     carried out.
+%
 
 % svn $Id$
 %===========================================================================%

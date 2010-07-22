@@ -1,17 +1,18 @@
-function [deltaZ_b,zeta_err]=zeta_balance(K,elliptic,r,zeta,Niter);
+function [deltaZ_b, zeta_err]=zeta_balance(K, elliptic, r, zeta, Niter);
 
 %
 % ZETA_BALANCE:  Computes the balanced, baroclinic free-surface
 %
-% [zeta_b]=zeta_balance(K,zeta,rhs_r2d,Niter);
+% [deltaZ_b] = zeta_balance(K, elliptic, r, zeta, Niter);
 %
 % This function computes balanced, baroclinic free-surface.
 %
 % There are two algorithms to compute the balanced, baroclinic
 % free_surface:
 %
-%  (1) Intergrate hydrostatic equation from surface to bottom,
-%      elliptic=0
+%  (1) Intergrate hydrostatic equation from bottom to surface
+%      (elliptic=0, K.LNM_depth=0) or from level of no motion
+%      K.LNM_depth to surface (elliptic=0, K.LNM_depth > 0).
 %
 %  (2) Solve an elliptic equation as in Fukumori et al. (1998)
 %      and Weaver et al. (2005), elliptic=1
@@ -74,35 +75,68 @@ function [deltaZ_b,zeta_err]=zeta_balance(K,elliptic,r,zeta,Niter);
 
 %  Initialize internal parameters.
 
-Istr=2;
-Iend=K.Lm+1;
-Jstr=2;
-Jend=K.Mm+2;
-N=K.N;
+Istr = 1;
+Iend = K.Lm+2;
+Jstr = 1;
+Jend = K.Mm+2;
+N    = K.N;
 
-zeta_err=[];
+zeta_err = [];
 
 %---------------------------------------------------------------------------
-%  Integrate hydrostatic equation from surface to bottom.
+%  Integrate hydrostatic equation.
 %---------------------------------------------------------------------------
 
 if (~ elliptic),
 
-  deltaZ_b(1:Iend+1,1:Jend+1)=0;
-  
-  cff=-1.0/K.rho0;
-  
-  deltaZ_b(Istr:Iend,Jstr:Jend)=cff.*r(Istr:Iend,Jstr:Jend,N).*          ...
-                                K.Hz(Istr:Iend,Jstr:Jend,N);
-			    
-  for k=N-1:-1:1,
-    deltaZ_b(Istr:Iend,Jstr:Jend)=deltaZ_b(Istr:Iend,Jstr:Jend)+         ...
-                                  cff.*r(Istr:Iend,Jstr:Jend,k).*        ...
-                                    K.Hz(Istr:Iend,Jstr:Jend,k);
-  end,
+%  Integrate from bottom to surface.
 
-  deltaZ_b(Istr:Iend,Jstr:Jend)=deltaZ_b (Istr:Iend,Jstr:Jend).*         ...
-                                  K.rmask(Istr:Iend,Jstr:Jend);
+  if (K.LNM_depth == 0)
+
+    cff = -1.0 / K.rho0;
+
+    deltaZ_b(1:Iend,1:Jend) = 0;
+
+    for k=1:N,
+      deltaZ_b(Istr:Iend,Jstr:Jend) = deltaZ_b(Istr:Iend,Jstr:Jend) +    ...
+                                      cff .* r(Istr:Iend,Jstr:Jend,k) .* ...
+                                          K.Hz(Istr:Iend,Jstr:Jend,k) .* ...
+	                               K.rmask(Istr:Iend,Jstr:Jend);
+    end,
+
+  else,
+    
+%  Integrate from level of no motion (K.LNM_depth > 0) to the surface
+%  or integrate from local bottom if shallower than K.LNM_depth. Note
+%  that the W-points depths (K.Zw) are negative.
+%
+%  The vertical integration is done by recomputing the level thickness
+%  (Hz) from (K.Zw) and zero out its values below the level of no motion
+%  (K.LNM_depth). A very elegant and efficient approach.  The density, r,
+%  is assumed to be constant in grid cell containing the level of no
+%  motion, as it should be in ROMS finite volume formulation.
+
+    cff = -1.0 / K.rho0;
+
+    Zw = K.Zw;                            % load W-points depths
+
+    ind = find((Zw + K.LNM_depth) < 0);   % find values below LNM_depth
+    if (~isempty(ind)),                   % and substitute its values
+      Zw(ind) = - K.LNM_depth;            % with -LNM_depth, so we get
+    end,                                  % zero vertical difference in Hz
+
+    Hz = diff(Zw, 1, 3);                  % Recompute vertical thickness
+
+    deltaZ_b(1:Iend,1:Jend) = 0;          % Then, integrate vertically
+    
+    for k=1:N,
+      deltaZ_b(Istr:Iend,Jstr:Jend) = deltaZ_b(Istr:Iend,Jstr:Jend) +    ...
+                                      cff .* r(Istr:Iend,Jstr:Jend,k) .* ...
+                                            Hz(Istr:Iend,Jstr:Jend,k) .* ...
+	                               K.rmask(Istr:Iend,Jstr:Jend);
+    end,
+
+  end,
 
 %---------------------------------------------------------------------------
 %  Solve elliptic equation: use biconjugate gradient algorithm.
@@ -111,10 +145,10 @@ if (~ elliptic),
 else,
 
   if (nargin < 4),
-    Niter=K.Niter;
+    Niter = K.Niter;
   end,
   
-  [deltaZ_b,zeta_err]=biconj(K,r,zeta,Niter);
+  [deltaZ_b, zeta_err] = biconj(K, r, zeta, Niter);
 
 end,
 
