@@ -230,6 +230,8 @@ for m=1:12,
         mydate=datestr(datenum(1968,5,23) + time(rec)/86400, 0);
         disp([ '*** Processing Averages: ', mydate]);
 
+        Rcount = Rcount + 1;
+	
         for fval = field_list,
           field     = char(fval);           % convert cell to string
           field_avg = [field, '_avg'];      % average field 
@@ -237,7 +239,6 @@ for m=1:12,
           try,
             F = nc_read(ncfile, field, rec);
 
-            Rcount = Rcount + 1;
           catch,
             disp([' D_STD: error while processing, rec = ', num2str(rec)]);
             disp(['        for variable : ', field]);
