@@ -72,15 +72,10 @@ Lm = Sinp.grid_Lm_Mm_N(1);
 Mm = Sinp.grid_Lm_Mm_N(2);
 N  = Sinp.grid_Lm_Mm_N(3);
 
-%  Add binning standard deviation field to input structure. Initialize
-%  to input observation error.
-
-Sinp.std = zeros(size(Sinp.error));
-
 %  Check if 'provenace', 'lon', and 'lat' fields are available.
 
 has.lonlat=false;
-if (isfield(Sinp,'lon') & isfield(Sinp,'lat')),
+if (isfield(Sinp,'lon') && isfield(Sinp,'lat')),
   has.lonlat=true;
 end,
 
@@ -104,6 +99,24 @@ end,
 if (has.provenance),
   field_list = [field_list, 'provenance'];
 end,
+
+%  Insure that the vector fields in the input structure have the
+%  singleton as the first dimension to allow vector concatenation.
+
+for value = field_list,
+  field = char(value);
+  if (size(Sinp.(field),1) > 1),
+    Sinp.(field) = transpose(Sinp.(field));
+  end,
+end,
+if (size(Sinp.survey_time,1) > 1),
+  Sinp.survey_time = transpose(Sinp.survey_time);
+end,
+
+%  Add binning standard deviation field to input structure. Initialize
+%  to input observation error.
+
+Sinp.std = zeros(size(Sinp.error));
 
 %----------------------------------------------------------------------------
 %  Find observations associated with the same state variable.
@@ -206,8 +219,8 @@ for m=1:Nsurvey,   %%% SURVEY TIME LOOP %%%
 %  Combine the indices in each dimension into one index. It is like stacking
 %  all the matrix in one column vector.
 
-    varInd    = sub2ind(matsize, Ybin, Xbin, Zbin);
-    onesCol   = ones(size(varInd));
+    varInd    = transpose(sub2ind(matsize, Ybin, Xbin, Zbin));
+    onesCol   = transpose(ones(size(varInd)));
     maxVarInd = max(varInd);
 
 %  Accumulate values in bins using "accumarray" function. Count how many
@@ -238,7 +251,7 @@ for m=1:Nsurvey,   %%% SURVEY TIME LOOP %%%
       Sout.(field) = [Sout.(field) transpose(binned)];
     
       if (strcmp(field, 'value')),        % save binned observation value
-	Vmean = binned;                   % to compute its associated
+        Vmean = binned;                   % to compute its associated
       end,                                % variance (biased estimate)
     end,
 

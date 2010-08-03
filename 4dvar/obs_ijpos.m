@@ -95,7 +95,7 @@ end,
 if (got.spherical),
   spherical=nc_read(GRDname,'spherical');
   if (ischar(spherical)),
-    if (spherical == 'T' | spherical == 't'),
+    if (spherical == 'T' || spherical == 't'),
       spherical = 1;
     else,
       spherical = 0;
@@ -108,13 +108,13 @@ end,
 if (got.lon_rho),
   rlon = nc_read(GRDname, 'lon_rho');
 else,
-  error(['OBS_IJPOS - cannot find variable: lon_rho']);
+  error('OBS_IJPOS - cannot find variable: lon_rho');
 end,
 
 if (got.lat_rho),
   rlat = nc_read(GRDname, 'lat_rho');
 else,
-  error(['OBS_IJPOS - cannot find variable: lat_rho']);
+  error('OBS_IJPOS - cannot find variable: lat_rho');
 end,
 
 if (got.angle),
@@ -176,9 +176,9 @@ if (IPLOT),
        obs_lon(ON), obs_lat(ON), 'r.', ...
        obs_lon(~IN), obs_lat(~IN), 'm.');
   title(['Blue points (inside),  ', ...
-	 'Red points (boundary),  ', ...
-	 'Magenta Points (outliers)'], ...
-	'fontsize', 14, 'fontweight', 'bold');
+         'Red points (boundary),  ', ...
+         'Magenta Points (outliers)'], ...
+         'fontsize', 14, 'fontweight', 'bold');
   hold off;
 end,
 

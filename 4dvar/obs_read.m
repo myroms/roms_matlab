@@ -77,6 +77,9 @@ S.Ndatum=0;
 
 got.provenance=0;
 
+%  Insure that read vector variables have the singleton in the first
+%  dimension to allow vector concatenation when merging several datasets.
+
 for n=1:nvars,
   name=deblank(Vnames(n,:));
   switch name
@@ -84,35 +87,77 @@ for n=1:nvars,
       S.spherical=nc_read(ncfile,'spherical');
     case 'Nobs'
       S.Nobs=nc_read(ncfile,'Nobs');
+      if (size(S.Nobs,1) > 1),
+        S.Nobs=transpose(S.Nobs);
+      end,
     case 'survey_time'
       S.survey_time=nc_read(ncfile,'survey_time');
+      if (size(S.survey_time,1) > 1),
+        S.survey_time=transpose(S.survey_time);
+      end,
       S.Nsurvey=length(S.survey_time);
     case 'obs_variance'
       S.variance=nc_read(ncfile,'obs_variance');
+      if (size(S.variance,1) > 1),
+        S.variance=transpose(S.variance);
+      end,
       S.Nstate=length(S.variance);
     case 'obs_type'
       S.type=nc_read(ncfile,'obs_type');
+      if (size(S.type,1) > 1),
+        S.type=transpose(S.type);
+      end,
     case 'obs_provenance'
       S.provenance=nc_read(ncfile,'obs_provenance');
+      if (size(S.provenance,1) > 1),
+        S.provenance=transpose(S.provenance);
+      end,
       got.provenance=1;
     case 'obs_time'
       S.time=nc_read(ncfile,'obs_time');
+      if (size(S.time,1) > 1),
+        S.time=transpose(S.time);
+      end,
     case 'obs_lon'
       S.lon=nc_read(ncfile,'obs_lon');
+      if (size(S.lon,1) > 1),
+        S.lon=transpose(S.lon);
+      end,
     case 'obs_lat'
       S.lat=nc_read(ncfile,'obs_lat');
+      if (size(S.lat,1) > 1),
+        S.lat=transpose(S.lat);
+      end,
     case 'obs_depth'
       S.depth=nc_read(ncfile,'obs_depth');
+      if (size(S.depth,1) > 1),
+        S.depth=transpose(S.depth);
+      end,
     case 'obs_Xgrid'
       S.Xgrid=nc_read(ncfile,'obs_Xgrid');
+      if (size(S.Xgrid,1) > 1),
+        S.Xgrid=transpose(S.Xgrid);
+      end,
     case 'obs_Ygrid'
       S.Ygrid=nc_read(ncfile,'obs_Ygrid');
+      if (size(S.Ygrid,1) > 1),
+        S.Ygrid=transpose(S.Ygrid);
+      end,
     case 'obs_Zgrid'
       S.Zgrid=nc_read(ncfile,'obs_Zgrid');
+      if (size(S.Zgrid,1) > 1),
+        S.Zgrid=transpose(S.Zgrid);
+      end,
     case 'obs_error'
       S.error=nc_read(ncfile,'obs_error');
+      if (size(S.error,1) > 1),
+        S.error=transpose(S.error);
+      end,
     case 'obs_value'
       S.value=nc_read(ncfile,'obs_value');
+      if (size(S.value,1) > 1),
+        S.value=transpose(S.value);
+      end,
       S.Ndatum=length(S.value);
   end,
 end,

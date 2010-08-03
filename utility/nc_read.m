@@ -3,7 +3,7 @@ function [f]=nc_read(fname,vname,tindex,FillValue);
 %
 % NC_READ:  Read requested NetCDF variable
 %
-% [f]=nc_read(fname,vname,tindex)
+% [f]=nc_read(fname,vname,tindex,FillValue)
 %
 % This function reads in a generic multi-dimensional field from a NetCDF
 % file.  If only water points are available, this function fill the land
@@ -283,15 +283,18 @@ for i = 0:nvatts-1
     error(['READ_NC: ncattname: error while inquiring attribute ' num2str(i)])
   end,
   lstr=length(attnam);
-  if (strncmp(attnam(1:lstr),'_FillValue',10)),
+  if (strncmp(attnam(1:lstr),'_FillValue',10) || ...
+      strncmp(attnam(1:lstr),'_fillvalue',10)),
     if (nctype == NC_DOUBLE),
-      [spval,status]=mexnc('get_att_double',ncid,varid,'_FillValue'); 
+      [spval,status]=mexnc('get_att_double',ncid,varid,attnam(1:lstr)); 
     elseif (nctype == NC_FLOAT),
-      [spval,status]=mexnc('get_att_float' ,ncid,varid,'_FillValue');
+      [spval,status]=mexnc('get_att_float' ,ncid,varid,attnam(1:lstr));
     elseif (nctype == NC_INT),
-      [spval,status]=mexnc('get_att_int'   ,ncid,varid,'_FillValue');
+      [spval,status]=mexnc('get_att_int'   ,ncid,varid,attnam(1:lstr));
+    elseif (nctype == NC_CHAR),
+      [spval,status]=mexnc('get_att_text'  ,ncid,varid,attnam(1:lstr));
     else
-      [spval,status]=mexnc('ncattget'      ,ncid,varid,'_FillValue');
+      [spval,status]=mexnc('ncattget'      ,ncid,varid,attnam(1:lstr));
     end,
     if (status == -1),
       error(['READ_NC: ncattget error while reading _FillValue attribute'])
@@ -366,7 +369,7 @@ else,
   elseif (nctype == NC_INT),
     [f,status]=mexnc('get_vara_int'   ,ncid,varid,start,count);
   else,
-    [f,status]=mexnc('ncvarget'       ,ncid,varid,start,count);
+    [f,status]=mexnc('varget'         ,ncid,varid,start,count);
   end,
 
   if (status == -1),
@@ -417,7 +420,11 @@ end,
 %----------------------------------------------------------------------------
 
 if (got_FillValue),
-  ind=find(abs(f) >= abs(spval));
+  if (iscellstr(f) | ischar(f)),
+    ind=find(f == spval);
+  else,
+    ind=find(abs(f) >= abs(spval));
+  end,
   if (~isempty(ind)),
     f(ind)=FillValue;
   end,

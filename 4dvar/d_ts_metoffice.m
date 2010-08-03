@@ -1,10 +1,26 @@
 %
-%  D_SSH_OBS:  Driver script to create a 4D-Var SSH observations file.
+%  D_TS_METOFFICE:  Driver script to create a 4D-Var T,S observations file.
 %
 %  This a user modifiable script that can be used to prepare ROMS 4D-Var
-%  SSH observations NetCDF file. The SSH observations are extracted from
-%  AVISO dataset using script 'load_ssh_aviso.m'. USERS can use this as
-%  a prototype for their application.
+%  SST observations NetCDF file. The T,S data is extracted from the UK
+%  Met office Hadley Centre, quality controlled, EN3 observation datasets.
+%  It uses the script 'load_ts_metoffice.m' extract profiles of potential
+%  temperature and salinity for the application grid and requested times.
+%
+%  The hydrographic data are available from 1950 to the present and stored
+%  in annual tar files (said, EN3_v2a_Profiles_2004.tar) containing a NetCDF
+%  for each month (said, EN3_v2a_Profiles_200401.nc.gz). Since this dataset
+%  is not available in an OpenDAP server, the user needs to get the tar
+%  files and extract the montly NetCDF files in it. The URL is:
+%
+%    http://hadobs.metoffice.com/en3/data/EN3_v2a/download_EN3_v2a.html
+%
+%  The script 'load_ts_metoffice.m' can processed compressed NetCDF files.
+%  If compressed files are passed, the script will uncompress them using
+%  "gunzip" and compress back after processing with "gzip". The user can
+%  pass a single monthly file or a cell string with several monthly files.
+%
+%  USERS can use this script as a prototype for their application.
 %
 
 % svn $Id$
@@ -14,13 +30,37 @@
 %    See License_ROMS.txt                           Hernan G. Arango        %
 %===========================================================================%
 
-%  Set input/output NetCDF files.
+%  Set input application Grid and history NetCDF files. The history file
+%  is used to compute the depth of model vertical levels.
 
  my_root = '/home/arango/ocean/toms/repository/test';
 
- GRDfile = fullfile(my_root, 'WC13/Data', 'wc13_grd.nc');
- OBSfile = 'wc13_ssh_obs.nc';
- SUPfile = 'wc13_ssh_super_obs.nc';
+ GRDfile = fullfile(my_root, 'WC13/Data', 'wc13_grd.nc'); 
+ HISfile = fullfile(my_root, 'WC13/Data', 'wc13_ini.nc'); 
+ 
+%  Set input UK Met Office NetCDF file name(s).
+
+ MET_dir = '/home/arango/ocean/toms/repository/test/WC13/OBS/EN3';
+
+ METfile = fullfile(MET_dir, 'EN3_v2a_Profiles_200401.nc.gz');
+
+ METcell = {fullfile(MET_dir, 'EN3_v2a_Profiles_200401.nc.gz'), ...
+            fullfile(MET_dir, 'EN3_v2a_Profiles_200402.nc.gz'), ...
+            fullfile(MET_dir, 'EN3_v2a_Profiles_200403.nc.gz'), ...
+            fullfile(MET_dir, 'EN3_v2a_Profiles_200404.nc.gz'), ...
+            fullfile(MET_dir, 'EN3_v2a_Profiles_200405.nc.gz'), ...
+            fullfile(MET_dir, 'EN3_v2a_Profiles_200406.nc.gz'), ...
+            fullfile(MET_dir, 'EN3_v2a_Profiles_200407.nc.gz'), ...
+            fullfile(MET_dir, 'EN3_v2a_Profiles_200408.nc.gz'), ...
+            fullfile(MET_dir, 'EN3_v2a_Profiles_200409.nc.gz'), ...
+            fullfile(MET_dir, 'EN3_v2a_Profiles_200410.nc.gz'), ...
+            fullfile(MET_dir, 'EN3_v2a_Profiles_200411.nc.gz'), ...
+            fullfile(MET_dir, 'EN3_v2a_Profiles_200412.nc.gz')};
+
+%  Set observations output NetCDF files.
+ 
+ OBSfile = 'wc13_ts_obs.nc';
+ SUPfile = 'wc13_ts_super_obs.nc';
 
 %  Set ROMS state variable type classification.
 
@@ -44,27 +84,28 @@ provenance.Txbt_MetO = 3;    % XBT temperature from Met Office
 provenance.Tctd_MetO = 4;    % CTD temperature from Met Office
 provenance.Sctd_MetO = 5;    % CTD salinity from Met Office
 provenance.Targo     = 6;    % ARGO floats temperature from Met Office
-provenance.Targo     = 7;    % ARGO floats salinity from Met Office
+provenance.Sargo     = 7;    % ARGO floats salinity from Met Office
 provenance.Tctd_CalC = 8;    % CTD temperature from CalCOFI
 provenance.Sctd_CalC = 9;    % CTD salinity from CalCOFI
 provenance.Tctd_GLOB = 10;   % CTD temperature from GLOBEC
 provenance.Sctd_GLOB = 11;   % CTD salinity from GLOBEC
 provenance.Tbuy_MetO = 12;   % Buoys, thermistor temperature form Met Office
 
-%  Set data error to 2 cm. Square the values since we  need variances.
+%  Set observations error by instrument.  Square values since we
+%  need variances.
 
-error.zeta = 0.02;        error.zeta = error.zeta ^2;
-error.ubar = 0;           error.ubar = error.ubar ^2;
-error.vbar = 0;           error.vbar = error.ubar ^2;
-error.u    = 0;           error.u    = error.u ^2;
-error.v    = 0;           error.v    = error.u ^2;
-error.temp = 0;           error.temp = error.temp ^2;
-error.salt = 0;           error.salt = error.salt ^2;
+error.Targo = 0.1;        error.Targo = error.Targo ^2;
+error.Tbuoy = 0.1;        error.Tbuoy = error.Tbuoy ^2;
+error.Tctd  = 0.1;        error.Tctd  = error.Tctd  ^2;
+error.Txbt  = 0.1;        error.Txct  = error.Txbt  ^2;
+
+error.Sargo = 0.01;       error.Sargo = error.Sargo ^2;
+error.Sctd  = 0.01;       error.Sctd  = error.Sctd  ^2;
 
 %  Set number of vertical levels in application. The depth of the
-%  satellite data is assigned to the surface level.
+%  satellite data is assign to the surface level.
 
-Nsur=30;
+Nsur = length(nc_read(HISfile,'s_rho'));
 
 %  Set 'grid_Lm_Mm_N' global attribute. It needs to be integer. We need
 %  to have this attribute for data quality control (like binning) in other
@@ -72,7 +113,7 @@ Nsur=30;
 
 [Lr Mr]=size(nc_read(GRDfile,'h'));
 
-S.grid_Lm_Mm_N = int32([Lr-2 Mr-2 Nsur]);
+C.grid_Lm_Mm_N = int32([Lr-2 Mr-2 Nsur]);
 
 %  Set switch to apply small correction due to spherical/curvilinear
 %  grids (see "obs_ijpos.m").
@@ -85,47 +126,98 @@ Correction = true;
 obc_edge = false;
 
 %---------------------------------------------------------------------------
-%  Extract SSH observations from AVISO, store it into structure array D.
+%  Extract SST observations and store them into structure array D.
 %---------------------------------------------------------------------------
 
 %  Set spherical switch.
 
 obs.spherical = 1;
 
-% The 'load_ssh_aviso' stores SSH data as:   D.ssh, D.time, D.lon, D.lat.
+% The 'load_sst_pfeg' stores SST data as:   D.sst, D.time, D.lon, D.lat.
 
-StartDay = datenum(2004,1,1);
-EndDay   = datenum(2004,2,1);
+  StartDay = datenum(2004,1, 1);
+  EndDay   = datenum(2004,1,15);
 
-D = load_ssh_aviso(GRDfile, StartDay, EndDay);
+% [T,S] = load_ts_metoffice(METcell, GRDfile);
+  [T,S] = load_ts_metoffice(METfile, GRDfile, StartDay, EndDay);
 
-%  Convert data to one-dimenension array and replicate the data to
-%  the same dimension of D.ssh. Notice that we get the following
-%  dimensions after running 'load_ssh_aviso':
+%  The script 'load_ts_metoffice.m' loads the extracted potential 
+%  temperature and salinity in two different structures (T, S).
+%  Notice that salinity data in available in XBT or thermistor
+%  chain profilers. Each individual sctructure has 1D array for
+%  each datum and the time has been sorted in increasing time
+%  order.  We get:
 %
-%       D.ssh (time,lat,lon)
-%       D.time(time)           already sorted in increased time order
-%       D.lon (lat,lon)
-%       D.lat (lat,lon
+%       T.time     S.time       time (date number)
+%       T.lon      S.lon        longitude (degree_east)
+%       T.lat      S.lat        latitude
+%       T.depth    S.depth      depth (meter, negative)
+%       T.WMO      S.WMO        WMO instrument type
+%       T.value    S.value      observation values
 
-[it,Jm,Im] = size(D.ssh);
+T.type  = ones(size(T.value)) .* state.temp;
+S.type  = ones(size(S.value)) .* state.salt;
 
-obs.time = repmat(D.time,[1 Jm Im]);
-obs.lon  = permute(repmat(D.lon,[1 1 it]),[3 1 2]);
-obs.lat  = permute(repmat(D.lat,[1 1 it]),[3 1 2]);
+T.error = zeros(size(T.value));
+S.error = zeros(size(S.value));
 
-obs.time  = obs.time(:);           % no time sorting is necessary
-obs.lon   = obs.lon(:);
-obs.lat   = obs.lat(:);
-obs.value = D.ssh(:).*0.01;        % convert from cm to m
+T.provenance = zeros(size(T.value));
+S.provenance = zeros(size(S.value));
 
-ind = find(isnan(obs.value));
-if (~isempty(ind));                % remove NaN's from data
-  obs.time (ind) = [];
-  obs.lon  (ind) = [];
-  obs.lat  (ind) = [];
-  obs.value(ind) = [];
+ind = find(T.WMO == 401);
+if (~isempty(ind)),
+  T.provenance(ind) = provenance.Txbt_MetO;
+  T.error(ind)      = error.Txbt;
 end,
+ind = find(T.WMO == 741);
+if (~isempty(ind)),
+  T.provenance(ind) = provenance.Tctd_MetO;
+  T.error(ind)      = error.Tctd;
+end,
+ind = find(T.WMO == 820);
+if (~isempty(ind)),
+  T.provenance(ind) = provenance.Tbuy_MetO;
+  T.error(ind)      = error.Tbuoy;
+end,
+ind = find(T.WMO == 831);
+if (~isempty(ind)),
+  T.provenance(ind) = provenance.Targo;
+  T.error(ind)      = error.Targo;
+end,
+
+ind = find(S.WMO == 741);
+if (~isempty(ind)),
+  S.provenance(ind) = provenance.Sctd_MetO;
+  S.error(ind)      = error.Sctd;
+end,
+ind = find(S.WMO == 831);
+if (~isempty(ind)),
+  S.provenance(ind) = provenance.Sargo;
+  S.error(ind)      = error.Sargo;
+end,
+
+%  Build observation sctructure. Sort observations in time
+%  ascending order.
+
+obs.type       = [T.type,       S.type      ];
+obs.provenance = [T.provenance, S.provenance];
+obs.time       = [T.time,       S.time      ];
+obs.lon        = [T.lon,        S.lon       ];
+obs.lat        = [T.lat,        S.lat       ];
+obs.depth      = [T.depth,      S.depth     ];
+obs.error      = [T.error,      S.error     ];
+obs.value      = [T.value,      S.value     ];
+
+[Y,I] = sort(obs.time, 'ascend');
+
+obs.type       = obs.type(I);
+obs.provenance = obs.provenance(I);
+obs.time       = obs.time(I);
+obs.lon        = obs.lon(I);
+obs.lat        = obs.lat(I);
+obs.depth      = obs.depth(I);
+obs.error      = obs.error(I);
+obs.value      = obs.value(I);
 
 %  Compute observation fractional grid coordinates in term
 %  of ROMS grid.
@@ -133,25 +225,26 @@ end,
 [obs.Xgrid, obs.Ygrid] = obs_ijpos(GRDfile, obs.lon, obs.lat, ...
                                    Correction, obc_edge);
 
+obs.Xgrid = transpose(obs.Xgrid);  % take the transpose of the locations     
+obs.Ygrid = transpose(obs.Ygrid);  % to faciliate structure expansion
+
 ind = find(isnan(obs.Xgrid) & isnan(obs.Ygrid));
 if (~isempty(ind));                % remove NaN's from data
-  obs.time (ind) = [];
-  obs.lon  (ind) = [];
-  obs.lat  (ind) = [];
-  obs.Xgrid(ind) = [];
-  obs.Ygrid(ind) = [];
-  obs.value(ind) = [];
+  obs.type      (ind) = [];
+  obs.provenance(ind) = [];
+  obs.time      (ind) = [];
+  obs.lon       (ind) = [];
+  obs.lat       (ind) = [];
+  obs.depth     (ind) = [];
+  obs.Xgrid     (ind) = [];
+  obs.Ygrid     (ind) = [];
+  obs.error     (ind) = [];
+  obs.value     (ind) = [];
 end,
-
-%  Assign ROMS associated state variable and provenance.
-
-obs.type = ones(size(obs.value)) .* state.zeta;
-
-obs.provenance = ones(size(obs.value)) .* provenance.ssh_aviso;
 
 %  Determine number of unique surveys times and number of
 %  observation per survey.  They are already sorted in
-%  incresed time order.
+%  increased time order.
 
 obs.survey_time = unique(obs.time);
 obs.Nsurvey     = length(obs.survey_time);
@@ -161,55 +254,50 @@ for n=1:obs.Nsurvey,
   ind = find(obs.time == obs.survey_time(n));
   obs.Nobs(n) = length(ind);
 end,
+obs.Nobs = obs.Nobs;
 
-%  Set depths and fractional z-grid coordinates for the observations.
-%  The SSH data is a the surface.  Therefore, we need to assign
-%  'obs_depth' to surface level and 'obs_Zgrid' to zero.  ROMS will
-%  compute the value of 'obs_zgrid' when relevant.
+%  Set fractional z-grid coordinates for the observations.
 
-obs.depth = ones(size(obs.value)) .* Nsur;
+zflag = 0;                          % use zero free-surface
 
-obs.Zgrid = zeros(size(obs.value));
-
-%  Set observation error covariance (squared units).
-
-obs.error=ones(size(obs.value)) .* error.zeta;
+[obs] = obs_depth(HISfile, obs, zflag);
 
 %  Initialize global variance per state variables.
 
-obs.variance=zeros([1 Nstate]);
+obs.variance = zeros([1 Nstate]);
 
-obs.variance(state.zeta) = error.zeta;
+obs.variance(state.temp) = error.Targo;
+obs.variance(state.salt) = error.Sargo;
 
 %---------------------------------------------------------------------------
-%  Set observation file creation parameter in structure array, S.
+%  Set observation file creation parameter in structure array, C.
 %---------------------------------------------------------------------------
 
 %  Observations output file name.
 
-S.ncfile = OBSfile;
+C.ncfile = OBSfile;
 
 %  Application grid NetCDF file name.
 
-S.grd_file = GRDfile;
+C.grd_file = GRDfile;
 
 %  Set application title.
 
-S.title = 'California Current System, 1/3 degree resolution (WC13)';
+C.title = 'California Current System, 1/3 degree resolution (WC13)';
 
 %  Spherical grid switch.
 %
 %            [0] Cartesian grid
 %            [1] Spherical grid
 
-S.spherical = 1;
+C.spherical = 1;
 
 %  Set switches to include the 'obs_lon' and 'obs_lat' variables.
 %  This are not used inside ROMS but are needed during pre- and
 %  post-processing.
 
-S.do_longitude = 1;
-S.do_latitude  = 1;
+C.do_longitude = 1;
+C.do_latitude  = 1;
 
 %  Number of state variables. Usually, ROMS uses 7 variables in the
 %  observation state vector (zeta, ubar, vbar, u, v, temperature,
@@ -217,20 +305,20 @@ S.do_latitude  = 1;
 %  additional tracer variables.  This is the value of the NetCDF
 %  dimension 'state_variable'.
 
-S.Nstate = Nstate;
+C.Nstate = Nstate;
 
 %  Number of data surveys. That is, number of unique survey times
 %  in the observational dataset. This is the value of the NetCDF
 %  dimension 'survey'.
 
-S.Nsurvey = obs.Nsurvey;
+C.Nsurvey = obs.Nsurvey;
 
 %  Total number of observations in space and time. This is the value
 %  of the NetCDF dimension 'datum'.  If zero, an unlimited dimension
 %  is used.
 
-%S.Ndatum = 0;             % use unlimited datum record dimension
- S.Ndatum = obs.Ndatum;    % fixed datum dimension
+%C.Ndatum = 0;             % use unlimited datum record dimension
+ C.Ndatum = obs.Ndatum;    % fixed datum dimension
  
 %  Set attributes for 'obs_type' variable which assigns the model
 %  state variable associated with the observation. Usually, ROMS
@@ -248,9 +336,9 @@ S.Nsurvey = obs.Nsurvey;
 %  NOTE: We are following the CF compliance rules for variable
 %        attributes 'flag_values' and 'flag_meanings'.
 
-S.state_flag_values  =[1:1:7];
+C.state_flag_values  =[1:1:7];
 
-S.state_flag_meanings=['zeta', blanks(1), ...
+C.state_flag_meanings=['zeta', blanks(1), ...
                        'ubar', blanks(1), ...
                        'vbar', blanks(1), ...
                        'u', blanks(1), ...
@@ -269,9 +357,9 @@ S.state_flag_meanings=['zeta', blanks(1), ...
 %        underscores.
 
 
-S.origin_flag_values=[1:1:12];
+C.origin_flag_values=[1:1:12];
 
-S.origin_flag_meanings=['gridded_AVISO_SLA', blanks(1), ...
+C.origin_flag_meanings=['gridded_AVISO_SLA', blanks(1), ...
                         'blended_SST', blanks(1), ...
                         'XBT_Met_Office', blanks(1), ...
                         'CTD_temperature_Met_Office', blanks(1), ...
@@ -294,7 +382,7 @@ S.origin_flag_meanings=['gridded_AVISO_SLA', blanks(1), ...
 
 newline=sprintf('\n');
 
-S.global_variables=[newline, ...
+C.global_variables=[newline, ...
        '1: free-surface (m) ', newline, ...
        '2: vertically integrated u-momentum component (m/s) ', newline, ...
        '3: vertically integrated v-momentum component (m/s) ', newline, ...
@@ -303,7 +391,7 @@ S.global_variables=[newline, ...
        '6: potential temperature (Celsius) ', newline, ...
        '7: salinity (nondimensional)'];
 
-S.global_provenance=[newline, ...
+C.global_provenance=[newline, ...
        ' 1: gridded AVISO sea level anomaly ', newline, ...
        ' 2: blended satellite SST ', newline, ...
        ' 3: XBT temperature from Met Office ', newline, ...
@@ -320,7 +408,7 @@ S.global_provenance=[newline, ...
 %  Set the observation data sources global attribute 'obs_sources'
 %  which is stored in S.global_sources (OPTIONAL).
 
-S.global_sources=[newline, ...
+C.global_sources=[newline, ...
        'http://opendap.aviso.oceanobs.com/thredds/dodsC ', newline, ...
        'http://thredds1.pfeg.noaa.gov:8080/thredds/dodsC/satellite/BA/' ...
              'ssta/5day ', newline, ...
@@ -330,7 +418,7 @@ S.global_sources=[newline, ...
 %  Create 4D-Var observations NetCDF file.
 %---------------------------------------------------------------------------
 
-[status]=c_observations(S);
+[status]=c_observations(C);
 
 %  Update 'units' attribute for time variables. Notice that the time
 %  of the observations in the NetCDF file is in DAYS.
@@ -347,7 +435,7 @@ avalue='days since 1968-05-23 00:00:00 GMT';
 %  Write 4D-Var observations NetCDF file.
 %---------------------------------------------------------------------------
 
-[status]=obs_write(OBSfile,obs);
+[status]=obs_write(OBSfile, obs);
 
 %---------------------------------------------------------------------------
 %  Super observations.
@@ -357,7 +445,7 @@ avalue='days since 1968-05-23 00:00:00 GMT';
 %  when computing super observations. We can either use the structure of
 %  the NetCDF file OBSfile created above. This allows flexibility.
 
-obs.grid_Lm_Mm_N = S.grid_Lm_Mm_N;
+obs.grid_Lm_Mm_N = C.grid_Lm_Mm_N;
 obs.ncfile       = OBSfile;
 
 %  It is possible that more that one observations associatiated to the
@@ -375,7 +463,7 @@ OBS.error = max(OBS.error, OBS.std);
 
 %  Write new structure to a new NetCDF.
 
-[status]=c_observations(OBS,SUPfile);
+[status]=c_observations(OBS, SUPfile);
 
 avalue='days since 1968-05-23 00:00:00 GMT';
 
@@ -385,7 +473,7 @@ avalue='days since 1968-05-23 00:00:00 GMT';
 [status]=nc_attadd(SUPfile,'units',avalue,'obs_time');
 [status]=nc_attadd(SUPfile,'calendar','gregorian','obs_time');
 
-[status]=obs_write(SUPfile,OBS);
+[status]=obs_write(SUPfile, OBS);
 
 disp(' ');
 disp('Done.');

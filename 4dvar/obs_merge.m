@@ -1,20 +1,21 @@
-function [S]=obs_merge(files,dt);
+function [S]=obs_merge(files, dt);
 
 %
 % OBS_MERGE:  Merges data from several 4D-Var observation NetCDF files
 %
-% [S]=obs_merge(obs_file,dt)
+% [S]=obs_merge(files, dt)
 %
 % Given a cell array of 4D-Var NetCDF observation files, this function
-% combines them into a single observation data structure. The DT argument
-% is the minimum amount of time that surveys must be separated by (MUST
-% BE GREATER THAN DT OF YOUR ROMS CONFIGURATION). Surveys that are closer
-% than DT together will be combined.
+% combines them into a single observation data structure.
 %
 % On Input:
 %
 %    files   Observations NetCDF file names (string cell array)
-%    dt  
+%
+%    dt      Minimum amount of time (days) for merging surveys from input
+%              files. It must be greater than the ROMS application time
+%              step. Surveys that are closer than "dt" together will be
+%              combined.
 %
 % On Output:
 %
@@ -65,19 +66,23 @@ Nfiles=length(files);
 %  Process each observation file and build observation structure.
 %----------------------------------------------------------------------------
 
-has.lonlat     = false;
-has.provenance = false;
+%  Set observations dynamical fields (cell array) in structure, S.
+
+field_list = {'type', 'time', 'Xgrid', 'Ygrid', 'Zgrid', 'depth', ...
+              'error', 'value'};
 
 %  Initialize structure with first file.
 
 [S]=obs_read(char(files(1)));
 
-if (isfield(S,'lon') & isfield(S,'lat')),
-  has.lonlat=true;
+%  If appropriate, add other dynamical fields to structure list.
+
+if (isfield(S,'lon') && isfield(S,'lat')),
+  field_list = [field_list, 'lon', 'lat'];
 end,
 
 if (isfield(S,'provenance')),
-  has.provenance=true;
+  field_list = [field_list, 'provenance'];
 end,
 
 %  Proccess remaining files.
@@ -86,71 +91,33 @@ for m=2:Nfiles,
 
   [N]=obs_read(char(files(m)));
 
-  if (has.provenance & isfield(N,'provenance')),
-    has.provenance=true;
-  else,
-    has.provenance=false;
-  end,
-
-  if (has.lonlat & (isfield(N,'lon') & isfield(N,'lat'))),
-    has.lonlat=true;
-  else,
-    has.lonlat=false;
-  end,
-
 %  Add new data to S structure.
 
-  S.spherical    = ( S.spherical +  N.spherical   ) / 2;
-  S.Nobs         = [ S.Nobs;        N.Nobs        ];
-  S.survey_time  = [ S.survey_time; N.survey_time ];
-  S.variance     = ( S.variance  +  N.variance    ) / 2.0;
-  S.type         = [ S.type;        N.type        ];
-  S.time         = [ S.time;        N.time        ];
-  S.depth        = [ S.depth;       N.depth       ];
-  S.Xgrid        = [ S.Xgrid;       N.Xgrid       ];
-  S.Ygrid        = [ S.Ygrid;       N.Ygrid       ];
-  S.Zgrid        = [ S.Zgrid;       N.Zgrid       ];
-  S.error        = [ S.error;       N.error       ];
-  S.value        = [ S.value;       N.value       ];
-
-  if (has.provenance),
-    S.provenance = [ S.provenance;  N.provenance  ];
+  for value = field_list,
+    field = char(value);
+    S.(field) = [S.(field), N.(field)];
   end,
-
-  if (has.lonlat),
-    S.lon        = [ S.lon;         N.lon         ];
-    S.lat        = [ S.lat;         N.lat         ];
-  end,
+ 
+  S.Nobs        = [S.Nobs,         N.Nobs       ];
+  S.survey_time = [S.survey_time,  N.survey_time];
+  S.variance    = (S.variance    + N.variance   ) / 2.0;
 
 %  Order according to ascending 'survey_time'.
 
   [l,ind]=sort(S.survey_time);
 
-  S.survey_time  = S.survey_time(ind);
-  S.Nobs         = S.Nobs(ind);
+  S.Nobs        = S.Nobs(ind);
+  S.survey_time = S.survey_time(ind);
 
-  S.Nsurvey      = length(S.Nobs);
+  S.Nsurvey     = length(S.Nobs);
 
 %  Order according to ascending 'obs_time'.
 
   [l,ind]=sort(S.time);
 
-  S.type         = S.type(ind);
-  S.time         = S.time(ind);
-  S.depth        = S.depth(ind);
-  S.Xgrid        = S.Xgrid(ind);
-  S.Ygrid        = S.Ygrid(ind);
-  S.Zgrid        = S.Zgrid(ind);
-  S.error        = S.error(ind);
-  S.value        = S.value(ind);
-
-  if (has.provenance),
-    S.provenance = S.provenance(ind);
-  end,
-
-  if (has.lonlat),
-    S.lon        = S.lon(ind);
-    S.lat        = S.lat(ind);
+  for value = field_list,
+    field = char(value);
+    S.(field) = S.(field)(ind);
   end,
 
 end,
@@ -158,7 +125,7 @@ end,
 %  Loop over 'survey_times' until they are well-spaced.
 
 if (check_time),
-  
+
   while (true),
     ntime = S.survey_time;
     sdt = diff(S.survey_time);
@@ -169,7 +136,7 @@ if (check_time),
     otime = S.time;
     for i=1:length(l),
       lo = find(S.time == S.survey_time(l(i)   ) | ...
-		S.time == S.survey_time(l(i)+1));
+                S.time == S.survey_time(l(i)+1));
       ntime(l(i):l(i)+1) = nanmedian(S.time(lo));
       otime(lo) = ntime(l(i));
     end,
@@ -184,7 +151,6 @@ end,
 [l,i] = unique(S.survey_time);
 
 if (length(l) ~= length(S.survey_time)),
-  S.spherical = S.spherical(i);
   survey_time = S.survey_time;
   S.survey_time = l;
   Nobs = S.Nobs;
@@ -204,22 +170,9 @@ for i=1:S.Nsurvey,
   l = find(S.time == S.survey_time(i));
   [m,i]=sort(S.type(l));
 
-  S.type(l)         = S.type(l(i));
-  S.time(l)         = S.time(l(i)); 
-  S.depth(l)        = S.depth(l(i));
-  S.Xgrid(l)        = S.Xgrid(l(i));
-  S.Ygrid(l)        = S.Ygrid(l(i));
-  S.Zgrid(l)        = S.Zgrid(l(i));
-  S.error(l)        = S.error(l(i));
-  S.value(l)        = S.value(l(i));
-
-  if (has.lonlat),
-    S.lat(l)        = S.lat(l(i));
-    S.lon(l)        = S.lon(l(i));
-  end,
-
-  if (has.provenance),
-    S.provenance(l) = S.provenance(l(i));
+  for value = field_list,
+    field = char(value);
+    S.(field)(l) = S.(field)(l(i));
   end,
 
 end,
@@ -231,22 +184,9 @@ l=find(isnan(S.value) | isnan(S.time)   | ...
        isnan(S.Zgrid) | isnan(S.depth));
 
 if (~isempty(l)),
-  S.type(l)         = [];
-  S.time(l)         = []; 
-  S.depth(l)        = [];
-  S.Xgrid(l)        = [];
-  S.Ygrid(l)        = [];
-  S.Zgrid(l)        = [];
-  S.error(l)        = [];
-  S.value(l)        = [];
-
-  if (has.lonlat),
-    S.lat(l)        = [];
-    S.lon(l)        = [];
-  end,
-
-  if (has.provenance),
-    S.provenance(l) = [];
+  for value = field_list,
+    field = char(value);
+    S.(field)(l) = [];
   end,
 
   for i=1:S.Nsurvey,

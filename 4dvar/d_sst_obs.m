@@ -50,7 +50,8 @@ provenance.Targo     = 7;    % ARGO floats salinity from Met Office
 provenance.Tctd_CalC = 8;    % CTD temperature from CalCOFI
 provenance.Sctd_CalC = 9;    % CTD salinity from CalCOFI
 provenance.Tctd_GLOB = 10;   % CTD temperature from GLOBEC
-provenance.Sctd_GLOB = 10;   % CTD salinity from GLOBEC
+provenance.Sctd_GLOB = 11;   % CTD salinity from GLOBEC
+provenance.Tbuy_MetO = 12;   % Buoys, thermistor temperature form Met Office
 
 %  Set data error to 0.4 degrees Celsius.  Square values since we
 %  need variances.
@@ -275,7 +276,7 @@ S.state_flag_meanings=['zeta', blanks(1), ...
 %        underscores.
 
 
-S.origin_flag_values=[1:1:11];
+S.origin_flag_values=[1:1:12];
 
 S.origin_flag_meanings=['gridded_AVISO_SLA', blanks(1), ...
                         'blended_SST', blanks(1), ...
@@ -287,7 +288,8 @@ S.origin_flag_meanings=['gridded_AVISO_SLA', blanks(1), ...
                         'CTD_temperature_CalCOFI', blanks(1), ...
                         'CTD_salinity_CalCOFI', blanks(1), ...
                         'CTD_temperature_GLOBEC', blanks(1), ...
-                        'CTD_salinity_GLOBEC'];
+                        'CTD_salinity_GLOBEC', blanks(1), ...
+                        'buoy_temperature_Met_Office'];
 
 %  The attribute association between 'flag_values' and 'flag_meanings'
 %  is difficult to read when a moderate number of flags are use. To
@@ -319,7 +321,8 @@ S.global_provenance=[newline, ...
        ' 8: CTD temperature from CalCOFI ', newline, ...
        ' 9: CTD salinity from CalCOFI ', newline, ...
        '10: CTD temperature from GLOBEC ', newline, ...
-       '11: CTD salinity from GLOBEC'];
+       '11: CTD salinity from GLOBEC ', newline, ...
+       '12: buoy, thermistor temperature from Met Office'];
 
 %  Set the observation data sources global attribute 'obs_sources'
 %  which is stored in S.global_sources (OPTIONAL).
@@ -356,6 +359,13 @@ avalue='days since 1968-05-23 00:00:00 GMT';
 %---------------------------------------------------------------------------
 %  Super observations.
 %---------------------------------------------------------------------------
+
+%  Add needed fields to "obs" structure for the case that it is used latter
+%  when computing super observations. We can either use the structure of
+%  the NetCDF file OBSfile created above. This allows flexibility.
+
+obs.grid_Lm_Mm_N = S.grid_Lm_Mm_N;
+obs.ncfile       = OBSfile;
 
 %  It is possible that more that one observations associatiated to the
 %  same ROMS state variable is available at the same time in a particular

@@ -69,15 +69,15 @@ end,
 
 if (Nsurvey ~= length(S.survey_time)),
   error(['OBS_WRITE: dimension mismatch between data and file, ', ...
-	 'survey = ',num2str(Nsurvey),' ',num2str(length(S.survey_time))]);
+         'survey = ',num2str(Nsurvey),' ',num2str(length(S.survey_time))]);
 end,
 
 if (Nstate ~= length(S.variance)),
   error(['OBS_WRITE: dimension mismatch between data and file, ', ...
-	 'state_variable = ',num2str(Nstate),' ', ...
-	 num2str(length(S.variance))]);
+         'state_variable = ',num2str(Nstate),' ', ...
+         num2str(length(S.variance))]);
 end,
-	 
+
 %  Check size of the datum dimension in input NetCDF file. This dimension
 %  can be unlimited or not. If not unlimited, issue an error if the size
 %  of the observation array is not the same as the size of the dimension
@@ -87,12 +87,12 @@ end,
 if (unlimit == -1),
   if (Ndatum ~= length(S.value)),
     error(['OBS_WRITE: dimension mismatch between data and file, ', ...
-	   'datum = ',num2str(Ndatum),' ',num2str(length(S.value))]);
+           'datum = ',num2str(Ndatum),' ',num2str(length(S.value))]);
   end,
 end,
 
 disp(' ');
-disp(['*** Writing observations into:  ', ncfile]);
+disp(['*** Writing observations into:   ', ncfile]);
 
 %----------------------------------------------------------------------------
 %  Write all available variables in the structure.
@@ -109,105 +109,105 @@ for n=1:nvars,
       if (isfield(S,'spherical')),
         status=nc_write(ncfile,'spherical',S.spherical);
       else,
-	disp(['   field ''spherical''   not found in input structure']);
+        disp(['   field ''spherical''   not found in input structure']);
         notwritten=[notwritten 'spherical '];
       end,
     case 'Nobs'
       if (isfield(S,'Nobs')),
         status=nc_write(ncfile,'Nobs',S.Nobs);
       else,
-	disp(['   field ''Nobs''        not found in input structure']);
+        disp(['   field ''Nobs''        not found in input structure']);
         notwritten=[notwritten 'Nobs '];
       end,
     case 'survey_time'
       if (isfield(S,'survey_time')),
         status=nc_write(ncfile,'survey_time',S.survey_time);
       else,
-	disp(['   field ''survey_time'' not found in input structure']);
+        disp(['   field ''survey_time'' not found in input structure']);
         notwritten=[notwritten 'survey_time '];
       end,
     case 'obs_variance'
        if (isfield(S,'variance')),
         status=nc_write(ncfile,'obs_variance',S.variance);
       else,
-	disp(['   field ''variance''    not found in input structure']);
+        disp(['   field ''variance''    not found in input structure']);
         notwritten=[notwritten 'obs_variance '];
       end,
     case 'obs_type'
       if (isfield(S,'type')),
         status=nc_write(ncfile,'obs_type',S.type);
       else,
-	disp(['   field ''type''        not found in input structure']);
+        disp(['   field ''type''        not found in input structure']);
         notwritten=[notwritten 'obs_type '];
       end,
     case 'obs_provenance'
       if (isfield(S,'provenance')),
         status=nc_write(ncfile,'obs_provenance',S.provenance);
       else,
-	disp(['   field ''provenance''  not found in input structure']);
+        disp(['   field ''provenance''  not found in input structure']);
         notwritten=[notwritten 'obs_provenance '];
       end,
     case 'obs_time'
       if (isfield(S,'time')),
         status=nc_write(ncfile,'obs_time',S.time);
       else,
-	disp(['   field ''time''        not found in input structure']);
+        disp(['   field ''time''        not found in input structure']);
         notwritten=[notwritten 'obs_time '];
       end,
     case 'obs_lon'
       if (isfield(S,'lon')),
         status=nc_write(ncfile,'obs_lon',S.lon);
       else,
-	disp(['   field ''lon''         not found in input structure']);
+        disp(['   field ''lon''         not found in input structure']);
         notwritten=[notwritten 'obs_lon '];
       end,
     case 'obs_lat'
       if (isfield(S,'lat')),
         status=nc_write(ncfile,'obs_lat',S.lat);
       else,
-	disp(['   field ''lat''         not found in input structure']);
+        disp(['   field ''lat''         not found in input structure']);
         notwritten=[notwritten 'obs_lat '];
       end,
     case 'obs_depth'
       if (isfield(S,'depth')),
         status=nc_write(ncfile,'obs_depth',S.depth);
       else,
-	disp(['   field ''depth''       not found in input structure']);
+        disp(['   field ''depth''       not found in input structure']);
         notwritten=[notwritten 'obs_depth '];
       end,
     case 'obs_Xgrid'
       if (isfield(S,'Xgrid')),
         status=nc_write(ncfile,'obs_Xgrid',S.Xgrid);
       else,
-	disp(['   field ''Xgrid''       not found in input structure']);
+        disp(['   field ''Xgrid''       not found in input structure']);
         notwritten=[notwritten 'obs_Xgrid '];
       end,
     case 'obs_Ygrid'
       if (isfield(S,'Ygrid')),
         status=nc_write(ncfile,'obs_Ygrid',S.Ygrid);
       else,
-	disp(['   field ''Ygrid''       not found in input structure']);
+        disp(['   field ''Ygrid''       not found in input structure']);
         notwritten=[notwritten 'obs_Ygrid '];
       end,
     case 'obs_Zgrid'
       if (isfield(S,'Zgrid')),
         status=nc_write(ncfile,'obs_Zgrid',S.Zgrid);
       else,
-	disp(['   field ''Zgrid''       not found in input structure']);
+        disp(['   field ''Zgrid''       not found in input structure']);
         notwritten=[notwritten 'obs_Zgrid '];
       end,
     case 'obs_error'
       if (isfield(S,'error')),
         status=nc_write(ncfile,'obs_error',S.error);
       else,
-	disp(['   field ''error''       not found in input structure']);
+        disp(['   field ''error''       not found in input structure']);
         notwritten=[notwritten 'obs_error '];
       end,
     case 'obs_value'
       if (isfield(S,'value')),
         status=nc_write(ncfile,'obs_value',S.value);
       else,
-	disp(['   field ''value''       not found in input structure']);
+        disp(['   field ''value''       not found in input structure']);
         notwritten=[notwritten 'obs_value '];
       end,
   end,

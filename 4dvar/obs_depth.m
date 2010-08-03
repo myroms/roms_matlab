@@ -13,7 +13,7 @@ function [S]=obs_depth(ncfile, S, zflag);
 %
 %    ncfile  ROMS history file name (string)
 %
-%    S       Observations structure data or NetCDF file name:
+%    S         Observations structure data or NetCDF file name:
 %
 %    zflag   Flag to compute ROMS depths (integer):
 %
@@ -77,7 +77,7 @@ end,
 %  Check if 'provenace', 'lon', and 'lat' fields are available.
 
 has.lonlat=false;
-if (isfield(S,'lon') & isfield(S,'lat')),
+if (isfield(S,'lon') && isfield(S,'lat')),
   has.lonlat=true;
 end,
 
@@ -177,7 +177,7 @@ ind = find(isnan(S.Zgrid));
 if (~isempty(ind)),
   for value = field_list,
     field = char(value);             % convert from cell to string
-    S.(field) = [];                  % remove outliers
+    S.(field)(ind) = [];             % remove outliers
   end,
 
   disp(' ');
