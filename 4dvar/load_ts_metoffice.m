@@ -184,7 +184,7 @@ while (N <= Nfiles),
 %    DEPH_CORRECTED observation depth, negative, meters   (1:Nlev, 1:Nprof)
 %    WMO_INST_TYPE  WMO instrument type, code table 1770  (4xNprof)
 
-  time  = nc_read(ncname, 'JULD'          , [], FillValue);
+  time  = nc_read(ncname, 'JULD'          , [], FillValue) + epoch;
   lon   = nc_read(ncname, 'LONGITUDE'     , [], FillValue);
   lat   = nc_read(ncname, 'LATITUDE'      , [], FillValue);
   depth = nc_read(ncname, 'DEPH_CORRECTED', [], FillValue);
@@ -336,8 +336,8 @@ while (N <= Nfiles),
 %  times.
 
   if (got_period),
-    ind_T = find(Temp.time >= StartDay & Temp.time <= EndDay);
-    ind_S = find(Salt.time >= StartDay & Salt.time <= EndDay);
+    ind_T = find(Temp.time >= StartDay & EndDay <= Temp.time);
+    ind_S = find(Salt.time >= StartDay & EndDay <= Salt.time);
 
     if (~isempty(ind_T)),
       for value = field_list,
