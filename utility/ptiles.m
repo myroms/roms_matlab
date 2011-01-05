@@ -1,4 +1,4 @@
-function [handle]=ptiles(NtileI, NtileJ, fname);
+function [handle]=ptiles(NtileI, NtileJ, fname, LineType);
 
 %
 % PTILES:  Plot ROMS parallel horizontal tile partitions
@@ -13,6 +13,7 @@ function [handle]=ptiles(NtileI, NtileJ, fname);
 %    NtileI      Number of parallel partitions in the I-direction
 %    NtileJ      Number of parallel partitions in the J-direction
 %    fname       NetCDF file name (character string)
+%    LineType    Line symbol and color (character string, OPTIONAL)
 %
 % On Output:
 %
@@ -23,10 +24,14 @@ function [handle]=ptiles(NtileI, NtileJ, fname);
 
 % svn $Id$
 %===========================================================================%
-%  Copyright (c) 2002-2010 The ROMS/TOMS Group                              %
+%  Copyright (c) 2002-2011 The ROMS/TOMS Group                              %
 %    Licensed under a MIT/X style license                                   %
 %    See License_ROMS.txt                           Hernan G. Arango        %
 %===========================================================================%
+
+if (nargin < 4),
+  LineType='k-';
+end,
 
 %---------------------------------------------------------------------------
 % Inquire information from NetCDF file.
@@ -65,7 +70,7 @@ y=1:1:Jm;
 if (NtileI > 1 ),
   for i=1:NtileI-1,
     s=ones(size(y)).*Iend(i);
-    handle=plot(s,y,'k-');
+    handle=plot(s,y,LineType);
   end,
 end,  
 
@@ -73,7 +78,7 @@ if (NtileJ > 1 ),
   for i=1:NtileJ-1,
     j=1+(i-1)*NtileI;
     s=ones(size(x)).*Jend(j);
-    handle=plot(x,s,'k-');
+    handle=plot(x,s,LineType);
   end,
 end,
 

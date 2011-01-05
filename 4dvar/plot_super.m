@@ -12,7 +12,7 @@ function [S]=plot_super(GRDfile, OBSfile, state_var, survey)
 %
 %    GRDfile      Application NetCDF grid file name (string)
 %
-%    OBSfile      Observation NetCDF grid file name (string)
+%    OBSfile      Observation NetCDF file name (string)
 %
 %    state_var    Associate state variable:
 %
@@ -58,7 +58,7 @@ function [S]=plot_super(GRDfile, OBSfile, state_var, survey)
 
 % svn $Id$
 %===========================================================================%
-%  Copyright (c) 2002-2010 The ROMS/TOMS Group                              %
+%  Copyright (c) 2002-2011 The ROMS/TOMS Group                              %
 %    Licensed under a MIT/X style license                                   %
 %    See License_ROMS.txt                           Hernan G. Arango        %
 %===========================================================================%
@@ -98,7 +98,7 @@ end,
 
 %  Create super observations, if necessary.
 
-[S] = super_obs_jw(O);
+[S] = super_obs(O);
 
 %  Plot original (O) and new (S) observations.
 

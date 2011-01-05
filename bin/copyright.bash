@@ -2,7 +2,7 @@
 #
 # svn $Id$
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-# Copyright (c) 2002-2010 The ROMS/TOMS Group                           :::
+# Copyright (c) 2002-2011 The ROMS/TOMS Group                           :::
 #   Licensed under a MIT/X style license                                :::
 #   See License_ROMS.txt                                                :::
 #:::::::::::::::::::::::::::::::::::::::::::::::::::::: David Robertson :::
@@ -27,12 +27,12 @@
 #                                                                       :::
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-search="2002-2009 The ROMS/TOMS"
-replace="2002-2010 The ROMS/TOMS"
+search="2002-2010 The ROMS/TOMS"
+replace="2002-2011 The ROMS/TOMS"
 
 # Directories to search for replacements.
 
-set c_dirs = "4dvar bathymetry bin coastlines initial landmask utility"
+set c_dirs = "4dvar bathymetry bin boundary coastlines grid initial landmask utility"
 
 setsvn=1
 verbose=0
@@ -92,28 +92,28 @@ done
 echo -e "\nDone.\n"
 
 if [ $setsvn -eq 1 ]; then
-  svn propset -R copyright '(c) 2002-2010 The ROMS/TOMS Group' 4dvar
-  svn propset -R copyright '(c) 2002-2010 The ROMS/TOMS Group' bathymetry
-  svn propset -R copyright '(c) 2002-2010 The ROMS/TOMS Group' bin
-  svn propset -R copyright '(c) 2002-2010 The ROMS/TOMS Group' coastlines
-  svn propset -R copyright '(c) 2002-2010 The ROMS/TOMS Group' initial
-  svn propset -R copyright '(c) 2002-2010 The ROMS/TOMS Group' landmask
-  svn propset -R copyright '(c) 2002-2010 The ROMS/TOMS Group' utility
+  svn propset -R copyright '(c) 2002-2011 The ROMS/TOMS Group' 4dvar
+  svn propset -R copyright '(c) 2002-2011 The ROMS/TOMS Group' bathymetry
+  svn propset -R copyright '(c) 2002-2011 The ROMS/TOMS Group' bin
+  svn propset -R copyright '(c) 2002-2011 The ROMS/TOMS Group' coastlines
+  svn propset -R copyright '(c) 2002-2011 The ROMS/TOMS Group' initial
+  svn propset -R copyright '(c) 2002-2011 The ROMS/TOMS Group' landmask
+  svn propset -R copyright '(c) 2002-2011 The ROMS/TOMS Group' utility
 
-  svn propset copyright '(c) 2002-2010 The ROMS/TOMS Group' mex
-  svn propset copyright '(c) 2002-2010 The ROMS/TOMS Group' mex/Contents.m
-  svn propset copyright '(c) 2002-2010 The ROMS/TOMS Group' mex/mexinside
-  svn propset copyright '(c) 2002-2010 The ROMS/TOMS Group' mex/mexrect
-  svn propset copyright '(c) 2002-2010 The ROMS/TOMS Group' mex/mexsepeli
-  svn propset copyright '(c) 2002-2010 The ROMS/TOMS Group' seagrid
-  svn propset copyright '(c) 2002-2010 The ROMS/TOMS Group' seagrid/presto
-  svn propset copyright '(c) 2002-2010 The ROMS/TOMS Group' seagrid/presto/@presto
-  svn propset copyright '(c) 2002-2010 The ROMS/TOMS Group' seagrid/presto/@ps
-  svn propset copyright '(c) 2002-2010 The ROMS/TOMS Group' seagrid/presto/@pst
-  svn propset copyright '(c) 2002-2010 The ROMS/TOMS Group' seagrid/@seagrid
-  svn propset copyright '(c) 2002-2010 The ROMS/TOMS Group' seagrid/test_data
-  svn propset copyright '(c) 2002-2010 The ROMS/TOMS Group' seawater
-  svn propset copyright '(c) 2002-2010 The ROMS/TOMS Group' . startup.m
+  svn propset copyright '(c) 2002-2011 The ROMS/TOMS Group' mex
+  svn propset copyright '(c) 2002-2011 The ROMS/TOMS Group' mex/Contents.m
+  svn propset copyright '(c) 2002-2011 The ROMS/TOMS Group' mex/mexinside
+  svn propset copyright '(c) 2002-2011 The ROMS/TOMS Group' mex/mexrect
+  svn propset copyright '(c) 2002-2011 The ROMS/TOMS Group' mex/mexsepeli
+  svn propset copyright '(c) 2002-2011 The ROMS/TOMS Group' seagrid
+  svn propset copyright '(c) 2002-2011 The ROMS/TOMS Group' seagrid/presto
+  svn propset copyright '(c) 2002-2011 The ROMS/TOMS Group' seagrid/presto/@presto
+  svn propset copyright '(c) 2002-2011 The ROMS/TOMS Group' seagrid/presto/@ps
+  svn propset copyright '(c) 2002-2011 The ROMS/TOMS Group' seagrid/presto/@pst
+  svn propset copyright '(c) 2002-2011 The ROMS/TOMS Group' seagrid/@seagrid
+  svn propset copyright '(c) 2002-2011 The ROMS/TOMS Group' seagrid/test_data
+  svn propset copyright '(c) 2002-2011 The ROMS/TOMS Group' seawater
+  svn propset copyright '(c) 2002-2011 The ROMS/TOMS Group' . startup.m
 else
   echo -e "Not updating svn properties.\n"
 fi

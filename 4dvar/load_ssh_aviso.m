@@ -39,7 +39,7 @@ function [D]=load_ssh_aviso(GRDfile, StartDay, EndDay)
 
 % svn $Id$
 %===========================================================================%
-%  Copyright (c) 2002-2010 The ROMS/TOMS Group                              %
+%  Copyright (c) 2002-2011 The ROMS/TOMS Group                              %
 %    Licensed under a MIT/X style license                                   %
 %    See License_ROMS.txt                           Brian Powell            %
 %===========================================================================%
@@ -64,9 +64,9 @@ data=[];
 
 %  Source of AVISO data.
 
-if (StartDay < datenum(2001,8,22)),
+if (StartDay < datenum(2010,3,31)),
   url=['http://opendap.aviso.oceanobs.com/thredds/dodsC/' ...
-       'dt_ref_global_merged_msla_h?%s'];
+       'dataset-duacs-dt-ref-global-merged-msla-h?%s'];
 else,
   url=['http://opendap.aviso.oceanobs.com/thredds/dodsC/' ...
        'duacs_global_nrt_msla_merged_h?%s'];
