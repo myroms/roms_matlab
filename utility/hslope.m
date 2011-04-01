@@ -134,7 +134,13 @@ end,
 %----------------------------------------------------------------------------
 
 spherical=nc_read(fname,'spherical',0);
-if (spherical == 'T' | spherical == 't'),
+if (ischar(spherical)),
+  if (spherical == 'T' | spherical == 't'),
+    spherical=true;
+  end,
+end,
+
+if (spherical),
   xr=nc_read(fname,'lon_rho',0);
   yr=nc_read(fname,'lat_rho',0);
   x(1:L,1:M)=0.25.*(xr(1:L,1:M)+xr(2:Lp,1:M)+xr(1:L,2:Mp)+xr(2:Lp,2:Mp));
@@ -270,7 +276,7 @@ if (iprint),
   else,
     disp('  ');
     disp(['There is not need to activate the CURVGRID flag in your ',...
-	  'header file...']);
+          'header file...']);
     disp('  ');
   end,
 end,  

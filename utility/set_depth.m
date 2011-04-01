@@ -31,8 +31,9 @@ function [z]=set_depth(Vtransform, Vstretching, ...
 %                       Zo(x,y,s)=[hc*s(k)+h(x,y)*C(k)]/[hc+h(x,y)]
 %    Vstretching   Vertical stretching function:
 %                    Vstretching = 1,  original (Song and Haidvogel, 1994)
-%                    Vstretching = 2,  A. Shchepetkin (UCLA-ROMS)
+%                    Vstretching = 2,  A. Shchepetkin (UCLA-ROMS, 2005)
 %                    Vstretching = 3,  R. Geyer BBL refinement
+%                    Vstretching = 4,  A. Shchepetkin (UCLA-ROMS, 2010)
 %    theta_s       S-coordinate surface control parameter (scalar)
 %    theta_b       S-coordinate bottom control parameter (scalar)
 %    hc            Width (m) of surface or bottom boundary layer in which
@@ -90,7 +91,7 @@ if (Vtransform < 1 | Vtransform > 2),
   return
 end,
 
-if (Vstretching < 1 | Vstretching > 3),
+if (Vstretching < 1 | Vstretching > 4),
   disp(' ');
   disp([setstr(7),'*** Error:  SET_DEPTH - Illegal parameter Vstretching = ' ...
 	num2str(Vstretching), setstr(7)]);

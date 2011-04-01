@@ -131,6 +131,8 @@ data.time = nc_varget(url,'time',T(1), length(T));
 data.lon  = nc_varget(url,'lon' ,I(1), length(I));
 data.lat  = nc_varget(url,'lat' ,J(1), length(J));
 
+data.time = epoch + data.time./86400;
+
 ind = find(data.lon > MaxLon);
 if (~isempty(ind)),
   data.lon(ind) = data.lon(ind) - 360;
