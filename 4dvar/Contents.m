@@ -37,6 +37,10 @@
 %                         AVISO. It creates and writes observation file.
 %                         Then, it computes super observations and creates
 %                         and writes super observations NetCDF file.
+%   d_sst_merge       - Driver template to merge several SST ROMS 4D-Var
+%                         observations NetCDF files. It allows the user
+%                         to merge data from several satellites and
+%                         process super observations.
 %   d_sst_obs         - Driver template to extract SST observations from
 %                         satellite data. It creates and writes observation
 %                         file. Then, it computes super observations and
@@ -47,6 +51,12 @@
 %
 %   load_ssh_aviso    - Extracts AVISO sea level anomaly for the period of
 %                         interest and specified region from ROMS Grid file.
+%   load_sst_AMSRE    - Extracts satellite sea surface temperature for the
+%                         period of interest and specified region from
+%                         ROMS Grid file. The SST data is from the OpenDAP
+%                         catalog maintained by NOAA PFEG CoastWatch in
+%                         California. The resolution is 0.025 degree global
+%                         1-day average product.
 %   load_sst_pfeg     - Extracts satellite sea surface temperature for the
 %                         period of interest and specified region from
 %                         ROMS Grid file. The SST data is from the OpenDAP

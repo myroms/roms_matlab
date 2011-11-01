@@ -1,15 +1,20 @@
 function [Xgrid, Ygrid]=obs_ijpos(GRDname, obs_lon, obs_lat, ...
-                                  Correction, obc_edge);
+                                  Correction, obc_edge, ...
+                                  Ioffset, Joffset);
 
 %
 % OBS_IJPOS:  Computes observation locations in ROMS fractional coordinates
 %
-% [Xgrid,Ygrid]=obs_ijpos(GRDname,obs_lon,obs_lat,Correction,obc_edge)
+% [Xgrid,Ygrid]=obs_ijpos(GRDname,obs_lon,obs_lat,Correction,obc_edge,
+%                         Ioffset,Joffset)
 %
 % This function computes the observation locations (Xgrid,Ygrid) in terms
 % of ROMS fractional (I,J) coordinates. This is done to facilitate the
 % processing of the observation operators inside ROMS. All the observations
-% are assumed to be located at RHO-points.
+% are assumed to be located at RHO-points.  If the Ioffset and Joffset
+% vectors are provided, the polygon defined by the application grid is
+% smaller by the number of grid points provided in the offset.  This is
+% done to avoid processing next to the applications boundary edges.
 %
 % On Input:
 %
@@ -20,6 +25,12 @@ function [Xgrid, Ygrid]=obs_ijpos(GRDname, obs_lon, obs_lat, ...
 %                    grids (false, true)
 %    obc_edge      switch to include observations on open boundary edges
 %                    (false, true)
+%    Ioffset       Application I-grid offset when defining polygon (vector):
+%                    Ioffset(1):  I-grid offset on the edge where Istr=1
+%                    Ioffset(2):  I-grid offset on the edge where Iend=Lm
+%    Joffset       Application J-grid offset when defining polygon (vector):
+%                    Joffset(1):  I-grid offset on the edge where Jstr=1
+%                    Joffset(2):  I-grid offset on the edge where Jend=Mm
 %
 % On Ouput:
 %
@@ -57,6 +68,16 @@ end,
 
 if (nargin < 5),
   obc_edge = false;
+end,
+
+if (nargin < 6),
+  Ioffset(1)=0;
+  Ioffset(2)=0;
+end,
+
+if (nargin < 7),
+  Joffset(1)=0;
+  Joffset(2)=0;
 end,
 
 %----------------------------------------------------------------------------
@@ -137,15 +158,20 @@ end,
 
 [Im,Jm]=size(rlon);
 
-Xbox=[squeeze(rlon(:,1)); ...
-      squeeze(rlon(Im,2:Jm))'; ...
-      squeeze(flipud(rlon(1:Im-1,Jm))); ...
-      squeeze(fliplr(rlon(1,1:Jm-1)))'];
+Istr=1 +Ioffset(1);
+Iend=Im-Ioffset(2);
+Jstr=1 +Joffset(1);
+Jend=Jm-Joffset(2);
 
-Ybox=[squeeze(rlat(:,1)); ...
-      squeeze(rlat(Im,2:Jm))'; ...
-      squeeze(flipud(rlat(1:Im-1,Jm))); ...
-      squeeze(fliplr(rlat(1,1:Jm-1)))'];
+Xbox=[squeeze(rlon(Istr:Iend,Jstr)); ...
+      squeeze(rlon(Iend,Jstr+1:Jend))'; ...
+      squeeze(flipud(rlon(Istr:Iend-1,Jend))); ...
+      squeeze(fliplr(rlon(Istr,Jstr:Jend-1)))'];
+
+Ybox=[squeeze(rlat(Istr:Iend,Jstr)); ...
+      squeeze(rlat(Iend,Jstr+1:Jend))'; ...
+      squeeze(flipud(rlat(Istr:Iend-1,Jend))); ...
+      squeeze(fliplr(rlat(Istr,Jstr:Jend-1)))'];
 
 %  Find observation inside (IN) or on the edge (ON) the polygon defined
 %  by (Xbox,Ybox).

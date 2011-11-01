@@ -1,24 +1,23 @@
-function [data]=load_sst_pfeg(GRDfile, StartDay, EndDay)
+function [data]=load_sst_AMSRE(GRDfile, StartDay, EndDay)
 
 %
-% LOAD_SST_PFEG:  Loads SST data for the region and time period
+% LOAD_SST_AMSRE:  Loads SST data for the region and time period
 %
 % [DATA]=load_sst_pfeg(GRDfile, StartDay, EndDay)
 % 
 %  Given a ROMS grid NetCDF, this function loads the SST data from the
 %  extensive OpenDAP catalog maintained by NOAA PFEG OceanWatch. The
-%  SST are 0.1 degree global 5-day average composite. The data are a
-%  combination of microwave AMSR-E (which has only coverage > 25 km
-%  from the coast) with infrared observations from AVHRR and MODIS
-%  (polar orbiting) and GOES (geostationary) via GHRSST.  The entire
-%  OceanWatch catalog can be found at:  
+%  SST has 0.025 degree global 1-day product. Meassurements are gathered
+%  by Japan's Advanced Microwave Scanning Radiometer (AMSR-E) instrument,
+%  a passive radiance sensor carried aboard NASA's Aqua spacecraft.
+%  The entire OceanWatch catalog can be found at:  
 %  
 %  http://oceanwatch.pfeg.noaa.gov/thredds/catalog.html
 %
-%  This script process the SST, Blended, Global, EXPERIMENTAL/5-day
-%  dataset which starts on 2002-07-06 12:00:00Z
+%  This script process the SST, Aqua AMSR-E, Global/1-day dataset which
+%  starts on 2002-06-01 12:00:00Z
 %
-%  http://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatBA/ssta/catalog.html
+%  http://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatAA/ssta/catalog.html
 %   
 % On Input:
 %
@@ -58,12 +57,12 @@ function [data]=load_sst_pfeg(GRDfile, StartDay, EndDay)
 %  Check arguments.
 
 if (nargin < 3),
-  error([' LOAD_SST_PFEG: You must specify a grid file along with', ...
+  error([' LOAD_SST_AMSRE: You must specify a grid file along with', ...
          ' starting and ending times']);
 end,
 
 if (StartDay > EndDay),
-  error([' LOAD_SST_PFEG: Your starting time must be greater than', ...
+  error([' LOAD_SST_AMSRE: Your starting time must be greater than', ...
          ' the ending time']);
 end,
 
@@ -76,7 +75,7 @@ data=[];
 %  Source of SST data.
 
 url = ['http://thredds1.pfeg.noaa.gov:8080/thredds/dodsC/' ...
-       'satellite/BA/ssta/5day'];
+       'satellite/AA/ssta/1day'];
 
 %  Find the time period of interest.
 
@@ -85,7 +84,7 @@ sst_time = epoch + nc_varget(url,'time')/86400;
 T = find(sst_time >= StartDay & sst_time <= EndDay);
 
 if (isempty(T)),
-  disp([' LOAD_SST_PFEG: no data found for period of interest.']);
+  disp([' LOAD_SST_AMSRE: no data found for period of interest.']);
   return;
 end
 
@@ -124,7 +123,7 @@ I = find(sst_lon >= MinLon & sst_lon <= MaxLon);
 J = find(sst_lat >= MinLat & sst_lat <= MaxLat);
 
 if (isempty(I) | isempty(J))
-  disp([' LOAD_SST_PFEG: no data found for application grid.']);
+  disp([' LOAD_SST_AMSRE: no data found for application grid.']);
   return;
 end,
 
@@ -153,7 +152,7 @@ end,
 %  Get the SST data. The data are actually 4D with second coordinate
 %  being altitude.
 
-data.sst = nc_varget(url, 'BAssta', [T(1) 0 J(1) I(1)], ...
+data.sst = nc_varget(url, 'AAssta', [T(1) 0 J(1) I(1)], ...
                                     [length(T) 1 length(J) length(I)]);   
 
 return

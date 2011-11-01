@@ -16,7 +16,7 @@
 
 %  Set input/output NetCDF files.
 
- my_root = '/home/arango/ocean/toms/repository/test';
+ my_root = '~/ocean/repository/test';
 
  GRDfile = fullfile(my_root, 'WC13/Data', 'wc13_grd.nc');
  OBSfile = 'wc13_ssh_obs.nc';
@@ -84,6 +84,15 @@ Correction = true;
 
 obc_edge = false;
 
+%  Set ROMS application I- and J-grid offset to process observation away
+%  from boundaries, if so desired.
+
+Ioffset(1)=0;     % I-grid offset on the edge where Istr=1
+Ioffset(2)=0;     % I-grid offset on the edge where Iend=Lm
+
+Joffset(1)=0;     % J-grid offset on the edge where Jstr=1
+Joffset(2)=0;     % J-grid offset on the edge where Jend=Lm
+
 %---------------------------------------------------------------------------
 %  Extract SSH observations from AVISO, store it into structure array D.
 %---------------------------------------------------------------------------
@@ -131,7 +140,8 @@ end,
 %  of ROMS grid.
 
 [obs.Xgrid, obs.Ygrid] = obs_ijpos(GRDfile, obs.lon, obs.lat, ...
-                                   Correction, obc_edge);
+                                   Correction, obc_edge, ...
+                                   Ioffset, Joffset);
 
 ind = find(isnan(obs.Xgrid) & isnan(obs.Ygrid));
 if (~isempty(ind));                % remove NaN's from data

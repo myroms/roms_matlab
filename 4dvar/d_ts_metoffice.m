@@ -4,7 +4,7 @@
 %  This a user modifiable script that can be used to prepare ROMS 4D-Var
 %  SST observations NetCDF file. The T,S data is extracted from the UK
 %  Met office Hadley Centre, quality controlled, EN3 observation datasets.
-%  It uses the script 'load_ts_metoffice.m' extract profiles of potential
+%  It uses the script 'load_ts_metoffice.m' to extract profiles of potential
 %  temperature and salinity for the application grid and requested times.
 %
 %  The hydrographic data are available from 1950 to the present and stored
@@ -33,14 +33,14 @@
 %  Set input application Grid and history NetCDF files. The history file
 %  is used to compute the depth of model vertical levels.
 
- my_root = '/home/arango/ocean/toms/repository/test';
+ my_root = '~/ocean/repository/test';
 
  GRDfile = fullfile(my_root, 'WC13/Data', 'wc13_grd.nc'); 
  HISfile = fullfile(my_root, 'WC13/Data', 'wc13_ini.nc'); 
  
 %  Set input UK Met Office NetCDF file name(s).
 
- MET_dir = '/home/arango/ocean/toms/repository/test/WC13/OBS/EN3';
+ MET_dir = '~/ocean/repository/test/WC13/OBS/EN3';
 
  METfile = fullfile(MET_dir, 'EN3_v2a_Profiles_200401.nc.gz');
 
@@ -97,7 +97,7 @@ provenance.Tbuy_MetO = 12;   % Buoys, thermistor temperature form Met Office
 error.Targo = 0.1;        error.Targo = error.Targo ^2;
 error.Tbuoy = 0.1;        error.Tbuoy = error.Tbuoy ^2;
 error.Tctd  = 0.1;        error.Tctd  = error.Tctd  ^2;
-error.Txbt  = 0.1;        error.Txct  = error.Txbt  ^2;
+error.Txbt  = 0.1;        error.Txbt  = error.Txbt  ^2;
 
 error.Sargo = 0.01;       error.Sargo = error.Sargo ^2;
 error.Sctd  = 0.01;       error.Sctd  = error.Sctd  ^2;
@@ -125,6 +125,15 @@ Correction = true;
 
 obc_edge = false;
 
+%  Set ROMS application I- and J-grid offset to process observation away
+%  from boundaries, if so desired.
+
+Ioffset(1)=0;     % I-grid offset on the edge where Istr=1
+Ioffset(2)=0;     % I-grid offset on the edge where Iend=Lm
+
+Joffset(1)=0;     % J-grid offset on the edge where Jstr=1
+Joffset(2)=0;     % J-grid offset on the edge where Jend=Lm
+
 %---------------------------------------------------------------------------
 %  Extract SST observations and store them into structure array D.
 %---------------------------------------------------------------------------
@@ -133,7 +142,7 @@ obc_edge = false;
 
 obs.spherical = 1;
 
-% The 'load_sst_pfeg' stores SST data as:   D.sst, D.time, D.lon, D.lat.
+%  Set time to process.
 
   StartDay = datenum(2004,1, 1);
   EndDay   = datenum(2004,1,15);
@@ -223,7 +232,8 @@ obs.value      = obs.value(I);
 %  of ROMS grid.
 
 [obs.Xgrid, obs.Ygrid] = obs_ijpos(GRDfile, obs.lon, obs.lat, ...
-                                   Correction, obc_edge);
+                                   Correction, obc_edge, ...
+                                   Ioffset, Joffset);
 
 obs.Xgrid = transpose(obs.Xgrid);  % take the transpose of the locations     
 obs.Ygrid = transpose(obs.Ygrid);  % to faciliate structure expansion
