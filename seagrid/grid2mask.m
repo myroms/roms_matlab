@@ -41,16 +41,16 @@ function theResult = grid2mask(x, y, z, c, mask)
 
 if nargin < 1, help(mfilename), return, end
 
-if nargin == 1 & isequal(x, 'demo')
+if nargin == 1 && isequal(x, 'demo')
 	x = 10;
 end
-if ischar(x) & any(x(1) == '0123456789')
+if ischar(x) && any(x(1) == '0123456789')
 	x = eval(x);
 end
 
 % Demonstration.
 
-if nargin < 2 & ~ischar(x)
+if nargin < 2 && ~ischar(x)
 	f = findobj(gcf, 'Tag', mfilename);
 	delete(f)
 	nx = x;
@@ -72,7 +72,7 @@ end
 REPLACEMENT_DEPTH = 0;
 
 MASTER_HANDLE = findobj(gca, 'Type', 'text', 'Tag', mfilename);
-if any(MASTER_HANDLE) & ishandle(MASTER_HANDLE(1))
+if any(MASTER_HANDLE) && ishandle(MASTER_HANDLE(1))
 	u = get(MASTER_HANDLE, 'UserData');
 	STRIP_HANDLES = u.strips;
 	EDIT_HANDLE = u.edit;
@@ -82,7 +82,7 @@ end
 
 % Get the edit-field replacement-value.
 
-if isequal(lower(x), 'edit') & nargin == 1
+if isequal(lower(x), 'edit') && nargin == 1
 	REPLACEMENT_DEPTH = eval(get(EDIT_HANDLE, 'String'));
 	set(EDIT_HANDLE, 'String', num2str(REPLACEMENT_DEPTH));
 	u.depth = REPLACEMENT_DEPTH;
@@ -111,9 +111,9 @@ end
 
 % Set the mask.
 
-if isequal(lower(x), 'mask') & nargin > 1
-	if nargin < 3 | isempty(y), y = 0; end
-	mask = ~~y
+if isequal(lower(x), 'mask') && nargin > 1
+	if nargin < 3 || isempty(y), y = 0; end
+	mask = ~~y;
 	if length(mask) == 1
 		mask = ~~(zeros(size(y)) + mask);
 	end
@@ -140,7 +140,7 @@ end
 
 % Get the mask.
 
-if isequal(lower(x), 'mask') & nargin < 2
+if isequal(lower(x), 'mask') && nargin < 2
 	x = get(u.strips(1), 'XData');
 	c = zeros(length(u.strips)+1, length(x));
 	for i = 1:length(u.strips)
@@ -156,13 +156,13 @@ end
 
 % Set the depth-array.
 
-if isequal(lower(x), 'depth') & nargin > 1
+if isequal(lower(x), 'depth') && nargin > 1
 	return
 end
 
 % Get the depth-array.
 
-if isequal(lower(x), 'depth') & nargin < 2
+if isequal(lower(x), 'depth') && nargin < 2
 	x = get(u.strips(1), 'XData');
 	z = zeros(length(u.strips)+1, length(x));
 	for i = 1:length(u.strips)
@@ -176,13 +176,13 @@ if isequal(lower(x), 'depth') & nargin < 2
 	return
 end
 
-if isequal(lower(x), 'depth') & nargin < 2
+if isequal(lower(x), 'depth') && nargin < 2
 	return
 end
 
 % Done.
 
-if nargin == 1 & isequal(lower(x), 'done')
+if nargin == 1 && isequal(lower(x), 'done')
 	x = get(u.strips(1), 'XData');
 	c = zeros(length(u.strips)+1, length(x));
 	for i = 1:length(u.strips)
@@ -201,7 +201,7 @@ end
 
 % Handle mouse click.
 
-if isequal(lower(x), 'buttondownfcn') & nargin == 1
+if isequal(lower(x), 'buttondownfcn') && nargin == 1
 	selection = get(gcbf, 'SelectionType');
 	switch selection
 	case {'normal', 'extend', 'alt'}
@@ -284,7 +284,6 @@ if isempty(mask), mask = ~~zeros(size(x)); end
 masked_color = c;
 masked_color(logical(mask)) = NaN;
 
-theEraseMode = 'normal';
 theEraseMode = 'xor';
 
 for i = 1:size(x, 1)-1

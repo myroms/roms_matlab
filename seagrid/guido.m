@@ -508,7 +508,7 @@ result = theValue;
 if all(isOkay)
     switch class(theValue)
     case 'cell'
-        if isequal(theValue{1}, 'checkbox') | ...
+        if isequal(theValue{1}, 'checkbox') || ...
 				isequal(theValue{1}, 'radiobutton')
 			if length(theValue) < 2, theValue{2} = 0; end
             result = theValue{2};
@@ -569,15 +569,15 @@ if nargin < 2
 			isOkay = isOkay & okay;
 			result = setfield(result, theFields{i}, res);
 		case 'cell'
-			if length(theValue) == 1 & ...
-				(isequal(theValue{1}, 'radiobutton') | ...
+			if length(theValue) == 1 && ...
+				(isequal(theValue{1}, 'radiobutton') || ...
 				isequal(theValue{1}, 'checkbox'))
 				theValue{2} = 0;
 				result = setfield(result, theFields{i}, theValue);
-			elseif length(theValue) == 1 & iscell(theValue{1})
+			elseif length(theValue) == 1 && iscell(theValue{1})
 				theValue{2} = 1;
 				result = setfield(result, theFields{i}, theValue);
-			elseif ~isequal(theValue{1}, 'radiobutton') & ...
+			elseif ~isequal(theValue{1}, 'radiobutton') && ...
 					~isequal(theValue{1}, 'checkbox')
 				theValue{1} = {theValue{1}};
 				theValue{2} = 1;
@@ -751,7 +751,7 @@ if nargin < 2, theLayout = (1:length(theControls)).'; end
 if nargin < 3, thePosition = [0 0 1 1]; end
 
 a = theLayout(:);
-a = a(finite(a));
+a = a(isfinite(a));
 a = sort(a);
 a(diff(a) == 0) = [];
 

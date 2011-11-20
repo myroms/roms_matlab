@@ -3,7 +3,7 @@ function [dnames,dsizes,recdim]=nc_dim(fname);
 %
 % NC_DIM:  Inquire about the dimensions in a NetCDF file
 %
-% [dnames,dsizes]=nc_dim(fname)
+% [dnames,dsizes,recdim]=nc_dim(fname)
 %
 % This function gets dimensions information about requested NetCDF
 % file.

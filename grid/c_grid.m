@@ -1,9 +1,9 @@
-function [status]=c_grid(Lp,Mp,Gname);
+function [status]=c_grid(Lp,Mp,Gname,NewFile);
 
 %
 % C_GRID:  Creates or modifies a ROMS grid NetCDF file.
 %
-% [status]=c_grid(Lp,Mp,Gname)
+% [status]=c_grid(Lp,Mp,Gname,NewFile)
 %
 % This function creates or modifies a existing ROMS grid NetCDF file.
 %
@@ -12,6 +12,7 @@ function [status]=c_grid(Lp,Mp,Gname);
 %    Lp          Number of RHO-points in the XI-direction
 %    Mp          Number of RHO-points in the ETA-direction
 %    Gname       Grid NetCDF file name (string)
+%    NewFile     Switch to create a new file (logical, OPTIONAL)
 %
 % On Output:
 %
@@ -24,17 +25,25 @@ function [status]=c_grid(Lp,Mp,Gname);
 %    See License_ROMS.txt                           Hernan G. Arango        %
 %===========================================================================%
 
+if (nargin < 4),
+  NewFile=false;
+end,
+
+GOT_NCFILE=false;
+  
 % Check if grid NetCDF already exist.
 
-GOT_NCFILE=0;
 disp(' ');
-if (exist(Gname)),
-  GOT_NCFILE=1;
-  disp(['Appending to existing GRID NetCDF file: ',Gname]);
-else,
-  disp(['Creating a new GRID NetCDF file: ',Gname]);
+if (~NewFile),
+  if (exist(Gname)),
+    GOT_NCFILE=true;
+    disp(['Appending to existing GRID NetCDF file: ',Gname]);
+  else,
+    disp(['Creating a new GRID NetCDF file: ',Gname]);
+  end,
+  disp(' ');
 end,
-disp(' ');
+
 
 %----------------------------------------------------------------------------
 %  Get some NetCDF parameters.
@@ -763,4 +772,3 @@ if (status ~= 0),
 end,
 
 return
-

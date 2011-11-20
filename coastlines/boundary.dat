@@ -17,7 +17,19 @@
 %  should be loaded first, followed by the coastline matlab file, and
 %  then this boundary file.
 %
+%  To get the origin of the (lon,lat) coordinates in the lower-letf-corner,
+%  you need to specify as the first-point below to the (lat,lon) of the map
+%  upper-left-corner. Then, specify the other points in counterclock order:
+%
+%            1 ---------- 4
+%              |        |
+%        Eta   |        |        O:  Origin of ROMS (Xi,Eta) coordinates
+%              |        |
+%            2 ---------- 3
+%              O
+%                  Xi
+
+-4.0 70.0 1
 -4.0 62.5 1
 14.0 62.5 1
 14.0 70.0 1
--4.0 70.0 1

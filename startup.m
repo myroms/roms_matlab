@@ -19,7 +19,7 @@ format long g
 % Change "my_root" to the appropriate path were these matlab scripts are
 % installed in your computer.
 
-my_root='/home/arango/ocean/toms/repository';
+my_root='~/ocean/repository';
 
 path(path, fullfile(my_root, 'matlab', '4dvar', ''))
 path(path, fullfile(my_root, 'matlab', 'bathymetry', ''))

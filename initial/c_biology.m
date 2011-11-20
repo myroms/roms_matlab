@@ -66,7 +66,7 @@ for n=1:length(dsizes),
       did.Nr=id;
       Nr=dsizes(n);
     case 'ocean_time',
-      did.time
+      did.time=id;
       rec=dsizes(n);
   end,
 end,  

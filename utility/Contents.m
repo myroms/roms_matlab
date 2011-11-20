@@ -22,6 +22,7 @@
 %   nc_attadd     - Adds/modifies a global or variable NetCDF attribute.
 %   nc_attdel     - Deletes requested global or variable NetCDF attribute.
 %   nc_dim        - Inquires about the dimensions in a NetCDF file.
+%   nc_drename    - Renames a NetCDF dimension.
 %   nc_getatt     - Gets a global or variable NetCDF attribute.
 %   nc_inq        - Inquires about the contents of a NetCDF file.
 %   nc_vdef       - Creates a ROMS variable in a NetCDF file.
