@@ -1,9 +1,9 @@
-function [avalue]=nc_getatt(fname,aname,vname);
+function avalue=nc_getatt(fname,aname,vname);
 
 %
 % NC_GETATT:  Gets a global or variable NetCDF attribute
 %
-% [avalue]=nc_getatt(fname,aname,vname)
+% avalue=nc_getatt(fname,aname,vname)
 %
 % This function reads the spcedified global or variable attribute
 % from input NetCDF file. If the "vname" argument is missing, it
@@ -11,7 +11,7 @@ function [avalue]=nc_getatt(fname,aname,vname);
 %
 % On Input:
 %
-%    fname      NetCDF file name (character string)
+%    fname      NetCDF file name or URL file name (character string)
 %    aname      Attribute name (character string)
 %    vname      Variable name (character string; optional)
 %
@@ -27,16 +27,119 @@ function [avalue]=nc_getatt(fname,aname,vname);
 %    See License_ROMS.txt                           Hernan G. Arango        %
 %===========================================================================%
 
+if (nargin < 3),
+  vname=[];
+end
+
+%  Check if input file is URL from an OpenDAP server and process with the
+%  appropriate interface.
+
+url=nc_url(fname);
+
+if (url),
+  [avalue]=nc_getatt_java(fname,aname,vname);
+else
+  [avalue]=nc_getatt_mexnc(fname,aname,vname);
+end
+
+return
+
+function [avalue]=nc_getatt_java(fname,aname,vname);
+
+%
+% NC_GETATT_JAVA:  Gets a global or variable NetCDF attribute
+%
+% avalue=nc_getatt_java(fname,aname,vname)
+%
+% This function reads the spcedified global or variable attribute
+% from input NetCDF file. If the "vname" argument is missing, it
+% is assumed that "aname" is a global attribute. It uses SNCTOOLS
+% function "nc_info".
 
 %  Initialize.
 
 avalue=[];
 
-if (nargin < 3),
-  got_var=0;
-else,
-  got_var=1;
-end,
+got_var=false;
+if (~isempty(vname)),
+  got_var=true;
+end
+
+latt=length(aname);
+
+%  Inquire information from URL NetCDF file.
+
+Info=nc_info(fname); 
+
+%  Get variable attribute.
+
+if (got_var),
+  nvars=length(Info.Dataset);
+  for n=1:nvars,
+    varname=Info.Dataset(n).Name;
+    vstr=length(varname);
+    if (strcmp(varname(1:vstr),vname)),
+      nvatts=length(Info.Dataset(n).Attribute);
+      for m=1:nvatts,
+        attname=Info.Dataset(n).Attribute(m).Name;
+        astr=length(attname);
+        if (strcmp(attname(1:astr),aname)),
+          avalue=Info.Dataset(n).Attribute(m).Value;
+        end
+      end
+    end
+  end
+
+  if (isempty(avalue)),
+    disp(' ')
+    disp(['   Variable attribute: ''',aname,     ...
+          ''' not found in ''', vname,''' ...'])
+    disp(' ')
+  end
+  
+%  Get global attribute.
+
+else
+
+  natts=length(Info.Attribute);
+  for n=1:natts,
+    attname=Info.Attribute(n).Name;
+    astr=length(attname);
+    if (strcmp(attname(1:astr),aname)),
+      avalue=Info.Attribute(n).Value;
+    end
+  end
+
+  if (isempty(avalue)),
+    disp(' ')
+    disp(['   Global attribute: ''',aname,''' not found ...'])
+    disp(' ')
+  end
+  
+end
+
+
+return
+
+function [avalue]=nc_getatt_mexnc(fname,aname,vname);
+
+%
+% NC_GETATT_MEXNC:  Gets a global or variable NetCDF attribute
+%
+% avalue=nc_getatt_mexnc(fname,aname,vname)
+%
+% This function reads the spcedified global or variable attribute
+% from input NetCDF file. If the "vname" argument is missing, it
+% is assumed that "aname" is a global attribute.
+
+%  Initialize.
+
+avalue=[];
+
+got_var=false;
+if (~isempty(vname)),
+  got_var=true;
+end
 
 latt=length(aname);
 
@@ -71,7 +174,7 @@ if (got_var),
     disp('  ');
     error(['NC_GETATT: inq_varid - cannot find variable: ',vname]);
     return
-  end,
+  end
 
 %  Inquire number of variable attributes.
 
@@ -80,8 +183,8 @@ if (got_var),
     disp('  ');
     disp(mexnc('strerror',status));
     error(['NC_GETATT: inq_varnatts - unable to inquire number of variable ' ...
-	   'attributes: ',vname]);
-  end,
+           'attributes: ',vname]);
+  end
 
 %  Inquire if variable attribute exist.
 
@@ -93,14 +196,14 @@ if (got_var),
       disp('  ');
       disp(mexnc('strerror',status));
       error(['NC_GETATT: inq_attname: error while inquiring attribute: ' ...
-	     num2str(i)]);
-    end,
+             num2str(i)]);
+    end
     lstr=length(attnam);
     if (strmatch(aname(1:latt),attnam(1:lstr),'exact')),
       found=1;
       break
-    end,
-  end,
+    end
+  end
 
 %  Read in requested attribute.
   
@@ -110,8 +213,8 @@ if (got_var),
       disp('  ');
       disp(mexnc('strerror',status));
       error(['NC_GETATT: inq_atttype - unable to inquire datatype for ' ...
-	     'attribute: ',aname]);
-    end,
+             'attribute: ',aname]);
+    end
 
     switch (atype)
       case (ncchar)
@@ -121,7 +224,7 @@ if (got_var),
           disp(mexnc('strerror',status));
           error(['NC_GETATT: get_att_text - unable to read attribute ',...
                  '"',aname,'"in variable: ',vname,'.']);
-        end,
+        end
       case (ncint)
         [avalue,status]=mexnc('get_att_int', ncid,varid,aname);
         if (status < 0),
@@ -129,7 +232,7 @@ if (got_var),
           disp(mexnc('strerror',status));
           error(['NC_GETATT: get_att_int - unable to read attribute ',...
                  '"',aname,'"in variable: ',vname,'.']);
-        end,
+        end
       case (ncfloat)
         [avalue,status]=mexnc('get_att_float',ncid,varid,aname);
         if (status < 0),
@@ -137,7 +240,7 @@ if (got_var),
           disp(mexnc('strerror',status));
           error(['NC_GETATT: get_att_float - unable to read attribute ',...
                  '"',aname,'"in variable: ',vname,'.']);
-        end,
+        end
       case (ncdouble)
         [avalue,status]=mexnc('get_att_double',ncid,varid,aname);
         if (status < 0),
@@ -145,15 +248,22 @@ if (got_var),
           disp(mexnc('strerror',status));
           error(['NC_GETATT: get_att_double - unable to read attribute ',...
                  '"',aname,'"in variable: ',vname,'.']);
-        end,
-    end,
-  end,
+        end
+    end
+  end
 
+  if (isempty(avalue)),
+    disp(' ')
+    disp(['   Variable attribute: ''',aname,     ...
+          ''' not found in ''', vname,''' ...'])
+    disp(' ')
+  end
+  
 %---------------------------------------------------------------------------
 %  Read requested global attribute.
 %---------------------------------------------------------------------------
    
-else,
+else
 
 %  Inquire number of global attributes.
 
@@ -162,8 +272,8 @@ else,
     disp('  ');
     disp(mexnc('strerror',status));
     error(['NC_GETATT: inq_natts - unable to inquire number of global ' ...
-	   'attributes: ',fname]);
-  end,
+           'attributes: ',fname]);
+  end
   
 %  Inquire if requested global attribute exist.
 
@@ -175,15 +285,15 @@ else,
       disp('  ');
       disp(mexnc('strerror',status));
       error(['NC_GETATT: inq_attname: error while inquiring attribute: ' ...
-	     num2str(i)]);
+             num2str(i)]);
       return
-    end,
+    end
     lstr=length(attnam);
     if (strmatch(aname(1:latt),attnam(1:lstr),'exact')),
       found=1;
       break
-    end,
-  end,
+    end
+  end
   
 %  Read in requested attribute.
 
@@ -193,8 +303,8 @@ else,
       disp('  ');
       disp(mexnc('strerror',status));
       error(['NC_GETATT: inq_atttype - unable to inquire datatype for ' ...
-	     'attribute: ',aname]);
-    end,
+             'attribute: ',aname]);
+    end
 
     switch (atype)
       case (ncchar)
@@ -204,7 +314,7 @@ else,
           disp(mexnc('strerror',status));
           error(['NC_GETATT: get_att_text - unable to read global ',...
                  'attribute: "',aname,'".']);
-        end,
+        end
       case (ncint)
         [avalue,status]=mexnc('get_att_int', ncid,ncglobal,aname);
         if (status < 0),
@@ -212,7 +322,7 @@ else,
           disp(mexnc('strerror',status));
           error(['NC_GETATT: get_att_int - unable to read global ',...
                  'attribute: "',aname,'".']);
-        end,
+        end
       case (ncfloat)
         [avalue,status]=mexnc('get_att_float',ncid,ncglobal,aname);
         if (status < 0),
@@ -220,7 +330,7 @@ else,
           disp(mexnc('strerror',status));
           error(['NC_GETATT: get_att_float - unable to read global ',...
                  'attribute: "',aname,'".']);
-        end,
+        end
       case (ncdouble)
         [avalue,status]=mexnc('get_att_double',ncid,ncglobal,aname);
         if (status < 0),
@@ -228,11 +338,17 @@ else,
           disp(mexnc('strerror',status));
           error(['NC_GETATT: get_att_double - unable to read global ',...
                  'attribute: "',aname,'".']);
-        end,
-    end,
-  end,
+        end
+    end
+  end
+
+  if (isempty(avalue)),
+    disp(' ')
+    disp(['   Global attribute: ''',aname,''' not found ...'])
+    disp(' ')
+  end
   
-end,
+end
 
 %  Close NetCDF file.
 

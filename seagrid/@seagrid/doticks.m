@@ -142,7 +142,7 @@ case {'degrees', 'deg'}
 	setsafe(ylab, 'String', 'Latitude')
 	
 case {'kilometers', 'km'}
-	EARTH_RADIUS = 6378;   % kilometers.
+	EARTH_RADIUS = 6371.315;   % kilometers.
 	xlim = xlim * EARTH_RADIUS;
 	ylim = ylim * EARTH_RADIUS;
 	ax = axes('Position', axpos, 'Visible', 'off', ...

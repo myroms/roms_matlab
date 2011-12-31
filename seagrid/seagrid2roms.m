@@ -25,7 +25,7 @@ function seagrid2roms (theSeagridFile, theRomsFile, theGridTitle)
 %    See License_ROMS.txt                           Hernan G. Arango        %
 %===========================================================================%
 
-EARTH_RADIUS_METERS = 6378*1000;   % Equatorial radius.
+EARTH_RADIUS_METERS = 6371.315*1000;   % Equatorial radius.
 
 if (nargin < 1),
   theSeagridFile = '*.mat';

@@ -41,7 +41,7 @@ function [status]=nc_write(fname,vname,f,tindex);
 time_rec=0;
 if (nargin > 3),
   time_rec=1;
-end,
+end
 
 %  Open NetCDF file.
 
@@ -58,9 +58,11 @@ end
 % Define NetCDF parameters.
 
 [NC_DOUBLE]=mexnc('parameter','nc_double');
-[NC_FLOAT]=mexnc('parameter','nc_float');
-[NC_INT]=mexnc('parameter','nc_int');
-[NC_CHAR]=mexnc('parameter','nc_char');
+[NC_FLOAT ]=mexnc('parameter','nc_float');
+[NC_INT   ]=mexnc('parameter','nc_int');
+[NC_SHORT ]=mexnc('parameter','nc_short');
+[NC_BYTE  ]=mexnc('parameter','nc_byte');
+[NC_CHAR  ]=mexnc('parameter','nc_char');
 
 %----------------------------------------------------------------------------
 % Inquire about requested variable.
@@ -75,7 +77,7 @@ if (varid < 0),
   disp('  ');
   error(['NC_WRITE: ncvarid - cannot find variable: ',vname])
   return
-end,
+end
 
 % Inquire about unlimmited dimension.
 
@@ -89,7 +91,7 @@ end,
 [vname,nctype,nvdims,dimids,nvatts,status]=mexnc('ncvarinq',ncid,varid);
 if (status == -1),
   error(['NC_WRITE: ncvarinq - unable to inquire about variable: ',vname])
-end,
+end
 
 % Inquire about dimensions.
 
@@ -109,37 +111,54 @@ for n=1:nvdims,
     if ((dimids(n) == recdim) | ~isempty(findstr(name,'time'))),
       unlimited=1;
       index=n;
-    end,
-  end,
-end,
+    end
+  end
+end
 
 % Inquire about the _FillValue attribute.
 
 got_FillValue=0;
 
-for i = 0:nvatts-1
-  [attnam,status]=mexnc('ncattname',ncid,varid,i);
+for i = 0:nvatts-1,
+  [attnam,status]=mexnc('inq_attname',ncid,varid,i);
   if (status == -1)
-    error(['NC_WRITE: ncattname: error while inquiring attribute ' ...
+    error(['NC_WRITE: inq_attname: error while inquiring attribute ' ...
 	    num2str(i)])
-  end,
+  end
   lstr=length(attnam);
-  if (strncmp(attnam(1:lstr),'_FillValue',10)),
-    if (nctype == NC_DOUBLE),
-      [spval,status]=mexnc('get_att_double',ncid,varid,'_FillValue');
-    elseif (nctype == NC_FLOAT),
-      [spval,status]=mexnc('get_att_float' ,ncid,varid,'_FillValue');
-    elseif (nctype == NC_INT),
-      [spval,status]=mexnc('get_att_int'   ,ncid,varid,'_FillValue');
-    else
-      [spval,status]=mexnc('ncattget'      ,ncid,varid,'_FillValue');
-    end,
-    if (status == -1),
-      error(['NC_WRITE: ncattget error while reading _FillValue attribute'])
-    end,
-    got_FillValue=1;
+  [atype,status]=mexnc('inq_atttype',ncid,varid,attnam(1:lstr));
+  if (status == -1)
+    error(['READ_NC: inq_atttype: error while inquiring attribute ' num2str(i)])
   end,
-end,
+  if (strcmp(attnam(1:lstr),'_FillValue')     ||   ...
+      strcmp(attnam(1:lstr),'missing_value')),
+    switch atype
+      case NC_DOUBLE
+        [spval,status]=mexnc('get_att_double',ncid,varid,attnam(1:lstr));
+        myfunc='get_att_double';
+      case NC_FLOAT
+        [spval,status]=mexnc('get_att_float' ,ncid,varid,attnam(1:lstr));
+        myfunc='get_att_float';
+      case NC_INT
+        [spval,status]=mexnc('get_att_int'   ,ncid,varid,attnam(1:lstr));
+        myfunc='get_att_int';
+      case NC_SHORT
+        [spval,status]=mexnc('get_att_short' ,ncid,varid,attnam(1:lstr));
+        myfunc='get_att_short';
+      case NC_BYTE
+        [spval,status]=mexnc('get_att_schar' ,ncid,varid,attnam(1:lstr));
+        myfunc='get_att_schar';
+      otherwise
+        [spval,status]=mexnc('ncattget'      ,ncid,varid,attnam(1:lstr));
+        myfunc='ncattget';
+    end
+    if (status == -1),
+      error(['NC_WRITE: ',myfunc,' - error while reading ' ...
+             attnam(1:lstr),' attribute'])
+    end
+    got_FillValue=1;
+  end
+end
 
 %  It writing specific time record, reset variable bounds.  Check
 %  for for files having the more than one datum in the unlimited
@@ -151,49 +170,22 @@ if (unlimited & (nvdims == 1)),
     datum=1;
     if (time_rec),
       start(index)=tindex-1;
-    else,
+    else
       start(index)=0;
-    end,
+    end
     count(index)=length(f);
-  end,
-end,
+  end
+end
 
 if (~datum & time_rec & (index > 0)),
   start(index)=tindex-1;
   count(index)=1;
-end,
+end
 
 %   Compute the minimum and maximum of the data to write.
 
-if (time_rec),
-  if (nvdims == 2),
-    fmin=min(f);
-    fmax=max(f);
-  elseif (nvdims == 3),
-    fmin=min(min(f));
-    fmax=max(max(f));
-  elseif (nvdims == 4),
-    fmin=min(min(min(f)));
-    fmax=max(max(max(f)));
-  elseif (nvdims == 5),
-    fmin=min(min(min(min(f))));
-    fmax=max(max(max(max(f))));
-  end,
-else,
-  if (nvdims == 1),
-    fmin=min(f);
-    fmax=max(f);
-  elseif (nvdims == 2),
-    fmin=min(min(f));
-    fmax=max(max(f));
-  elseif (nvdims == 3),
-    fmin=min(min(min(f)));
-    fmax=max(max(max(f)));
-  elseif (nvdims == 4),
-    fmin=min(min(min(min(f))));
-    fmax=max(max(max(max(f))));
-  end,
-end,
+fmin=min(f(:));
+fmax=max(f(:));
 
 %----------------------------------------------------------------------------
 %  If _FillValue attribute, replace NaNs with fill value.
@@ -201,24 +193,77 @@ end,
 
 if (got_FillValue),
   ind=isnan(f);
-  if (~isempty(ind)),
-    if (nctype == NC_FLOAT | nctype == NC_INT),
-      f(ind)=double(spval);
-    else
-      f(ind)=spval;
-    end,      
-  end,
-end,
+  if (~isempty(ind))
+    switch nctype
+      case NC_DOUBLE
+        f(ind)=double(spval);
+      case NC_FLOAT
+        f(ind)=single(spval);
+      case NC_INT
+        f(ind)=int32(spval);
+      case NC_SHORT
+        f(ind)=int16(spval);
+      case NC_BYTE
+        f(ind)=int8(spval);
+      otherwise
+        f(ind)=spval;
+    end
+  end
+end
 
 %----------------------------------------------------------------------------
 %  Write out variable into NetCDF file.
 %----------------------------------------------------------------------------
 
 if (nvdims > 0),
-  [status]=mexnc('ncvarput',ncid,varid,start,count,f);
+  switch nctype
+    case NC_DOUBLE
+      [status]=mexnc('put_vara_double',ncid,varid,start,count,f);
+      myfunc='put_vara_double';
+    case NC_FLOAT
+      [status]=mexnc('put_vara_float' ,ncid,varid,start,count,f);
+      myfunc='put_vara_float';
+    case NC_INT
+      [status]=mexnc('put_vara_int'   ,ncid,varid,start,count,f);
+      myfunc='put_vara_int';
+    case NC_SHORT
+      [status]=mexnc('put_vara_short' ,ncid,varid,start,count,f);
+      myfunc='put_vara_short';
+    case NC_BYTE
+      [status]=mexnc('put_vara_schar' ,ncid,varid,start,count,f);
+      myfunc='put_vara_schar';
+    case NC_CHAR
+      [status]=mexnc('put_vara_text'  ,ncid,varid,start,count,f);
+      myfunc='put_var_text';
+    otherwise
+      [status]=mexnc('ncvarput'       ,ncid,varid,start,count,f);
+  end
 else,
-  [status]=mexnc('ncvarput1',ncid,varid,0,f);
+  switch nctype
+    case NC_DOUBLE
+      [status]=mexnc('put_var_double',ncid,varid,start,count,f);
+      myfunc='put_var_double';
+    case NC_FLOAT
+      [status]=mexnc('put_var_float' ,ncid,varid,start,count,f);
+      myfunc='put_var_float';
+    case NC_INT
+      [status]=mexnc('put_var_int'   ,ncid,varid,start,count,f);
+      myfunc='put_var_int';
+    case NC_SHORT
+      [status]=mexnc('put_var_short' ,ncid,varid,start,count,f);
+      myfunc='put_var_short'; 
+    case NC_BYTE
+      [status]=mexnc('put_var_schar' ,ncid,varid,start,count,f);
+      myfunc='put_var_schar';
+    case NC_CHAR
+      [status]=mexnc('put_var_text' ,ncid,varid,start,count,f);
+      myfunc='put_var_text';
+   otherwise
+      [status]=mexnc('ncvarput1'     ,ncid,varid,start,count,f);
+      myfunc='ncvarput1';
+  end
 end,
+
 if (status ~= -1 & nvdims > 1),
   text(1:19)=' ';
   text(1:length(vname))=vname;
@@ -235,9 +280,8 @@ if (status ~= -1 & nvdims > 1),
 end,
 
 if (status == -1),
-  error(['NC_WRITE: ncvarput - error while writting variable: ', vname])
+  error(['NC_WRITE: ',myfunc,' - error while writting variable: ', vname])
 end
-
 
 %----------------------------------------------------------------------------
 %  Close NetCDF file.

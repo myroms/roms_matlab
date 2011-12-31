@@ -4,7 +4,7 @@ function theResult = earthdist(alon, alat, blon, blat, radius)
 %  earthdist(alon, aloat, blon, blat, radius) returns the
 %   distance in maters between locations (alon, alat)
 %   and (blon, blat).  The default earth radius is
-%   assumed to be 6371*1000 meters, the radius for
+%   assumed to be 6371.315*1000 meters, the radius for
 %   a sphere of equal-volume.
 
 % svn $Id$
@@ -15,8 +15,12 @@ function theResult = earthdist(alon, alat, blon, blat, radius)
 %    copyright owner does not constitute publication.
 %=======================================================================
 
+%  This function was modified by Hernan G. Arango (11/25/11) so the
+%  great circle distance is identical to the formula used in grid
+%  refinement.
+
 if nargin < 4, help(mfilename), return, end
-if nargin < 5, radius = 6371*1000; end   % meters.
+if nargin < 5, radius = 6371.315*1000; end   % meters.
 
 RCF = 180 / pi;
 
@@ -25,17 +29,13 @@ alat = alat / RCF;
 blon = blon / RCF;
 blat = blat / RCF;
 
-c = cos(alat);
-ax = c .* cos(alon);
-ay = c .* sin(alon);
-az = sin(alat);
+alpha = sin(alat).*sin(blat) + cos(alat).*cos(blat).*cos(blon-alon);
 
-c = cos(blat);
-bx = c .* cos(blon);
-by = c .* sin(blon);
-bz = sin(blat);
+ind = find (abs(alpha)>1);
+if (~isempty(ind)), alpha(ind) = sign(alpha(ind)); end;
 
-result = acos(ax.*bx + ay.*by + az.*bz) .* radius;
+alpha = acos(alpha);
+result = radius .* alpha;
 
 if nargout > 0
 	theResult = result;

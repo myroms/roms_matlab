@@ -3,14 +3,14 @@ function nc_inq(fname)
 %
 % NC_INQ:  Inquire about the contents of a NetCDF file
 %
-% []=nc_inq(fname)
+% nc_inq(fname)
 %
 % This gets and prints the contents of a NetCDF file.  It displays the
 % dimensions variables.
 %
 % On Input:
 %
-%    fname       NetCDF file name (character string)
+%    fname       NetCDF file name or URL file name (character string)
 %
 % Adapted from J.V. Mansbridge (CSIRO) "inqcdf.m" M-file.
 %
@@ -29,6 +29,131 @@ if (nargin < 1),
   return
 end
 
+%  Use the appropriate interface it the input file is URL from an OpenDAP
+%  server.
+
+url=nc_url(fname);
+
+if (url),
+  nc_inq_java(fname);
+else
+  nc_inq_mexnc(fname);
+end
+
+return
+
+function nc_inq_java(fname)
+
+%
+% NC_INQ_java:  Inquire about the contents of a NetCDF file
+%
+% nc_inq_java(fname)
+%
+% This gets and prints the contents of a NetCDF file.  It displays the
+% dimensions variables. It uses SNCTOOLS function "nc_info".
+
+%  Inquire information from URL NetCDF file.
+
+Info=nc_info(fname); 
+
+%  Report available dimensions.
+
+ndims=length(Info.Dimension);
+
+disp(' ')
+disp(['Available dimensions and values:']);
+disp(' ')
+
+unlimited=0;
+
+for i=1:ndims,
+  dimnam=Info.Dimension(i).Name;
+  dimsiz=Info.Dimension(i).Length;
+  unlimited=unlimited+Info.Dimension(i).Unlimited;
+
+  if (i > 9),
+    s=[' '  int2str(i) ') ' dimnam ' = ' int2str(dimsiz)];
+  else
+    s=['  ' int2str(i) ') ' dimnam ' = ' int2str(dimsiz)];
+  end,
+  disp(s)
+end,
+
+if (unlimited == 0),
+  disp(' ')
+  disp ('     None of the dimensions is unlimited.')
+else
+  disp(' ')
+  for i=1:ndims,
+    if (Info.Dimension(i).Unlimited),
+      dimnam=Info.Dimension(i).Name;
+      s=['     ' dimnam ' is unlimited in length.'];
+      disp(s)
+    end    
+  end
+end
+
+%  Report available variables.
+
+nvars=length(Info.Dataset);
+
+disp(' ')
+disp(['Available Variables:']);
+disp(' ')
+
+for i=1:3:nvars
+
+  stri=int2str(i);
+
+  if (length(stri) == 1)
+    stri=[ ' ' stri];
+  end
+  varnam=Info.Dataset(i).Name;
+  s=[ '  ' stri ') ' varnam ];
+  addit=26-length(s);
+  for j=1:addit
+    s=[ s ' '];
+  end
+   
+  if (i < nvars)
+    stri=int2str(i+2);
+    if (length(stri) == 1)
+      stri=[ ' ' stri];
+    end
+    varnam=Info.Dataset(i+1).Name;
+    s=[ s '  ' stri ') ' varnam ];
+    addit=52-length(s);
+    for j=1:addit
+      s=[ s ' '];
+    end
+  end 
+   
+  if (i < nvars - 1)
+    stri=int2str(i+3);
+    if (length(stri) == 1)
+      stri=[ ' ' stri];
+    end
+    varnam=Info.Dataset(i+2).Name;
+    s=[ s '  ' stri ') ' varnam ];
+  end 
+  disp(s)
+end
+
+return
+
+
+function nc_inq_mexnc(fname)
+
+%
+% NC_INQ_MEXNC:  Inquire about the contents of a NetCDF file
+%
+% nc_inq_mexnc(fname)
+%
+% This gets and prints the contents of a NetCDF file.  It displays the
+% dimensions variables. It uses MEXNC functions. Therefore, it cannot
+% process a URL OpenDAP file.
+%
+  
 % Open the NetCDF file.
   
 [ncid,rcode]=mexnc('ncopen',fname,'nowrite');

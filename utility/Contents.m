@@ -5,6 +5,19 @@
 % This utility contains several generic Matlab scripts to pre- and
 % post-processing ROMS data.
 %
+% The NetCDF scripts use the MEXNC toolbox that can be downloaded
+% from:
+%
+%   svn checkout url ~/matlab/mexnc
+%
+% where url = https://mexcdf.svn.sourceforge.net/svnroot/mexcdf/mexnc/trunk
+%
+% Similarly, the SNCTOOLS uses the NetCDF Java interface for OpenDAP
+% that can be downloaded from:
+%
+%   svn checkout url ~/matlab/snctools
+%
+% where url = https://mexcdf.svn.sourceforge.net/svnroot/mexcdf/snctools/trunk
 %
 % Terrain-Following Coordinates:
 %
@@ -25,6 +38,8 @@
 %   nc_drename    - Renames a NetCDF dimension.
 %   nc_getatt     - Gets a global or variable NetCDF attribute.
 %   nc_inq        - Inquires about the contents of a NetCDF file.
+%   nc_url        - Detects if the NetCDF file is a URL (OpenDAP server file).
+%   nc_varinfo    - Returns structure with information about a NetCDF variable.
 %   nc_vdef       - Creates a ROMS variable in a NetCDF file.
 %   nc_vinfo      - Inquires information about requested NetCDF variable.
 %   nc_vname      - Gets the names of all variables in a NetCDF file.
