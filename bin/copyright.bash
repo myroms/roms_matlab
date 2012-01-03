@@ -95,7 +95,9 @@ if [ $setsvn -eq 1 ]; then
   svn propset -R copyright '(c) 2002-2012 The ROMS/TOMS Group' 4dvar
   svn propset -R copyright '(c) 2002-2012 The ROMS/TOMS Group' bathymetry
   svn propset -R copyright '(c) 2002-2012 The ROMS/TOMS Group' bin
+  svn propset -R copyright '(c) 2002-2012 The ROMS/TOMS Group' boundary
   svn propset -R copyright '(c) 2002-2012 The ROMS/TOMS Group' coastlines
+  svn propset -R copyright '(c) 2002-2012 The ROMS/TOMS Group' grid
   svn propset -R copyright '(c) 2002-2012 The ROMS/TOMS Group' initial
   svn propset -R copyright '(c) 2002-2012 The ROMS/TOMS Group' landmask
   svn propset -R copyright '(c) 2002-2012 The ROMS/TOMS Group' utility
