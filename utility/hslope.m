@@ -29,7 +29,7 @@ function [x,y,dhdx,dhde,slope,r]=hslope(fname,iprint,iplot);
 
 % svn $Id$
 %===========================================================================%
-%  Copyright (c) 2002-2011 The ROMS/TOMS Group                              %
+%  Copyright (c) 2002-2012 The ROMS/TOMS Group                              %
 %    Licensed under a MIT/X style license                                   %
 %    See License_ROMS.txt                           Hernan G. Arango        %
 %===========================================================================%

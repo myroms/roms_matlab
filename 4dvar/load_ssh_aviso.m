@@ -39,7 +39,7 @@ function [D]=load_ssh_aviso(GRDfile, StartDay, EndDay)
 
 % svn $Id$
 %===========================================================================%
-%  Copyright (c) 2002-2011 The ROMS/TOMS Group                              %
+%  Copyright (c) 2002-2012 The ROMS/TOMS Group                              %
 %    Licensed under a MIT/X style license                                   %
 %    See License_ROMS.txt                           Brian Powell            %
 %===========================================================================%
