@@ -32,7 +32,7 @@ replace="2002-2012 The ROMS/TOMS"
 
 # Directories to search for replacements.
 
-set c_dirs = "4dvar bathymetry bin boundary coastlines grid initial landmask utility"
+c_dirs="4dvar bathymetry bin boundary coastlines grid initial landmask utility"
 
 setsvn=1
 verbose=0
