@@ -6,6 +6,11 @@
 %
 %   c_grid        - Creates ROMS grid NetCDF file.
 %
+% Grid Refinement:
+%
+%   grid_metrics  - Computes ROMS Grid horizontal metrics.
+%   grid_refine   - Creates a finer resolution ROMS Grid NetCDF.
+%
 
 % svn $Id$
 %===========================================================================%

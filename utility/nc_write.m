@@ -241,25 +241,25 @@ if (nvdims > 0),
 else,
   switch nctype
     case NC_DOUBLE
-      [status]=mexnc('put_var_double',ncid,varid,start,count,f);
+      [status]=mexnc('put_var_double',ncid,varid,f);
       myfunc='put_var_double';
     case NC_FLOAT
-      [status]=mexnc('put_var_float' ,ncid,varid,start,count,f);
+      [status]=mexnc('put_var_float' ,ncid,varid,f);
       myfunc='put_var_float';
     case NC_INT
-      [status]=mexnc('put_var_int'   ,ncid,varid,start,count,f);
+      [status]=mexnc('put_var_int'   ,ncid,varid,f);
       myfunc='put_var_int';
     case NC_SHORT
-      [status]=mexnc('put_var_short' ,ncid,varid,start,count,f);
+      [status]=mexnc('put_var_short' ,ncid,varid,f);
       myfunc='put_var_short'; 
     case NC_BYTE
-      [status]=mexnc('put_var_schar' ,ncid,varid,start,count,f);
+      [status]=mexnc('put_var_schar' ,ncid,varid,f);
       myfunc='put_var_schar';
     case NC_CHAR
-      [status]=mexnc('put_var_text' ,ncid,varid,start,count,f);
+      [status]=mexnc('put_var_text'  ,ncid,varid,f);
       myfunc='put_var_text';
    otherwise
-      [status]=mexnc('ncvarput1'     ,ncid,varid,start,count,f);
+      [status]=mexnc('ncvarput1'     ,ncid,varid,f);
       myfunc='ncvarput1';
   end
 end,
