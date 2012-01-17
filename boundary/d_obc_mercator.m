@@ -1,18 +1,18 @@
 %
-%  D_MERCATOR:  Driver script to create a ROMS open boundary conditions file.
+%  D_OBC_MERCATOR:  Driver script to create a ROMS boundary conditions
 %
 %  This a user modifiable script that can be used to prepare ROMS open
-%  boundary conditions NetCDF file from Mercator datase. It sets-up all
+%  boundary conditions NetCDF file from Mercator dataset. It sets-up all
 %  the necessary parameters and variables. USERS can use this as a
 %  prototype for their application.
 %
 
 % svn $Id$
-%===========================================================================%
-%  Copyright (c) 2002-2012 The ROMS/TOMS Group                              %
-%    Licensed under a MIT/X style license                                   %
-%    See License_ROMS.txt                           Hernan G. Arango        %
-%===========================================================================%
+%=========================================================================%
+%  Copyright (c) 2002-2012 The ROMS/TOMS Group                            %
+%    Licensed under a MIT/X style license                                 %
+%    See License_ROMS.txt                           Hernan G. Arango      %
+%=========================================================================%
 
 % Set input/output NetCDF files.
 
@@ -33,9 +33,9 @@ report = 1;                      % report vertical grid information
 Lu = Lr-1;   Lv = Lr;
 Mu = Mr;     Mv = Mr-1;
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 % Set full path of Mercator files for boundary conditions.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 Tfile1=dir(fullfile(RTR_Dir,'*_gridT_*.nc.gz'));
 Ufile1=dir(fullfile(RTR_Dir,'*_gridU_*.nc.gz'));
@@ -55,9 +55,9 @@ Vfile=[Vfile1; Vfile2];
 
 nfiles=length(Tfile);
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Set application parameters in structure array, S.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 S.ncname      = BRYname;     % output NetCDF file
 
@@ -81,9 +81,9 @@ S.theta_b     = 0.1;         % S-coordinate bottom control parameter
 S.Tcline      = 150.0;       % S-coordinate surface/bottom stretching width
 S.hc          = S.Tcline;    % S-coordinate stretching width
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Set grid variables.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 S.h           = nc_read(GRDname, 'h');            % bathymetry
 
@@ -140,14 +140,14 @@ S.lat_v_north  =S.lat_v(:,end);
 
 kgrid=0;                                          % RHO-points
 
-[S.s_rho, S.Cs_r]=stretching(S.Vstretching, ...
-                             S.theta_s, S.theta_b, S.hc, S.N, ...
+[S.s_rho, S.Cs_r]=stretching(S.Vstretching,                           ...
+                             S.theta_s, S.theta_b, S.hc, S.N,         ...
                              kgrid, report);
 
 kgrid=1;                                          % W-points
 
 [S.s_w,   S.Cs_w]=stretching(S.Vstretching, ...
-                             S.theta_s, S.theta_b, S.hc, S.N, ...
+                             S.theta_s, S.theta_b, S.hc, S.N,         ...
                              kgrid, report);
 
 %  Compute ROMS model depths.  Ignore free-sruface contribution
@@ -156,18 +156,18 @@ kgrid=1;                                          % W-points
 ssh=zeros(size(S.h));
 
 igrid=1;
-[S.z_r]=set_depth(S.Vtransform, S.Vstretching, ...
-                  S.theta_s, S.theta_b, S.hc, S.N, ...
+[S.z_r]=set_depth(S.Vtransform, S.Vstretching,                        ...
+                  S.theta_s, S.theta_b, S.hc, S.N,                    ...
                   igrid, S.h, ssh, report);
       
 igrid=3;
-[S.z_u]=set_depth(S.Vtransform, S.Vstretching, ...
-                  S.theta_s, S.theta_b, S.hc, S.N, ...
+[S.z_u]=set_depth(S.Vtransform, S.Vstretching,                        ...
+                  S.theta_s, S.theta_b, S.hc, S.N,                    ...
                   igrid, S.h, ssh, report);
 
 igrid=4;
-[S.z_v]=set_depth(S.Vtransform, S.Vstretching, ...
-                  S.theta_s, S.theta_b, S.hc, S.N, ...
+[S.z_v]=set_depth(S.Vtransform, S.Vstretching,                        ...
+                  S.theta_s, S.theta_b, S.hc, S.N,                    ...
                   igrid, S.h, ssh, report);
 
 %  Compute ROMS vertical level thicknesses (m).
@@ -258,8 +258,6 @@ if (CREATE),
   BryRec=0;
 
 end,
-
-return
 
 %---------------------------------------------------------------------------
 %  Interpolate boundary conditions from Mercator data to application grid.
@@ -374,9 +372,9 @@ for n=1:nfiles,
 
   disp(' ');
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Write out boundary conditions.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
   if (WRITE),
 

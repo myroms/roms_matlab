@@ -30,8 +30,8 @@ function [s,C]=stretching(Vstretching, theta_s, theta_b, hc, N, kgrid, ...
 %                    kgrid = 0,        function at vertical RHO-points
 %                    kgrid = 1,        function at vertical W-points
 %    report        Flag to report detailed information (OPTIONAL):
-%                    report = 0,       do not report
-%                    report = 1,       report information
+%                    report = false,   do not report
+%                    report = true,    report information
 %
 % On Output:
 %
@@ -42,47 +42,46 @@ function [s,C]=stretching(Vstretching, theta_s, theta_b, hc, N, kgrid, ...
 %
 
 % svn $Id$
-%===========================================================================%
-%  Copyright (c) 2002-2012 The ROMS/TOMS Group                              %
-%    Licensed under a MIT/X style license                                   %
-%    See License_ROMS.txt                           Hernan G. Arango        %
-%===========================================================================%
+%=========================================================================%
+%  Copyright (c) 2002-2012 The ROMS/TOMS Group                            %
+%    Licensed under a MIT/X style license                                 %
+%    See License_ROMS.txt                           Hernan G. Arango      %
+%=========================================================================%
 
 s=[];
 C=[];
 
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Set several parameters.
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
-if (nargin < 7),
+if (nargin < 6),
   disp(' ');
-  disp([setstr(7),'*** Error:  STRETCHING - too few arguments.',setstr(7)]);
-  disp([setstr(7),'                     number of supplied arguments: ',...
-       num2str(nargin),setstr(7)]);
-  disp([setstr(7),'                     number of required arguments: 8',...
-       setstr(7)]);
+  disp(['*** Error:  STRETCHING - too few arguments.']);
+  disp(['                     number of supplied arguments: ',        ...
+        num2str(nargin)]);
+  disp(['                     number of required arguments: 6']);
   disp(' ');
   return
 end,
 
 if (Vstretching < 1 | Vstretching > 4),
   disp(' ');
-  disp([setstr(7),'*** Error:  STRETCHING - Illegal parameter Vstretching = ' ...
-	num2str(Vstretching), setstr(7)]);
+  disp(['*** Error:  STRETCHING - Illegal parameter Vstretching = '   ...
+	num2str(Vstretching)]);
   disp(' ');
   return
 end,
 
 if (nargin < 7),
-  report=0;
+  report=false;
 end,
 
 Np=N+1;
 
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 % Compute ROMS S-coordinates vertical stretching function
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 % Original vertical stretching function (Song and Haidvogel, 1994).
 
@@ -196,13 +195,17 @@ end,
 if (report),
   disp(' ');
   if (Vstretching == 1),
-    disp(['Vstretching = ',num2str(Vstretching), '   Song and Haidvogel (1994)']);
+    disp(['Vstretching = ',num2str(Vstretching),                      ...
+          '   Song and Haidvogel (1994)']);
   elseif (Vstretching == 2),
-    disp(['Vstretching = ',num2str(Vstretching), '   Shchepetkin (2005)']);
+    disp(['Vstretching = ',num2str(Vstretching),                      ...
+          '   Shchepetkin (2005)']);
   elseif (Vstretching == 3),
-    disp(['Vstretching = ',num2str(Vstretching), '   Geyer (2009), BBL']);
+    disp(['Vstretching = ',num2str(Vstretching),                      ...
+          '   Geyer (2009), BBL']);
   elseif (Vstretching == 4),
-    disp(['Vstretching = ',num2str(Vstretching), '   Shchepetkin (2010)']);
+    disp(['Vstretching = ',num2str(Vstretching),                      ...
+          '   Shchepetkin (2010)']);
   end,
   if (kgrid == 1)
     disp(['   kgrid    = ',num2str(kgrid), '   at vertical W-points']);

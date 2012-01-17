@@ -52,12 +52,20 @@
 %
 % ROMS Data Processing:
 %
+%   nanland       - Mask Land points to NaN to facilitate plotting.
 %   roms_vectors  - Processes vector data for either the full grid
 %                     or boundary edges. The strategy is to get any
 %                     horizontal vector field at RHO-points for the
 %                     event that a rotation to ROMS curvilinear grid
 %                     is needed.  Then, they are computed at the
 %                     appropriate Arakawa C-grid location.
+%   rotate_vec    - Rotates vector components from TRUE East and North
+%                     to curvilinear coordinates (XI,ETA) orientation
+%                     or viceversa. Input vector components may be
+%                     located at the center of the cell (RHO-points)
+%                     or at staggered Arakawa's C-grid locations.
+%   sample_grid   - Gets Parent grid indices range of the polygon that
+%                     tightly contains the Target Grid.
 %
 %   uv_barotropic - Computes vertically integrated velocity components
 %                      for ROMS full grid or boundaries.

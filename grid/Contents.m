@@ -6,6 +6,9 @@
 %
 %   c_grid        - Creates ROMS grid NetCDF file.
 %
+%   get_roms_grid - Builds or updates a ROMS grid structure for
+%                     a particular ROMS application.
+%
 % Grid Refinement:
 %
 %   grid_metrics  - Computes ROMS Grid horizontal metrics.
@@ -13,8 +16,8 @@
 %
 
 % svn $Id$
-%===========================================================================%
-%  Copyright (c) 2002-2012 The ROMS/TOMS Group                              %
-%    Licensed under a MIT/X style license                                   %
-%    See License_ROMS.txt                           Hernan G. Arango        %
-%===========================================================================%
+%=========================================================================%
+%  Copyright (c) 2002-2012 The ROMS/TOMS Group                            %
+%    Licensed under a MIT/X style license                                 %
+%    See License_ROMS.txt                           Hernan G. Arango      %
+%=========================================================================%

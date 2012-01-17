@@ -30,11 +30,11 @@ function [status]=nc_write(fname,vname,f,tindex);
 %
 
 % svn $Id$
-%===========================================================================%
-%  Copyright (c) 2002-2012 The ROMS/TOMS Group                              %
-%    Licensed under a MIT/X style license                                   %
-%    See License_ROMS.txt                           Hernan G. Arango        %
-%===========================================================================%
+%=========================================================================%
+%  Copyright (c) 2002-2012 The ROMS/TOMS Group                            %
+%    Licensed under a MIT/X style license                                 %
+%    See License_ROMS.txt                           Hernan G. Arango      %
+%=========================================================================%
 
 %  Activate switch for writing specific record.
 
@@ -64,9 +64,9 @@ end
 [NC_BYTE  ]=mexnc('parameter','nc_byte');
 [NC_CHAR  ]=mexnc('parameter','nc_char');
 
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 % Inquire about requested variable.
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 % Get variable ID.
 
@@ -100,8 +100,8 @@ unlimited=0;
 for n=1:nvdims,
   [name,size,status]=mexnc('ncdiminq',ncid,dimids(n));
   if (status == -1),
-    error(['NC_WRITE: ncdiminq - unable to inquire about dimension ID: ',...
-          num2str(dimids(n))])
+    error(['NC_WRITE: ncdiminq - unable to inquire about dimension',  ...
+           ' ID: ',num2str(dimids(n))])
   else
     lstr=length(name);
     dimnam(n,1:lstr)=name(1:lstr);
@@ -122,13 +122,14 @@ got_FillValue=0;
 for i = 0:nvatts-1,
   [attnam,status]=mexnc('inq_attname',ncid,varid,i);
   if (status == -1)
-    error(['NC_WRITE: inq_attname: error while inquiring attribute ' ...
+    error(['NC_WRITE: inq_attname: error while inquiring attribute '  ...
 	    num2str(i)])
   end
   lstr=length(attnam);
   [atype,status]=mexnc('inq_atttype',ncid,varid,attnam(1:lstr));
   if (status == -1)
-    error(['READ_NC: inq_atttype: error while inquiring attribute ' num2str(i)])
+    error(['READ_NC: inq_atttype: error while inquiring attribute '   ...
+            num2str(i)])
   end,
   if (strcmp(attnam(1:lstr),'_FillValue')     ||   ...
       strcmp(attnam(1:lstr),'missing_value')),
@@ -187,9 +188,9 @@ end
 fmin=min(f(:));
 fmax=max(f(:));
 
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  If _FillValue attribute, replace NaNs with fill value.
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 if (got_FillValue),
   ind=isnan(f);
@@ -211,9 +212,9 @@ if (got_FillValue),
   end
 end
 
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Write out variable into NetCDF file.
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 if (nvdims > 0),
   switch nctype
@@ -280,12 +281,13 @@ if (status ~= -1 & nvdims > 1),
 end,
 
 if (status == -1),
-  error(['NC_WRITE: ',myfunc,' - error while writting variable: ', vname])
+  error(['NC_WRITE: ',myfunc,' - error while writting variable: ',    ...
+	 vname, sprintf('\n'),blanks(10),mexnc('strerror',status)]);
 end
 
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Close NetCDF file.
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 [status]=mexnc('ncclose',ncid);
 if (status == -1),
