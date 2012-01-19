@@ -38,6 +38,16 @@ report = false;                         % report vertical grid information
 
 TimeDependent = true;
 
+%  Initialize unlimited dimension record counter. Notice that if we want
+%  to restart the computations, we can set CREATE = false and get the
+% record of the last boundary conditions processed for appending.
+
+if (CREATE)
+  BryRec = 0;
+else
+  BryRec = length(nc_read(BRYname,'bry_time'));
+end
+
 %--------------------------------------------------------------------------
 %  Set application parameters in structure array, S.
 %--------------------------------------------------------------------------
@@ -210,10 +220,6 @@ if (CREATE),
     [err.(field)] = nc_write(BRYname, field, T.(field));
   end
 
-%  Initialize unlimited dimension record counter.
-
-  BryRec=0;
-
 end,
 
 %---------------------------------------------------------------------------
@@ -328,6 +334,11 @@ for Rec = StrRec:EndRec,
 
   end
 
-%  Process next boundary record.
+%  Process next boundary record. If processing OpenDAP files, force Java
+%  garbage collection.
+
+  if (nc_url(NWAdata)),
+    java.lang.System.gc
+  end
 
 end
