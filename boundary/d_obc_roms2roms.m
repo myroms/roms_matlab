@@ -337,7 +337,8 @@ for Rec = StrRec:EndRec,
 %  Process next boundary record. If processing OpenDAP files, force Java
 %  garbage collection.
 
-  if (nc_url(NWAdata)),
+  [~,url,~] = nc_interface(NWAdata);
+  if (url),
     java.lang.System.gc
   end
 

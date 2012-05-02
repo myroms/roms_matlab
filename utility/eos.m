@@ -60,12 +60,6 @@ function [F]=eos(gname,fname,tindex);
 %    See License_ROMS.txt                           Hernan G. Arango        %
 %===========================================================================%
 
-% Deactivate printing information when reading data from NetCDF file.
-
-global IPRINT
-
-IPRINT=0;
-
 %----------------------------------------------------------------------------
 %  Set equation of state expansion coefficients.
 %----------------------------------------------------------------------------

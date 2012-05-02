@@ -1,33 +1,33 @@
-function [Istr,Iend,Jstr,Jend] = sample_grid(XP,YP,XT,YT,varargin)
+function [Istr,Iend,Jstr,Jend] = sample_grid(XD,YD,XR,YR,varargin)
 
 %
-% SAMPLE_GRID:  Gets parent grid tight indices containing target grid
+% SAMPLE_GRID:  Gets donor grid tight indices containing receiver grid
 %
-% [Istr,Iend,Jstr,Jend] = sample_grid(XP,YP,XT,YT,offset,plt);
+% [Istr,Iend,Jstr,Jend] = sample_grid(XD,YD,XR,YR,offset,plt);
 %
-% This function computes the parent grid indices range of the polygon
-% that tightly contains the target grid.  This is done to sample the
-% parent grid to accelerate the interpolation of fields for the target
+% This function computes the donor grid indices range of the polygon
+% that tightly contains the receiver grid.  This is done to sample the
+% donor grid to accelerate the interpolation of fields for the receiver
 % grid.
 %
 % On Input:
 %
-%    XP            Parent grid X-coordinates (2D array)
-%    YP            Parent grid Y-coordinates (2D array)
-%    XT            Target grid X-coordinates (2D array)
-%    YT            Target grid Y-coordinates (2D array)
-%    offset        Number of extra points to used to sample the
-%                    parent grid so is large enough to contain
-%                    the target grid  (default 5)
-%    plt           Switch to plot parent and target grids
+%    XD            Donor grid X-coordinates (2D array)
+%    YD            Donor grid Y-coordinates (2D array)
+%    XR            Receiver grid X-coordinates (2D array)
+%    YR            Receiver grid Y-coordinates (2D array)
+%    offset        Number of extra points used to sample the
+%                    donor grid so it is large enough to contain
+%                    the receiver grid  (default 5)
+%    plt           Switch to plot donor and receiver grids
 %                    (default false)
 %
 % On Output:
 %
-%    Istr          Parent grid starting I-index for sampling
-%    Iend          Parent grid ending   I-index for sampling
-%    Jstr          Parent grid starting J-index for sampling
-%    Jend          Parent grid ending   J-index for sampling
+%    Istr          Donor grid starting I-index for sampling
+%    Iend          Donor grid ending   I-index for sampling
+%    Jstr          Donor grid starting J-index for sampling
+%    Jend          Donor grid ending   J-index for sampling
 %
 
 % svn $Id$
@@ -51,56 +51,56 @@ switch numel(varargin)
 end
 
 %--------------------------------------------------------------------------
-%  Extract parent grid polygon.
+%  Extract donor grid polygon.
 %--------------------------------------------------------------------------
 
-[ImP,JmP] = size(XP);
-IstrP = 1;
-IendP = ImP;
-JstrP = 1;
-JendP = JmP;
+[ImD,JmD] = size(XD);
+IstrD = 1;
+IendD = ImD;
+JstrD = 1;
+JendD = JmD;
 
-XboxP = [squeeze(XP(IstrP:IendP,JstrP));                              ...
-         squeeze(XP(IendP,JstrP+1:JendP))';                           ...
-         squeeze(flipud(XP(IstrP:IendP-1,JendP)));                    ...
-         squeeze(fliplr(XP(IstrP,JstrP:JendP-1)))'];
+XboxD = [squeeze(XD(IstrD:IendD,JstrD));                              ...
+         squeeze(XD(IendD,JstrD+1:JendD))';                           ...
+         squeeze(flipud(XD(IstrD:IendD-1,JendD)));                    ...
+         squeeze(fliplr(XD(IstrD,JstrD:JendD-1)))'];
 
-YboxP = [squeeze(YP(IstrP:IendP,JstrP));                              ...
-         squeeze(YP(IendP,JstrP+1:JendP))';                           ...
-         squeeze(flipud(YP(IstrP:IendP-1,JendP)));                    ...
-         squeeze(fliplr(YP(IstrP,JstrP:JendP-1)))'];
-
-%--------------------------------------------------------------------------
-%  Extract target grid polygon.
-%--------------------------------------------------------------------------
-
-[ImT,JmT] = size(XT);
-IstrT = 1;
-IendT = ImT;
-JstrT = 1;
-JendT = JmT;
-
-XboxT = [squeeze(XT(IstrT:IendT,JstrT));                              ...
-         squeeze(XT(IendT,JstrT+1:JendT))';                           ...
-         squeeze(flipud(XT(IstrT:IendT-1,JendT)));                    ...
-         squeeze(fliplr(XT(IstrT,JstrT:JendT-1)))'];
-
-YboxT = [squeeze(YT(IstrT:IendT,JstrT));                              ...
-         squeeze(YT(IendT,JstrT+1:JendT))';                           ...
-         squeeze(flipud(YT(IstrT:IendT-1,JendT)));                    ...
-         squeeze(fliplr(YT(IstrT,JstrT:JendT-1)))'];
+YboxD = [squeeze(YD(IstrD:IendD,JstrD));                              ...
+         squeeze(YD(IendD,JstrD+1:JendD))';                           ...
+         squeeze(flipud(YD(IstrD:IendD-1,JendD)));                    ...
+         squeeze(fliplr(YD(IstrD,JstrD:JendD-1)))'];
 
 %--------------------------------------------------------------------------
-%  Find parent indices containing the target grid.
+%  Extract receiver grid polygon.
 %--------------------------------------------------------------------------
 
-[in,on] = inpolygon(XP,YP,XboxT,YboxT);
+[ImR,JmR] = size(XR);
+IstrR = 1;
+IendR = ImR;
+JstrR = 1;
+JendR = JmR;
+
+XboxR = [squeeze(XR(IstrR:IendR,JstrR));                                ...
+         squeeze(XR(IendR,JstrR+1:JendR))';                             ...
+         squeeze(flipud(XR(IstrR:IendR-1,JendR)));                      ...
+         squeeze(fliplr(XR(IstrR,JstrR:JendR-1)))'];
+
+YboxR = [squeeze(YR(IstrR:IendR,JstrR));                                ...
+         squeeze(YR(IendR,JstrR+1:JendR))';                             ...
+         squeeze(flipud(YR(IstrR:IendR-1,JendR)));                      ...
+         squeeze(fliplr(YR(IstrR,JstrR:JendR-1)))'];
 
 %--------------------------------------------------------------------------
-%  Set parent grid sampling indices.
+%  Find donor indices containing the receiver grid.
 %--------------------------------------------------------------------------
 
-[J,I] = meshgrid(1:1:JmP, 1:1:ImP);
+[in,on] = inpolygon(XD,YD,XboxR,YboxR);
+
+%--------------------------------------------------------------------------
+%  Set donor grid sampling indices.
+%--------------------------------------------------------------------------
+
+[J,I] = meshgrid(1:1:JmD, 1:1:ImD);
 
 I(~in) = NaN;
 J(~in) = NaN;
@@ -111,38 +111,38 @@ if (isnan(Istr) || Istr < 1),
 end
 
 Iend = max(I(:))+offset;
-if (isnan(Iend) || Iend > ImP),
-  Iend = ImP;
+if (isnan(Iend) || Iend > ImD),
+  Iend = ImD;
 end
 
 Jstr = min(J(:))-offset;
 if (isnan(Jstr) || Jstr < 1),
-  Jstr = JmP;
+  Jstr = JmD;
 end
 
 Jend = max(J(:))+offset;
-if (isnan(Jend) || Jend > JmP),
-  Jend = JmP;
+if (isnan(Jend) || Jend > JmD),
+  Jend = JmD;
 end
 
 %--------------------------------------------------------------------------
-%  If requested, plot parent and target grids.
+%  If requested, plot donor and receiver grids.
 %--------------------------------------------------------------------------
-
+XS
 if (plt),
 
-  X = XP(Istr:1:Iend,Jstr:1:Jend);
-  Y = YP(Istr:1:Iend,Jstr:1:Jend);
+  X = XD(Istr:1:Iend,Jstr:1:Jend);
+  Y = YD(Istr:1:Iend,Jstr:1:Jend);
 
   figure;
-  plot(XboxP,YboxP,'r.',XboxT,YboxT,'b.');
-  title(['Original Parent and Taget Grids']);
+  plot(XboxD,YboxD,'r.',XboxR,YboxR,'b.');
+  title(['Original Donor and Receiver Grids']);
   
   figure;
   pcolor(X,Y,ones(size(X)));
   hold on;
-  plot(XboxT,YboxT,'b.');
-  title(['Sampled Parent and Taget Grids']);
+  plot(XboxR,YboxR,'b.');
+  title(['Sampled Donor and Receiver Grids']);
   hold off
 
 end,

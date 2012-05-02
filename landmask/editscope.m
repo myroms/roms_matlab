@@ -1,33 +1,42 @@
 function editscope(grid_file, coast_file);
 
+% EDITSCOPE: interactive adjoint sensitivity scope mask editing for ROMS
 %
-% EDITSCOPE interactive adjoint sensitivity scope mask editing for ROMS
+% editscope(grid_file, coast_file)
 %
-%    EDITSCOPE(GRID_FILE,COAST_FILE) is tool for manual editing of the
-%    scope  mask  on  RHO-points.  To accelerate the proccessing, the
-%    scope  mask  is  edited in (I,J) grid coordinates.  GRID_FILE is
-%    the GRID NetCDF file containing the grid and mask. COAST_FILE is
-%    a MAT file holding the coastline (lon,lat) coordinates  or (I,J)
-%    grid coordinates.  If the (I,J) coordinates are not provided, it
-%    will compute and write them into file. If called without, one or
-%    both arguments, it will prompt for the needed file name(s).
+% GUI for manual editing of ROMS adjoint sensitivity scope mask on
+% RHO-points.  To accelerate the processing, the Land/Sea mask is
+% edited in (I,J) grid coordinates. If the (I,J) coordinates are not
+% provided, it computes and writes them into file. If called without,
+% one or both arguments, it will prompt for the needed file name(s).
+% If the coastline data is in grid_file, it will read it and convert
+% it to (I,J) fractional coordinates.
 %
-%    Mouse shortcuts:
+% On Input:
+%
+%    grid_file     ROMS Grid NetCDF file name containing the grid
+%                  and mask arrays (string)
+%
+%    coast_file    Matlab file name containing the coastline
+%                  (lon,lat) or (I,J) fractional coordinates
+%                  (string; optional)
+%
+% Mouse shortcuts:
 %
 %    double click ==> Zoom in
 %    right  click ==> Zoom out
 %    middle click ==> change editing mode
 %
-%    Calls: READ_SCOPE, WRITE_SCOPE and UV_SCOPE functions.
+%    Calls: READ_MASK, WRITE_MASK and UVP_MASKS functions.
 %           BUTTON, RADIOBOX, TEXTBOX, AXISSCROLL,
 %
 
 % svn $Id$
-%===========================================================================%
-%  Copyright (c) 2002-2012 The ROMS/TOMS Group                              %
-%    Licensed under a MIT/X style license                                   %
-%    See License_ROMS.txt                           Hernan G. Arango        %
-%===========================================================================%
+%=========================================================================%
+%  Copyright (c) 2002-2012 The ROMS/TOMS Group                            %
+%    Licensed under a MIT/X style license                                 %
+%    See License_ROMS.txt                           Hernan G. Arango      %
+%=========================================================================%
 
 % Define and initialize persistent variables.
 
@@ -60,17 +69,17 @@ got_coast=0;
 
 FIGURE_NAME='Scope Mask Editor';
 
-%===========================================================================
+%==========================================================================
 % The EDITSCOPE function is also used as a CallBack for some of the
 % uicontrols,  so we need to figure out, what's required by looking
 % at the 'grid_file' parameter.
-%===========================================================================
+%==========================================================================
 
 switch lower(grid_file),
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 % Zoom-in.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
   case 'zoomin',
 
@@ -78,10 +87,10 @@ switch lower(grid_file),
     editscope move;
     zooming=1;
     waitforbuttonpress
-    xx0=xx; yy0=yy;                             % save current pointer position
-    rbbox;                                      % track rubberband rectangle
-    xx1=xx; yy1=yy;                             % new pointer position
-    if ((xx0 ~= xx1) & (yy0 ~= yy1)),           % trim limits and set zoom
+    xx0=xx; yy0=yy;                         % save current pointer position
+    rbbox;                                  % track rubberband rectangle
+    xx1=xx; yy1=yy;                         % new pointer position
+    if ((xx0 ~= xx1) & (yy0 ~= yy1)),       % trim limits and set zoom
       xx0(xx0<0)=0;  xx0(xx0>xl(2))=xl(2);
       xx1(xx1<0)=0;  xx1(xx1>xl(2))=xl(2);
       yy0(yy0<0)=0;  yy0(yy0>yl(2))=yl(2);
@@ -93,9 +102,9 @@ switch lower(grid_file),
     enable_click;
     zooming=0;
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 % Zoom-out.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
   case 'zoomout',
 
@@ -103,45 +112,45 @@ switch lower(grid_file),
     ylim(yl);
     axisscroll;
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 % Edit adjoint sensitivity scope mask.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
   case 'click',
 
     button=get(gcf, 'SelectionType');
-    if (strcmp(button,'alt')),                  % zoom out on right click
+    if (strcmp(button,'alt')),              % zoom out on right click
       editscope zoomout;
       return;
     end,
-    if (strcmp(button,'open')),                 % zoom in on double click
+    if (strcmp(button,'open')),             % zoom in on double click
       editscope zoomin;
       return;
     end,
-    if (strcmp(button,'extend')),               % cycle modes on middle click
+    if (strcmp(button,'extend')),           % cycle modes on middle click
       m=mod(GUI.mode,3)+1;
       eval(get(GUI.mode_h(m),'callback'));
       editscope zoomout;
       return;
     end,
-    if (within(xx,xlim) & within(yy,ylim)),     % left click within edit area
+    if (within(xx,xlim) & within(yy,ylim)), % left click within edit area
       disable_click;
       switch GUI.tool
-        case 1,                                 % point edit
+        case 1,                             % point edit
           ix=floor(xx+1.5);
           iy=floor(yy+1.5);
           switch GUI.mode
-            case 1,                             % toggle between off and on
+            case 1,                         % toggle between off and on
               Rscope(ix,iy)=~Rscope(ix,iy);
-            case 2,                             % off
+            case 2,                         % off
               Rscope(ix,iy)=0;
-            case 3,                             % on
+            case 3,                         % on
               Rscope(ix,iy)=1;
 	  end,
-        case 2,                                 % area edit
-          xx0=xx; yy0=yy;                       % save current pointer position
-          rbbox;                                % track rubberband rectangle
-          xx1=xx; yy1=yy;                       % new pointer position
+        case 2,                             % area edit
+          xx0=xx; yy0=yy;                   % save current pointer position
+          rbbox;                            % track rubberband rectangle
+          xx1=xx; yy1=yy;                   % new pointer position
           idsel=find((mx-xx0-1).*(mx-xx1-1)<=0 & ...
                      (my-yy0-1).*(my-yy1-1)<=0);% indicies within rectangle
           switch GUI.mode
@@ -276,15 +285,10 @@ switch lower(grid_file),
 
 % Check if grid NetCDF file has coastline data.
 
-   [varnam,nvars]=nc_vname(grid_file);
-   got_Clon=strmatch('lon_coast',varnam,'exact');
-   got_Clat=strmatch('lat_coast',varnam,'exact');
-   if (isempty(got_Clon)),
-     got_Clon=0;
-   end,
-   if (isempty(got_Clat)),
-     got_Clat=0;
-   end,
+   S=nc_vnames(grid_file);
+   vnames={S.Variables.Name};
+   got_Clon=any(strcmp(vnames,'lon_coast'));
+   got_Clat=any(strcmp(vnames,'lat_coast'));
 
    if (~(got_Clon & got_Clat) & spherical),
      if (any(coast_file=='*')),

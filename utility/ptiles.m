@@ -39,15 +39,15 @@ end,
 
 % Inquire about file dimensions.
 
-[dnames,dsizes]=nc_dim(fname);
+D=nc_dinfo(fname);
 
-for n=1:length(dsizes),
-  name=deblank(dnames(n,:));
+for n=1:length(D),
+  name=char(D(n).Name);
   switch name
     case 'xi_rho',
-      Im=dsizes(n);
+      Im=D(n).Name;
     case 'eta_rho',
-      Jm=dsizes(n);
+      Jm=D(n).Name;
   end,
 end,
 
@@ -83,4 +83,3 @@ if (NtileJ > 1 ),
 end,
 
 return
-

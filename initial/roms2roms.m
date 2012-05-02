@@ -1,29 +1,29 @@
-function V = roms2roms(ncfile,P,T,Vname,Tindex,Rvector,varargin)
+function V = roms2roms(ncname,D,R,Vname,Tindex,Rvector,varargin)
 
 %
 % ROMS2ROMS: Interpolates requested ROMS variable to specified ROMS grid
 %
-% V = roms2roms(ncfile,P,T,Vname,Tindex,Rvector,method,offset,RemoveNaN);
+% V = roms2roms(ncname,D,R,Vname,Tindex,Rvector,method,offset,RemoveNaN);
 %
 % This function interpolates requested 2D/3D variable between two ROMS
-% application grids. The target grid must be inside of the parent grid.
+% application grids. The receiver grid must be inside of the donor grid.
 %
 % This function is intended for down-scaling or nesting applications.
-% The horizontal/vertical coordinates for the parent and the target
-% grids are specified with array structures 'P' and 'T', which are
-% builded elsewhere using script 'get_roms_grid.m' for efficiency
+% The horizontal/vertical coordinates for the donor and the receiver
+% grids are specified with array structures 'D' and 'R', which are
+% builded elsewhere using the script 'get_roms_grid.m' for efficiency
 % and functionality.  It uses 'TriScatteredInterp' for interpolating
 % a 2D or 3D variable.
 % 
 % On Input:
 %
-%    ncfile        Parent NetCDF file/URL name (string) containing
+%    ncname        Donor NetCDF file/URL name (string) containing
 %                    variable to process
 %
-%    P             Parent grid structure containing all horizontal
+%    D             Donor grid structure containing all horizontal
 %                    and vertical variables (struct array)
 %
-%    T             Target grid structure containing all horizontal
+%    R             Receiver grid structure containing all horizontal
 %                    and vertical variables (struct array)
 %
 %    Vname         Field variable name to process (string)
@@ -42,11 +42,11 @@ function V = roms2roms(ncfile,P,T,Vname,Tindex,Rvector,varargin)
 %                    'linear'      linear interpolation (default)
 %                    'nearest'     nearest-neighbor interpolation
 %
-%    offset        Number of extra points to used to sample the
-%                    parent grid so is large enough to contain
-%                    the target grid  (default 5)
+%    offset        Number of extra points to use when sampling the
+%                    donor grid so it is large enough to contain
+%                    the receiver grid  (default 5)
 %
-%    RemoveNaN     Switch to remove NaN values from interpolated 
+%    RemoveNaN     Switch to remove NaN values from the interpolated 
 %                    variable with a second interpolation step
 %                    using the nearest-neighbor method
 %                    (default false)
@@ -98,7 +98,7 @@ Ncount = 0;
 
 %  Get information about requested variable.
  
-Info = nc_varinfo(ncfile,Vname);
+Info = nc_varinfo(ncname,Vname);
 
 nvdims = length(Info.Dimension);
 
@@ -117,7 +117,7 @@ if (nvdims > 0),
         Mname = 'mask_rho';
         got.Mname = true;
         if (~(got.Xname || got.Yname)),
-          if (P.spherical),
+          if (D.spherical),
             Xname = 'lon_rho';
             Yname = 'lat_rho';
           else
@@ -133,7 +133,7 @@ if (nvdims > 0),
         Mname = 'mask_psi';
         got.Mname = true;
         if (~(got.Xname || got.Yname)),
-          if (P.spherical),
+          if (D.spherical),
             Xname = 'lon_psi';
             Yname = 'lat_psi';
           else
@@ -147,7 +147,7 @@ if (nvdims > 0),
         Mname = 'mask_u';
         got.Mname = true;
         if (~(got.Xname || got.Yname)),
-          if (P.spherical),
+          if (D.spherical),
             Xname = 'lon_u';
             Yname = 'lat_u';
           else
@@ -164,7 +164,7 @@ if (nvdims > 0),
         Mname = 'mask_v';
         got.Mname = true;
         if (~(got.Xname || got.Yname)),
-          if (P.spherical),
+          if (D.spherical),
             Xname = 'lon_v';
             Yname = 'lat_v';
           else
@@ -189,65 +189,65 @@ end
 is3d = isr3d || isw3d;
 
 %--------------------------------------------------------------------------
-%  Get horizontal and vertical coordinates from parent and target grids.
+%  Get horizontal and vertical coordinates from donor and receiver grids.
 %--------------------------------------------------------------------------
 
-%  Parent grid.
+%  Donor grid.
 
-if (isfield(P,Xname)),
-  if (~isempty(P.(Xname)))
-    XP = P.(Xname);
+if (isfield(D,Xname)),
+  if (~isempty(D.(Xname)))
+    XD = D.(Xname);
   else
-    error([' ROMS2ROMS - field '', Xname, ''',                        ...
-           ' is empty in parent grid structure: P']);
+    error([' ROMS2ROMS - field '', Xname, ''',                          ...
+           ' is empty in donor grid structure: D']);
   end
 else
-  error([' ROMS2ROMS - unable to find field '', Xname, ''',           ...
-         ' in parent grid structure: P']);
+  error([' ROMS2ROMS - unable to find field '', Xname, ''',             ...
+         ' in donor grid structure: D']);
 end
 
-if (isfield(P,Yname)),
-  if (~isempty(P.(Yname)))
-    YP = P.(Yname);
+if (isfield(D,Yname)),
+  if (~isempty(D.(Yname)))
+    YD = D.(Yname);
   else
-    error([' ROMS2ROMS - field '', Yname, ''',                        ...
-           ' is empty in parent grid structure: P']);
+    error([' ROMS2ROMS - field '', Yname, ''',                          ...
+           ' is empty in donor grid structure: D']);
   end
 else
-  error([' ROMS2ROMS - unable to find field '', Yname, ''',           ...
-         ' in parent grid structure: P']);
+  error([' ROMS2ROMS - unable to find field '', Yname, ''',             ...
+         ' in donor grid structure: D']);
 end
 
 if (is3d),
-  if (isfield(P,Zname)),
-    if (~isempty(P.(Zname)))
-      ZP = P.(Zname);
+  if (isfield(D,Zname)),
+    if (~isempty(D.(Zname)))
+      ZD = D.(Zname);
     else
-      error([' ROMS2ROMS - field '', Zname, ''',                      ...
-             ' is empty in parent grid structure: P']);
+      error([' ROMS2ROMS - field '', Zname, ''',                        ...
+             ' is empty in donor grid structure: D']);
     end
   else
-    error([' ROMS2ROMS - unable to find field '', Zname, ''',         ...
-           ' in parent grid structure: P']);
+    error([' ROMS2ROMS - unable to find field '', Zname, ''',           ...
+           ' in donor grid structure: D']);
   end
 end
 
-if (isfield(P,Mname)),
-  if (~isempty(P.(Mname)))
-    Pmask = P.(Mname);
+if (isfield(D,Mname)),
+  if (~isempty(D.(Mname)))
+    Dmask = D.(Mname);
   else
-    error([' ROMS2ROMS - field '', Mname, ''',                        ...
-           ' is empty in parent grid structure: P']);
+    error([' ROMS2ROMS - field '', Mname, ''',                          ...
+           ' is empty in donor grid structure: D']);
   end
 else
-  error([' ROMS2ROMS - unable to find field '', Mname, ''',           ...
-         ' in parent grid structure: P']);
+  error([' ROMS2ROMS - unable to find field '', Mname, ''',             ...
+         ' in donor grid structure: D']);
 end
 
-%  Target grid.
+%  Receiver grid.
 
 if (isvec && Rvector),
-  if (P.spherical),
+  if (D.spherical),
     Xname = 'lon_rho';           % If requested, interpolate
     Yname = 'lat_rho';           % U- and V-points variables
   else                           % to RHO-points instead to
@@ -260,79 +260,79 @@ if (isvec && Rvector),
   end
 end
 
-if (isfield(T,Xname)),
-  if (~isempty(T.(Xname)))  
-    XT = T.(Xname);
+if (isfield(R,Xname)),
+  if (~isempty(R.(Xname)))  
+    XR = R.(Xname);
   else
-    error([' ROMS2ROMS - field '', Xname, ''',                        ...
-           ' is empty in target grid structure: T']);
+    error([' ROMS2ROMS - field '', Xname, ''',                          ...
+           ' is empty in receiver grid structure: R']);
   end
 else
-  error([' ROMS2ROMS - unable to find field '', Xname, ''',           ...
-         ' in target grid structure: T']);
+  error([' ROMS2ROMS - unable to find field '', Xname, ''',             ...
+         ' in receiver grid structure: R']);
 end
 
-if (isfield(T,Yname)),
-  if (~isempty(T.(Yname)))
-    YT = T.(Yname);
+if (isfield(R,Yname)),
+  if (~isempty(R.(Yname)))
+    YR = R.(Yname);
   else
-    error([' ROMS2ROMS - field '', Yname, ''',                        ...
-           ' is empty in target grid structure: T']);
+    error([' ROMS2ROMS - field '', Yname, ''',                          ...
+           ' is empty in receiver grid structure: R']);
   end
 else
-  error([' ROMS2ROMS - unable to find field '', Yname, ''',           ...
-         ' in target grid structure: T']);
+  error([' ROMS2ROMS - unable to find field '', Yname, ''',             ...
+         ' in receiver grid structure: R']);
 end
 
 if (is3d),
-  if (isfield(T,Zname)),
-    if (~isempty(T.(Zname)))
-      ZT = T.(Zname);
+  if (isfield(R,Zname)),
+    if (~isempty(R.(Zname)))
+      ZR = R.(Zname);
     else
-      error([' ROMS2ROMS - field '', Zname, ''',                      ...
-             ' is empty in target grid structure: T']);
+      error([' ROMS2ROMS - field '', Zname, ''',                        ...
+             ' is empty in receiver grid structure: R']);
     end
   else
-    error([' ROMS2ROMS - unable to find field '', Zname, ''',         ...
-           ' in target grid structure: T']);
+    error([' ROMS2ROMS - unable to find field '', Zname, ''',           ...
+           ' in receiver grid structure: R']);
   end
 end
   
-if (isfield(T,Mname)),
-  if (~isempty(T.(Mname)))
-    Tmask = T.(Mname);
+if (isfield(R,Mname)),
+  if (~isempty(R.(Mname)))
+    Rmask = R.(Mname);
   else
-    error([' ROMS2ROMS - field '', Mname, ''',                        ...
-           ' is empty in target grid structure: T']);
+    error([' ROMS2ROMS - field '', Mname, ''',                          ...
+           ' is empty in receiver grid structure: R']);
   end
 else
-  error([' ROMS2ROMS - unable to find field '', Mname, ''',           ...
-         ' in target grid structure: T']);
+  error([' ROMS2ROMS - unable to find field '', Mname, ''',             ...
+         ' in receiver grid structure: R']);
 end
 
 %--------------------------------------------------------------------------
-%  Read in requested variable from parent NetCDF file.
+%  Read in requested variable from donor NetCDF file.
 %--------------------------------------------------------------------------
 
 ReplaceValue = NaN;
 PreserveType = false;
 
-VP = nc_read(ncfile,Vname,Tindex,ReplaceValue,PreserveType);
+VD = nc_read(ncname,Vname,Tindex,ReplaceValue,PreserveType);
 
 %--------------------------------------------------------------------------
-%  Set parent grid sampling indices to accelerate the interpolation.
-%  The horizontally sampled parent grid is large enough to contain
-%  the target grid. The parameter 'offset' is used to add extra
+%  Set donor grid sampling indices to accelerate the interpolation.
+%  The horizontally sampled donor grid is large enough to contain
+%  the receiver grid. The parameter 'offset' is used to add extra
 %  points when computing the sampling indices (Istr:Iend,Jstr:Jend).
 %  That is, the sampled grid is 'offset' points larger in all sides.
 %  This is done to resolve well the interpolation near the boundaries
-%  of the target grid.
+%  of the receiver grid.
 %--------------------------------------------------------------------------
 
-[Istr,Iend,Jstr,Jend] = sample_grid(XP,YP,XT,YT,offset);
+[Istr,Iend,Jstr,Jend] = sample_grid(XD,YD,XR,YR,offset);
 
 %--------------------------------------------------------------------------
-%  Interpolate requested variable to target grid.
+%  Interpolate requested variable to receiver grid.
 %--------------------------------------------------------------------------
 
 %  Determine if interpolating 2D or 3D variables.  Notice that it is
@@ -349,40 +349,40 @@ switch (ivdims),
  
  case 2
 
-   [ImP,JmP]=size(XP);
-   [ImT,JmT]=size(XT);
+   [ImD,JmD]=size(XD);
+   [ImR,JmR]=size(XR);
 
    disp(' ');
-   disp(['Interpolating 2D variable: ', Vname,                        ...
-          ' (', num2str(ImT), 'x', num2str(JmT),') from parent ',     ...
-           '(', num2str(ImP), 'x', num2str(JmP),') ...']);
+   disp(['Interpolating 2D variable: ', Vname,                          ...
+          ' (', num2str(ImR), 'x', num2str(JmR),') from donor ',        ...
+           '(', num2str(ImD), 'x', num2str(JmD),') ...']);
    disp(' ');
 
-   x = XP(Istr:1:Iend,Jstr:1:Jend);
-   y = YP(Istr:1:Iend,Jstr:1:Jend);
-   v = VP(Istr:1:Iend,Jstr:1:Jend);
+   x = XD(Istr:1:Iend,Jstr:1:Jend);
+   y = YD(Istr:1:Iend,Jstr:1:Jend);
+   v = VD(Istr:1:Iend,Jstr:1:Jend);
 
    x = x(:);
    y = y(:);
    v = v(:);
 
-   Pind = find(Pmask(Istr:1:Iend,Jstr:1:Jend) < 0.5);    
-   if (~isempty(Pind)),
-     x(Pind) = [];                     % remove land points, if any
-     y(Pind) = [];
-     v(Pind) = [];
+   Dind = find(Dmask(Istr:1:Iend,Jstr:1:Jend) < 0.5);    
+   if (~isempty(Dind)),
+     x(Dind) = [];                     % remove land points, if any
+     y(Dind) = [];
+     v(Dind) = [];
    end
-   Pmin = min(v);
-   Pmax = max(v);
+   Dmin = min(v);
+   Dmax = max(v);
 
    F = TriScatteredInterp(x,y,v,method);
-   V = F(XT,YT);
-   Tmin = min(V(:));
-   Tmax = max(V(:));
+   V = F(XR,YR);
+   Rmin = min(V(:));
+   Rmax = max(V(:));
     
-   Tind = find(Tmask < 0.5);
-   if (~isempty(Tind)),
-     V(Tind) = 0;
+   Rind = find(Rmask < 0.5);
+   if (~isempty(Rind)),
+     V(Rind) = 0;
    end,
 
 %  If applicable, remove interpolated variable NaNs values with a
@@ -393,9 +393,9 @@ switch (ivdims),
    if (~isempty(ind)),
      if (RemoveNaN),
        R = TriScatteredInterp(x,y,v,'nearest');
-       V(ind) = R(XT(ind),YT(ind));
-       Tmin = min(Tmin, min(V(ind)));
-       Tmax = max(Tmax, max(V(ind)));
+       V(ind) = R(XR(ind),YR(ind));
+       Rmin = min(Rmin, min(V(ind)));
+       Rmax = max(Rmax, max(V(ind)));
 
        ind = find(isnan(V));
        if (~isempty(ind)),
@@ -406,58 +406,58 @@ switch (ivdims),
      end
    end
    
-   disp(['   Parent Min = ', sprintf('%12.5e',Pmin), '  ',            ...
-           ' Parent Max = ', sprintf('%12.5e',Pmax)]);
-   disp(['   Target Min = ', sprintf('%12.5e',Tmin), '  ',            ...
-           ' Target Max = ', sprintf('%12.5e',Tmax), '  ',            ...
+   disp(['   Donor Min = ', sprintf('%12.5e',Dmin), '  ',               ...
+           ' Donor Max = ', sprintf('%12.5e',Dmax)]);
+   disp(['   Receiver Min = ', sprintf('%12.5e',Rmin), '  ',            ...
+           ' Receiver Max = ', sprintf('%12.5e',Rmax), '  ',            ...
            ' Nan count = ',  num2str(Ncount)]);
    
  case 3
 
-   [ImP,JmP,KmP]=size(ZP);
-   [ImT,JmT,KmT]=size(ZT);
+   [ImD,JmD,KmD]=size(ZD);
+   [ImR,JmR,KmR]=size(ZR);
 
    disp(' ');
-   disp(['Interpolating 3D variable: ', Vname,                        ...
-          ' (', num2str(ImT), 'x', num2str(JmT), 'x',                 ...
-	        num2str(KmT), ') from parent ',                       ...
-           '(', num2str(ImP), 'x', num2str(JmP), 'x',                 ...
-	        num2str(KmP), ') ...']);
+   disp(['Interpolating 3D variable: ', Vname,                          ...
+          ' (', num2str(ImR), 'x', num2str(JmR), 'x',                   ...
+	        num2str(KmR), ') from donor ',                          ...
+           '(', num2str(ImD), 'x', num2str(JmD), 'x',                   ...
+	        num2str(KmD), ') ...']);
    disp(' ');
   
-   x = XP(Istr:1:Iend,Jstr:1:Jend);
-   x = repmat(x,[1,1,KmP]); 
-   y = YP(Istr:1:Iend,Jstr:1:Jend);
-   y = repmat(y,[1,1,KmP]);
-   z = ZP(Istr:1:Iend,Jstr:1:Jend,1:KmP);
-   v = VP(Istr:1:Iend,Jstr:1:Jend,1:KmP);
+   x = XD(Istr:1:Iend,Jstr:1:Jend);
+   x = repmat(x,[1,1,KmD]); 
+   y = YD(Istr:1:Iend,Jstr:1:Jend);
+   y = repmat(y,[1,1,KmD]);
+   z = ZD(Istr:1:Iend,Jstr:1:Jend,1:KmD);
+   v = VD(Istr:1:Iend,Jstr:1:Jend,1:KmD);
   
    x = x(:);
    y = y(:);
    z = z(:);
    v = v(:);
   
-   mask = Pmask(Istr:1:Iend,Jstr:1:Jend);
-   Pind = find(repmat(mask,[1,1,KmP]) < 0.5);
-   if (~isempty(Pind)),
-     x(Pind) = [];                     % remove land points, if any
-     y(Pind) = [];
-     z(Pind) = [];
-     v(Pind) = [];
+   mask = Dmask(Istr:1:Iend,Jstr:1:Jend);
+   Dind = find(repmat(mask,[1,1,KmD]) < 0.5);
+   if (~isempty(Dind)),
+     x(Dind) = [];                     % remove land points, if any
+     y(Dind) = [];
+     z(Dind) = [];
+     v(Dind) = [];
    end
-   Pmin = min(v);
-   Pmax = max(v);
+   Dmin = min(v);
+   Dmax = max(v);
 
    F = TriScatteredInterp(x,y,z,v,method);
-   X = repmat(XT,[1,1,KmT]);
-   Y = repmat(YT,[1,1,KmT]);
-   V = F(X,Y,ZT);
-   Tmin = min(V(:));
-   Tmax = max(V(:));
+   X = repmat(XR,[1,1,KmR]);
+   Y = repmat(YR,[1,1,KmR]);
+   V = F(X,Y,ZR);
+   Rmin = min(V(:));
+   Rmax = max(V(:));
     
-   Tind = find(repmat(Tmask,[1,1,KmT]) < 0.5);
-   if (~isempty(Tind)),
-     V(Tind) = 0;
+   Rind = find(repmat(Rmask,[1,1,KmR]) < 0.5);
+   if (~isempty(Rind)),
+     V(Rind) = 0;
    end,
 
 %  If applicable, remove interpolated variable NaNs values with a
@@ -468,9 +468,9 @@ switch (ivdims),
    if (~isempty(ind)),
      if (RemoveNaN),
        R = TriScatteredInterp(x,y,z,v,'nearest');
-       V(ind) = R(X(ind),Y(ind), ZT(ind));
-       Tmin = min(Tmin, min(V(ind)));
-       Tmax = max(Tmax, max(V(ind)));
+       V(ind) = R(X(ind),Y(ind), ZR(ind));
+       Rmin = min(Rmin, min(V(ind)));
+       Rmax = max(Rmax, max(V(ind)));
 
        ind = find(isnan(V));
        if (~isempty(ind)),
@@ -481,10 +481,10 @@ switch (ivdims),
      end
    end
 
-   disp(['   Parent Min = ', sprintf('%12.5e',Pmin), '  ',            ...
-           ' Parent Max = ', sprintf('%12.5e',Pmax)]);
-   disp(['   Target Min = ', sprintf('%12.5e',Tmin), '  ',            ...
-           ' Target Max = ', sprintf('%12.5e',Tmax), '  ',            ...
+   disp(['   Donor Min = ', sprintf('%12.5e',Dmin), '  ',               ...
+           ' Donor Max = ', sprintf('%12.5e',Dmax)]);
+   disp(['   Receiver Min = ', sprintf('%12.5e',Rmin), '  ',            ...
+           ' Receiver Max = ', sprintf('%12.5e',Rmax), '  ',            ...
            ' Nan count = ',  num2str(Ncount)]);
 
 end

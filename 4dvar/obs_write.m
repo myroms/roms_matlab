@@ -51,17 +51,18 @@ status=[];
 %  Check dimensions of input NetCDF file.
 %----------------------------------------------------------------------------
 
-[Dnames,Dsizes,unlimit]=nc_dim(ncfile);
+D=nc_dinfo(ncfile);
 
-for n=1:length(Dsizes),
-  name=deblank(Dnames(n,:));
+for n=1:length(D),
+  name=char(D(n).Name);
   switch name
     case 'survey'
-      Nsurvey=Dsizes(n);
+      Nsurvey=D(n).Length;
     case 'state_variable'
-      Nstate=Dsizes(n);
+      Nstate=D(n).Length;
     case 'datum'
-      Ndatum=Dsizes(n);
+      Ndatum=D(n).Length;
+      unlimited=D(n).Unlimited;
   end,
 end,
 
@@ -84,7 +85,7 @@ end,
 %  in input NetCDF file. If the datum dimension is unlimited, it will
 %  handle any size of the observation vector.
 
-if (unlimit == -1),
+if (~unlimited),
   if (Ndatum ~= length(S.value)),
     error(['OBS_WRITE: dimension mismatch between data and file, ', ...
            'datum = ',num2str(Ndatum),' ',num2str(length(S.value))]);
@@ -98,12 +99,13 @@ disp(['*** Writing observations into:   ', ncfile]);
 %  Write all available variables in the structure.
 %----------------------------------------------------------------------------
 
-[Vnames,nvars]=nc_vname(ncfile);
+V=nc_vname(ncfile);
+nvars=length(V.variables);
 
 notwritten=[];
 
 for n=1:nvars,
-  name=deblank(Vnames(n,:));
+  name=char(V.Variables(n).Name);
   switch name
     case 'spherical'
       if (isfield(S,'spherical')),

@@ -46,14 +46,15 @@ end,
 
 %  Incquire about variables in NetCDF file. Read in bathymetry.
 
-[vnames,nvars]=nc_vname(fname);
+S=nc_vnames(fname);
+nvars=length(S.Variables);
 
 got.angle=0;
 got.dndx=0;
 got.dmde=0;
 
 for n=1:nvars,
-  name=deblank(vnames(n,:));
+  name=char(S.Variables(n).Name);
   switch name
     case 'h'
       h=nc_read(fname,'h',0);
@@ -68,8 +69,8 @@ for n=1:nvars,
     case 'dmde'
       got.dmde=1;
       dmde=nc_read(fname,'dmde');
-  end,
-end,
+  end
+end
 
 hmin=min(min(h));
 hmax=max(max(h));
@@ -104,16 +105,16 @@ dymed=median(median(dy));
 %  Read in Land/Sea mask.
 %----------------------------------------------------------------------------
 
-got.rmask=0;
-got.pmask=0;
-[vname,nvars]=nc_vname(fname);
+got.rmask=false;
+got.pmask=false;
+
 for n=1:nvars,
-  name=deblank(vname(n,:));
+  name=char(S.Variables(n).Name);
   switch (name),
     case 'mask_rho'
-      got.rmask=1;
+      got.rmask=true;
     case 'mask_psi'
-      got.pmask=1;
+      got.pmask=true;
   end,
 end,
 

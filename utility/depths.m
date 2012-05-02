@@ -20,8 +20,8 @@ function [z]=depths(fname, gname, igrid, idims, tindex);
 %                  igrid=4  => v-velocity points
 %                  igrid=5  => w-velocity points
 %    idims       Depths dimension order switch (integer):
-%                  idims=0  => (i,j,k)  column-major order
-%                  idims=1  => (j,i,k)
+%                  idims=0  => (i,j,k)  column-major order (Fortran)
+%                  idims=1  => (j,i,k)  row-major order (C-language)
 %    tindex      Time index (integer)
 %
 % On Output:
@@ -35,12 +35,6 @@ function [z]=depths(fname, gname, igrid, idims, tindex);
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.txt                           Hernan G. Arango      %
 %=========================================================================%
-
-% Deactivate printing information when reading data from NetCDF file.
-
-global IPRINT
-
-IPRINT=0;
 
 % Check arguments and set default values.
 
@@ -61,23 +55,24 @@ end,
 
 Vtransform=1;
 Vstretching=1;
-got.hc=0;
+got.hc=false;
 
 %--------------------------------------------------------------------------
 % Read in S-coordinate parameters.
 %--------------------------------------------------------------------------
 
-[vname,nvars]=nc_vname(fname);
+S=nc_vnames(fname);
+nvars=length(S.Variables);
 
 for n=1:nvars
-  name=deblank(vname(n,:));
+  name=char(S.Variables(n).Name);
   switch name
     case 'Vtransform'
       Vtransform=nc_read(fname,'Vtransform');
     case 'Vstretching'
       Vstretching=nc_read(fname,'Vstretching');
     case 'hc'
-      got.hc=1;
+      got.hc=true;
     case 'sc_r'
       name_r='sc_r';
     case 's_rho'
@@ -86,8 +81,8 @@ for n=1:nvars
       name_w='sc_w';
     case 's_w'
       name_w='s_w';
-  end,
-end,
+  end
+end
 
 sc_r=nc_read(fname,name_r);
 Cs_r=nc_read(fname,'Cs_r');
@@ -101,11 +96,11 @@ Np=N+1;
 if (length(sc_w) == N),
   sc_w=[-1 sc_w'];
   Cs_w=[-1 Cs_w'];
-end,
+end
 
-%--------------------------------------------------------------------------
+%------------------------------------------------------------------------
 % Get bottom topography.
-%--------------------------------------------------------------------------
+%------------------------------------------------------------------------
 
 h=nc_read(gname,'h');
 [Lp Mp]=size(h);
@@ -126,19 +121,19 @@ switch ( igrid ),
     if (idims), hv=hv'; end,
   case 5
     if (idims), h=h'; end,
-end,
+end
 
 % Set critical depth parameter.
 
 if (got.hc),
   hc=nc_read(fname,'hc');
-else,
+else
   hc=min(min(h));
-end,
+end
 
-%--------------------------------------------------------------------------
+%------------------------------------------------------------------------
 % Get free-surface
-%--------------------------------------------------------------------------
+%------------------------------------------------------------------------
 
 if (tindex == 0),
   zeta=zeros([Lp Mp]);
@@ -161,11 +156,11 @@ switch ( igrid ),
     if (idims), zetav=zetav'; end,
   case 5
     if (idims), zeta=zeta'; end,
-end,
+end
 
-%--------------------------------------------------------------------------
+%------------------------------------------------------------------------
 % Compute depths.
-%--------------------------------------------------------------------------
+%------------------------------------------------------------------------
 
 if (Vtransform == 1),
   switch ( igrid ),
@@ -173,29 +168,29 @@ if (Vtransform == 1),
       for k=1:N,
 	z0=(sc_r(k)-Cs_r(k))*hc + Cs_r(k).*h;
         z(:,:,k)=z0 + zeta.*(1.0 + z0./h);
-      end,
+      end
     case 2
       for k=1:N,
         z0=(sc_r(k)-Cs_r(k))*hc + Cs_r(k).*hp;
         z(:,:,k)=z0 + zetap.*(1.0 + z0./hp);
-      end,
+      end
     case 3
       for k=1:N,
         z0=(sc_r(k)-Cs_r(k))*hc + Cs_r(k).*hu;
         z(:,:,k)=z0 + zetau.*(1.0 + z0./hu);
-      end,
+      end
     case 4
       for k=1:N,
         z0=(sc_r(k)-Cs_r(k))*hc + Cs_r(k).*hv;
         z(:,:,k)=z0 + zetav.*(1.0 + z0./hv);
-      end,
+      end
     case 5
       z(:,:,1)=-h;
       for k=2:Np,
         z0=(sc_w(k)-Cs_w(k))*hc + Cs_w(k).*h;
         z(:,:,k)=z0 + zeta.*(1.0 + z0./h);
-      end,
-  end,
+      end
+  end
 elseif (Vtransform == 2),
   switch ( igrid ),
     case 1
@@ -222,8 +217,8 @@ elseif (Vtransform == 2),
       for k=1:Np,
         z0=(hc.*sc_w(k)+Cs_w(k).*h)./(hc+h);
         z(:,:,k)=zeta+(zeta+h).*z0;
-      end,
-  end,
-end,
+      end
+  end
+end
 
 return

@@ -50,26 +50,25 @@ vartype=ncdouble;
 
 %  Inquire NetCDF file dimensions and their IDs.
 
-[dnames,dsizes]=nc_dim(fname);
+D=nc_dinfo(fname);
 
-for n=1:length(dsizes),
-  id=n-1;
-  name=deblank(dnames(n,:));
+for n=1:length(D),
+  name=char(D(n).Name);
   switch name
     case 'xi_rho',
-      did.xr=id;
-      Lr=dsizes(n);
+      did.xr=D(n).dimid;
+      Lr=D(n).Length;
     case 'eta_rho',
-      did.yr=id;
-      Mr=dsizes(n);
+      did.yr=D(n).dimid;
+      Mr=D(n).Length;
     case 's_rho',
-      did.Nr=id;
-      Nr=dsizes(n);
+      did.Nr=D(n).dimid;
+      Nr=D(n).Length;
     case 'ocean_time',
-      did.time=id;
-      rec=dsizes(n);
-  end,
-end,  
+      did.time=D(n).dimid;
+      rec=D(n).Length;
+  end
+end  
 
 %  Horizontal grid variables.
 

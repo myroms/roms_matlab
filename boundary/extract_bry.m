@@ -56,27 +56,27 @@ inorth = 4;           % northern edge
 % If compact extraction, determine the size of the IorJ dimension.
 
 if (compact),
-  [Dnames, Dsizes] = nc_dim(ncfile);
+  D = nc_dinfo(ncfile);
 
-  for n=1:length(Dsizes),
-    name = deblank(Dnames(n,:));
+  for n=1:length(D),
+    name = char(D(n).Name);
     switch name
       case 'xi_rho',
-        Lr = Dsizes(n);
+        Lr = D(n).Length;
       case 'xi_u',
-        Lu = Dsizes(n);
+        Lu = D(n).Length;
       case 'xi_v',
-        Lv = Dsizes(n);
+        Lv = D(n).Length;
       case 'eta_rho',
-        Mr = Dsizes(n);
+        Mr = D(n).Length;
       case 'eta_u',
-        Mu = Dsizes(n);
+        Mu = D(n).Length;
       case 'eta_v',
-        Mv = Dsizes(n);
+        Mv = D(n).Length;
       case 's_rho',
-        Nr = Dsizes(n);
+        Nr = D(n).Length;
       case 's_w',
-        Nw = Dsizes(n);
+        Nw = D(n).Length;
     end,
   end,
   IorJ = max(Lr, Mr);      %  maximum RHO-points value of X- or Y-direction

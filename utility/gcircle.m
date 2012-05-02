@@ -7,7 +7,7 @@ function [dist,bearing]=gcircle(lon1,lat1,lon2,lat2,BEARING);
 %
 %  This function computes great circle distance and initial bearing
 %  between two longitude and latitude points. The Earth is assumed
-%  to be an sphere. This approximation is valid for short distances.
+%  to be a sphere. This approximation is valid for short distances.
 %
 %  On Input:  Longitude is positive to the east and negative to the
 %             west.  Latitude is positive to the north and negative

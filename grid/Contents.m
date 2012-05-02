@@ -4,15 +4,53 @@
 %
 % These functions are used for preparing ROMS Grid NetCDF file.
 %
-%   c_grid        - Creates ROMS grid NetCDF file.
+%   c_grid            - Creates ROMS Grid NetCDF file.
 %
-%   get_roms_grid - Builds or updates a ROMS grid structure for
-%                     a particular ROMS application.
+%   flip_grid         - Given a ROMS Grid NetCDF file, it creates a new
+%                         Grid NetCDF file with flipped dimensions, 
+%                         coordinates, and variables.
 %
-% Grid Refinement:
+%   grid_extract      - Extracts a ROMS subdomain Grid NetCDF file for
+%                         a larger input grid.
 %
-%   grid_metrics  - Computes ROMS Grid horizontal metrics.
-%   grid_refine   - Creates a finer resolution ROMS Grid NetCDF.
+%   grid_metrics      - Computes ROMS Grid horizontal metrics.
+%
+%   get_roms_grid     - Builds or updates a ROMS grid structure for
+%                         a particular ROMS application.
+%
+%   uniform_grid      - Sets a ROMS Cartesian grid uniform coordinates and
+%                         metrics.
+%
+% Nested Grids:
+%
+%   c_contact         - Creates ROMS nesting Contact Points NetCDF file.
+%
+%   coarse2fine       - Given a coarse resolution ROMS grid NetCDF file,
+%                         it creates a finer resolution grid in the
+%                         specified region.
+%
+%   contact           - Sets Contact Points between ROMS nested grids for
+%                         each overlaping contact region.
+%
+%   disp_contact      - Displays Nested Grids Contact Points unique values.
+%
+%   fine2coarse       - Given a fine resolution ROMS grid NetCDF file,
+%                         it creates a coarser resolution grid in the
+%                         specified region.
+%
+%   grid_connections  - Appends the nested grids conectivity fields between
+%                         donor and receiver grids for each contact region
+%                         to the Nested Grids Structure.
+%
+%   grid_perimeter    - Creates a structure containing information about
+%                         nested grids perimeters, boundary edges, and
+%                         other parameters.
+%
+%   plot_contact      - Plots various ROMS Nested Grids Contact Points
+%                         figures.
+%
+%   write_contact     - Writes out the Nested Grids Contact Point data
+%                         into a NetCDF file.
 %
 
 % svn $Id$

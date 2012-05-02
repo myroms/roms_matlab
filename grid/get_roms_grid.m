@@ -9,8 +9,8 @@ function Gout = get_roms_grid(Ginp, Sinp, Tindex)
 % Gout = get_roms_grid(Ginp, Tindex)
 %
 % This function builds or updates a ROMS Grid structure (Gout) containing
-% all the variables associated with the application horizontal and vertical
-% grids.
+% all the variables associated with the application's horizontal and
+% vertical grids.
 %
 % On Input:
 %
@@ -38,7 +38,7 @@ function Gout = get_roms_grid(Ginp, Sinp, Tindex)
 %                    vertical coordinates (OPTIONAL, scalar):
 %
 %                    If Tindex is omitted, zero or empty, it assumes
-%                      that zeta=0 and yields unperturbed depths
+%                      that zeta=0 yielding unperturbed depths
 %
 %                    Otherwise, the free-surface record in input NetCDF
 %                      is processed.  The free-surface is read from
@@ -77,13 +77,13 @@ function Gout = get_roms_grid(Ginp, Sinp, Tindex)
 %
 
 % svn $Id$
-%===========================================================================%
-%  Copyright (c) 2002-2012 The ROMS/TOMS Group                              %
-%    Licensed under a MIT/X style license                                   %
-%    See License_ROMS.txt                           Hernan G. Arango        %
-%===========================================================================%
+%=========================================================================%
+%  Copyright (c) 2002-2012 The ROMS/TOMS Group                            %
+%    Licensed under a MIT/X style license                                 %
+%    See License_ROMS.txt                           Hernan G. Arango      %
+%=========================================================================%
 
-%  Check input arguments.
+% Check input arguments.
   
 process.horizontal = false;
 process.parameters = false;
@@ -94,41 +94,68 @@ TimeRecord = [];
 
 if (~isstruct(Ginp)),
   Gout.grid_name    = Ginp;
+
+  Ginfo = nc_inq(Ginp);
+  vnames = {Ginfo.Variables.Name};           % Available variables
+  anames = {Ginfo.Attributes.Name};          % Available global attributes
+  NvarsG = length(Ginfo.Variables);          % Number of variables
 end
 if (nargin > 1),
   if (ischar(Sinp)),
     process.zeta = true;
-    Gout.his_name = Sinp;                     % Sinp is a NetCDF file
+    Gout.his_name = Sinp;                    % Sinp is a NetCDF file
   elseif (isstruct(Sinp));
-    process.parameters = true;                % Sinp are vertical parameters
+    process.parameters = true;               % Sinp are vertical parameters
   elseif (isnumeric(Sinp) && nargin == 2),
     process.zeta = true;
-    TimeRecord = Sinp;                        % Sinp is time record index
+    TimeRecord = Sinp;                       % Sinp is time record index
   end
 end
 if (nargin == 3),
   TimeRecord = Tindex;
 end
 
-%  Initialize.
+% Initialize.
 
 spherical = false;
 
 if (~isstruct(Ginp)),
-  Gout.TimeRecord  = TimeRecord;
-  Gout.Lm          = [];
-  Gout.Mm          = [];
-  Gout.N           = [];
-  Gout.Vtransform  = [];
-  Gout.Vstretching = [];
-  Gout.theta_s     = [];
-  Gout.theta_b     = [];
-  Gout.Tcline      = [];
-  Gout.hc          = [];
-  Gout.s_rho       = [];
-  Gout.Cs_r        = [];
-  Gout.s_w         = [];
-  Gout.Cs_w        = [];
+  if (any(strcmp(anames,'coarse_factor')) ||                            ...
+      any(strcmp(anames,'refine_factor')));
+    index = strcmp(anames,'parent_grid');
+    if (any(index)),
+      Gout.parent_grid = Ginfo.Attributes(index).Value;
+    end
+  end
+  Gout.TimeRecord    = TimeRecord;
+  Gout.Lm            = [];
+  Gout.Mm            = [];
+  Gout.N             = [];
+  Gout.coarse_factor = 0;
+  if (any(strcmp(anames,'coarse_factor'))),
+    Gout.parent_Imin = [];
+    Gout.parent_Imax = [];
+    Gout.parent_Jmin = [];
+    Gout.parent_Jmax = [];
+  end
+  Gout.refine_factor = 0;
+  Gout.coarse_factor = [];
+  if (any(strcmp(anames,'refine_factor'))),
+    Gout.parent_Imin = [];
+    Gout.parent_Imax = [];
+    Gout.parent_Jmin = [];
+    Gout.parent_Jmax = [];
+  end
+  Gout.Vtransform    = [];
+  Gout.Vstretching   = [];
+  Gout.theta_s       = [];
+  Gout.theta_b       = [];
+  Gout.Tcline        = [];
+  Gout.hc            = [];
+  Gout.s_rho         = [];
+  Gout.Cs_r          = [];
+  Gout.s_w           = [];
+  Gout.Cs_w          = [];
 
   spherical = nc_read(Ginp,'spherical');
   
@@ -140,6 +167,7 @@ if (~isstruct(Ginp)),
     end
   end
   Gout.spherical = spherical;
+  Gout.uniform = false;
   Gout.curvilinear = false;
   Gout.vector_rotation = false;
 else
@@ -148,46 +176,46 @@ else
   end
 end
 
-%----------------------------------------------------------------------------
-%  Set variable list to process and switches.
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
+% Set variable list to process and switches.
+%--------------------------------------------------------------------------
 
-varhor  = {'x_rho', 'y_rho', 'x_psi', 'y_psi',                      ...
+varhor  = {'x_rho', 'y_rho', 'x_psi', 'y_psi',                          ...
            'x_u', 'y_u',  'x_v', 'y_v'};
 if (~spherical),
-  varhor = [varhor, 'x_rho_west',  'y_rho_west',                    ...
-                    'x_rho_east',  'y_rho_east',                    ...
-                    'x_rho_south', 'y_rho_south',                   ...
-                    'x_rho_north', 'y_rho_north',                   ...
-                    'x_u_west',    'y_u_west',                      ...
-                    'x_u_east',    'y_u_east',                      ...
-                    'x_u_south',   'y_u_south',                     ...
-                    'x_u_north',   'y_u_north',                     ...
-                    'x_v_west',    'y_v_west',                      ...
-                    'x_v_east',    'y_v_east',                      ...
-                    'x_v_south',   'y_v_south',                     ...
+  varhor = [varhor, 'x_rho_west',  'y_rho_west',                        ...
+                    'x_rho_east',  'y_rho_east',                        ...
+                    'x_rho_south', 'y_rho_south',                       ...
+                    'x_rho_north', 'y_rho_north',                       ...
+                    'x_u_west',    'y_u_west',                          ...
+                    'x_u_east',    'y_u_east',                          ...
+                    'x_u_south',   'y_u_south',                         ...
+                    'x_u_north',   'y_u_north',                         ...
+                    'x_v_west',    'y_v_west',                          ...
+                    'x_v_east',    'y_v_east',                          ...
+                    'x_v_south',   'y_v_south',                         ...
                     'x_v_north',   'y_v_north'];
 else
-  varhor = [varhor, 'lon_rho', 'lat_rho', 'lon_psi', 'lat_psi',     ...
-                    'lon_u', 'lat_u', 'lon_v', 'lat_v',             ...
-                    'lon_rho_west',  'lat_rho_west',                ...
-                    'lon_rho_east',  'lat_rho_east',                ...
-                    'lon_rho_south', 'lat_rho_south',               ...
-                    'lon_rho_north', 'lat_rho_north',               ...
-                    'lon_u_west',    'lat_u_west',                  ...
-                    'lon_u_east',    'lat_u_east',                  ...
-                    'lon_u_south',   'lat_u_south',                 ...
-                    'lon_u_north',   'lat_u_north',                 ...
-                    'lon_v_west',    'lat_v_west',                  ...
-                    'lon_v_east',    'lat_v_east',                  ...
-                    'lon_v_south',   'lat_v_south',                 ...
+  varhor = [varhor, 'lon_rho', 'lat_rho', 'lon_psi', 'lat_psi',         ...
+                    'lon_u', 'lat_u', 'lon_v', 'lat_v',                 ...
+                    'lon_rho_west',  'lat_rho_west',                    ...
+                    'lon_rho_east',  'lat_rho_east',                    ...
+                    'lon_rho_south', 'lat_rho_south',                   ...
+                    'lon_rho_north', 'lat_rho_north',                   ...
+                    'lon_u_west',    'lat_u_west',                      ...
+                    'lon_u_east',    'lat_u_east',                      ...
+                    'lon_u_south',   'lat_u_south',                     ...
+                    'lon_u_north',   'lat_u_north',                     ...
+                    'lon_v_west',    'lat_v_west',                      ...
+                    'lon_v_east',    'lat_v_east',                      ...
+                    'lon_v_south',   'lat_v_south',                     ...
                     'lon_v_north',   'lat_v_north'];
 end
-varhor  = [varhor, 'mask_rho', 'mask_psi', 'mask_u', 'mask_v',      ...
-                   'angle', 'pm', 'pn', 'h', 'f'];
-varver  = {'Vtransform', 'Vstretching',                             ...
-           'theta_s', 'theta_b', 'Tcline', 'hc',                    ...
-           's_rho', 'Cs_r', 's_w', 'Cs_w',                          ...
+varhor  = [varhor, 'mask_rho', 'mask_psi', 'mask_u', 'mask_v',          ...
+                   'angle', 'pm', 'pn', 'dndx', 'dmde', 'h', 'f'];
+varver  = {'Vtransform', 'Vstretching',                                 ...
+           'theta_s', 'theta_b', 'Tcline', 'hc',                        ...
+           's_rho', 'Cs_r', 's_w', 'Cs_w',                              ...
            'Hz', 'z_rho', 'z_u', 'z_v'};
 varlist = [varhor, varver];
 
@@ -209,30 +237,27 @@ if (isstruct(Ginp)),
 else
 
   process.horizontal = true;
-  
-  [VnamesG,NvarsG] = nc_vname(Ginp);
 
-  got.N    = false;
-  got.zeta = false;
+  got.N              = false;
+  got.zeta           = false;
+  got.lon_coast      = any(strcmp(vnames,'lon_coast'));
+  got.lat_coast      = any(strcmp(vnames,'lat_coast'));
 
   for var = varlist,
     field = char(var);
     got.(field) = false;
   end
-  
+   
   for n = 1:NvarsG,
-    field = deblank(VnamesG(n,:));
+    field = char(Ginfo.Variables(n).Name);
     if (isfield(got,field)),
       got.(field) = true;
     end
 
-%  If 'Ginp' is a ROMS output NetCDF file, read in vertical coordinate
-%  parameters.
+% If "Ginp" is a ROMS output NetCDF file, read in vertical coordinate
+% parameters.
 
     switch field  
-      case 's_rho'
-        Gout.N = length(nc_read(Ginp,field));
-        got.N  = true;
       case 'Vtransform'
         Gout.(field) = nc_read(Ginp,field);
       case 'Vstretching'
@@ -247,6 +272,8 @@ else
         Gout.(field) = nc_read(Ginp,field);
       case 's_rho'
         Gout.(field) = nc_read(Ginp,field);
+        Gout.N = length(Gout.(field));
+        got.N  = true;
       case 'Cs_r'
         Gout.(field) = nc_read(Ginp,field);
       case 's_w'
@@ -260,9 +287,45 @@ else
     end
   end
 
-%  If vertical parameters 'Vtransform' and 'Vstretching' are not found
-%  in primary file 'ginp', set their default values for backward
-%  compatibility.
+% If extracted from finer grid, get coarseness factor.
+
+  got.coarse_factor = any(strcmp(anames,'coarse_factor'));
+  if (got.coarse_factor),
+    index = strcmp(anames,'coarse_factor');
+    Gout.coarse_factor = double(Ginfo.Attributes(index).Value);
+
+    index = strcmp(anames,'parent_Imin');
+    Gout.parent_Imin   = double(Ginfo.Attributes(index).Value);
+    index = strcmp(anames,'parent_Imax');
+    Gout.parent_Imax   = double(Ginfo.Attributes(index).Value);
+
+    index = strcmp(anames,'parent_Jmin');
+    Gout.parent_Jmin   = double(Ginfo.Attributes(index).Value);
+    index = strcmp(anames,'parent_Jmax');
+    Gout.parent_Jmax   = double(Ginfo.Attributes(index).Value);
+  end
+
+% If refinement grid, get refinement factor.
+
+  got.refine_factor = any(strcmp(anames,'refine_factor'));
+  if (got.refine_factor),
+    index = strcmp(anames,'refine_factor');
+    Gout.refine_factor = double(Ginfo.Attributes(index).Value);
+
+    index = strcmp(anames,'parent_Imin');
+    Gout.parent_Imin   = double(Ginfo.Attributes(index).Value);
+    index = strcmp(anames,'parent_Imax');
+    Gout.parent_Imax   = double(Ginfo.Attributes(index).Value);
+
+    index = strcmp(anames,'parent_Jmin');
+    Gout.parent_Jmin   = double(Ginfo.Attributes(index).Value);
+    index = strcmp(anames,'parent_Jmax');
+    Gout.parent_Jmax   = double(Ginfo.Attributes(index).Value);
+  end
+
+% If vertical parameters "Vtransform" and "Vstretching" are not found
+% in primary file "Ginp", set their default values for backward
+% compatibility.
 
   if (process.vertical),  
     if (~got.Vtransform),
@@ -278,17 +341,17 @@ else
   
 end
 
-%----------------------------------------------------------------------------
-%  The 'Sinp' argument is a structure array containing application vertical
-%  coordonate parameters.
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
+% The "Sinp" argument is a structure array containing application
+% vertical coordonate parameters.
+%--------------------------------------------------------------------------
 
 if (process.parameters),
   if (isfield(Sinp,'N')),
     Gout.N = Sinp.N;
     got.N  = true;
   else
-    error([' GET_ROMS_GRID: unable to find field ''N''',            ...
+    error([' GET_ROMS_GRID: unable to find field ''N''',                ...
            ' in structure: Sinp']);
   end
 
@@ -296,7 +359,7 @@ if (process.parameters),
     Gout.Vtransform = Sinp.Vtransform;
     got.Vtransform  = true;
   else
-    error([' GET_ROMS_GRID: unable to find field ''Vtransform''',   ...
+    error([' GET_ROMS_GRID: unable to find field ''Vtransform''',       ...
            ' in structure: Sinp']);
   end
 
@@ -304,7 +367,7 @@ if (process.parameters),
     Gout.Vstretching = Sinp.Vstretching;
     got.Vstretching  = true;
   else
-    error([' GET_ROMS_GRID: unable to find field ''Vstretching''',  ...
+    error([' GET_ROMS_GRID: unable to find field ''Vstretching''',      ...
            ' in structure: Sinp']);
   end
 
@@ -312,7 +375,7 @@ if (process.parameters),
     Gout.theta_s = Sinp.theta_s;
     got.theta_s  = true;
   else
-    error([' GET_ROMS_GRID: unable to find field ''theta_s''',      ...
+    error([' GET_ROMS_GRID: unable to find field ''theta_s''',          ...
            ' in structure: Sinp']);
   end
 
@@ -320,7 +383,7 @@ if (process.parameters),
     Gout.theta_b = Sinp.theta_b;
     got.theta_b  = true;
   else
-    error([' GET_ROMS_GRID: unable to find field ''theta_b''',      ...
+    error([' GET_ROMS_GRID: unable to find field ''theta_b''',          ...
            ' in structure: Sinp']);
   end
 
@@ -328,7 +391,7 @@ if (process.parameters),
     Gout.Tcline = Sinp.Tcline;
     got.Tcline  = true;
   else
-    error([' GET_ROMS_GRID: unable to find field ''Tcline''',       ...
+    error([' GET_ROMS_GRID: unable to find field ''Tcline''',           ...
            ' in structure: Sinp']);
   end
 
@@ -336,7 +399,7 @@ if (process.parameters),
     Gout.hc = Sinp.hc;
     got.hc  = true;
   else
-    error([' GET_ROMS_GRID: unable to find field ''hc''',           ...
+    error([' GET_ROMS_GRID: unable to find field ''hc''',               ...
            ' in structure: Sinp']);
   end
 
@@ -344,15 +407,16 @@ if (process.parameters),
 
 end
 
-%----------------------------------------------------------------------------
-%  The 'Sinp' argument is a secondary ROMS output file.  Use the vertical
-%  coordinates parameters from secodary file to compute depths. Overwrite
-%  their values in 'Gout' structure.
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
+% The "Sinp" argument is a secondary ROMS output file.  Use the vertical
+% coordinates parameters from secodary file to compute depths. Overwrite
+% their values in "Gout" structure.
+%--------------------------------------------------------------------------
 
 if (process.zeta),
   if (ischar(Sinp)),
-    [VnamesS,NvarsS] = nc_vname(Sinp);    
+    Sinfo = nc_inq(Sinp);
+    NvarsS = length(Sinfo.Variables);
 
     got.N           = false;
     got.Vtransform  = false;
@@ -368,7 +432,7 @@ if (process.zeta),
     got.zeta        = false;
 
     for n = 1:NvarsS,
-      field = deblank(VnamesS(n,:));
+      field = char(Sinfo.Variables(n).Name);
       switch field
         case 'Vtransform'
           Gout.(field) = nc_read(Sinp,field);
@@ -409,8 +473,8 @@ if (process.zeta),
       end
     end
 
-%  If vertical parameters 'Vtransform' and 'Vstretching' are not found
-%  in secondary file, set their default values for backward compatibility.
+% If vertical parameters "Vtransform" and "Vstretching" are not found
+% in secondary file, set their default values for backward compatibility.
     
     if (~got.Vtransform),
       Gout.Vtransform  = 1;
@@ -425,11 +489,11 @@ if (process.zeta),
   end
 end
 
-%----------------------------------------------------------------------------
-%  Add grid variables to structure, except vertical depths.
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
+% Add grid variables to structure, except vertical depths.
+%--------------------------------------------------------------------------
 
-%  If appropriate, read in fields from primary file 'Ginp'.
+% If appropriate, read in fields from primary file "Ginp".
 
 if (process.horizontal),
   for var = varhor
@@ -448,7 +512,8 @@ if (process.horizontal),
 
     Gout.Lm = Lm;                %  This are horizontal (Lm,Mm) dimensions
     Gout.Mm = Mm;                %  that are specified in ROMS input script
-  
+                                 %  RHO-points: Lp = Lm+1,  Mp = Mm+2  
+
     if (~got.mask_rho),
       Gout.mask_rho = ones(Lr,Mr);
       got.mask_rho  = true;
@@ -472,7 +537,7 @@ if (process.horizontal),
     end
   end
 
-%  Extract boundary conditions locations.
+% Extract boundary conditions locations.
 
   if (spherical),
     if (got.lon_rho),
@@ -554,51 +619,64 @@ if (process.horizontal),
     end
   end
 
-%  Determine curvilinear and vector rotation switches.
+% Determine "uniform", "curvilinear", and "vector_rotation" switches.
 
   if (got.pm && got.pn),
-    if ((min(Gout.pm(:)) ~= max(Gout.pm(:))) ||                       ...
-        (min(Gout.pn(:)) ~= max(Gout.pm(:))))
+    if (length(unique(Gout.pm(:))) == 1 &&                              ...
+        length(unique(Gout.pn(:))) == 1),
+      Gout.uniform = true;
+    end
+
+    if (length(unique(Gout.pm(:))) > 1 ||                               ...
+        length(unique(Gout.pn(:))) > 1),
       Gout.curvilinear = true;
     end
   end
   
   if (got.angle),
-    if (min(Gout.angle(:)) ~= 0 && max(Gout.angle(:))),
+    if (length(unique(Gout.angle(:))) > 1 ||                            ...
+               unique(Gout.angle(:))  > 0),
       Gout.vector_rotation = true;
     end
   end
-  
+
+% If available, process coastline data.
+
+  if (got.lon_coast),
+    Gout.lon_coast = nc_read(Ginp,'lon_coast');
+    Gout.lat_coast = nc_read(Ginp,'lat_coast');
+  end
+
 end
 
-%----------------------------------------------------------------------------
-%  Add vertical depths.
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
+% Add vertical depths.
+%--------------------------------------------------------------------------
 
 if (process.vertical),
 
   if (~got.Vtransform  || isempty(Gout.Vtransform )),
-    error([' GET_ROMS_GRID: unassigned field ''Vtransform''',       ...
+    error([' GET_ROMS_GRID: unassigned field ''Vtransform''',           ...
            ' in structure: Gout']);
   end
   if (~got.Vstretching || isempty(Gout.Vstretching)),
-    error([' GET_ROMS_GRID: unassigned field ''Vstretching''',      ...
+    error([' GET_ROMS_GRID: unassigned field ''Vstretching''',          ...
            ' in structure: Gout']);
   end
   if (~got.theta_s     || isempty(Gout.theta_s    )),
-    error([' GET_ROMS_GRID: unassigned field ''theta_s''',          ...
+    error([' GET_ROMS_GRID: unassigned field ''theta_s''',              ...
            ' in structure: Gout']);
   end
   if (~got.theta_b     || isempty(Gout.theta_b    )),
-    error([' GET_ROMS_GRID: unassigned field ''theta_b''',          ...
+    error([' GET_ROMS_GRID: unassigned field ''theta_b''',              ...
            ' in structure: Gout']);
   end
   if (~got.hc          || isempty(Gout.hc         )),
-    error([' GET_ROMS_GRID: unassigned field ''hc''',               ...
+    error([' GET_ROMS_GRID: unassigned field ''hc''',                   ...
            ' in structure: Gout']);
   end
   if (~got.N           || isempty(Gout.N          )),
-    error([' GET_ROMS_GRID: unassigned field ''N''',                ...
+    error([' GET_ROMS_GRID: unassigned field ''N''',                    ...
            ' in structure: Gout']);
   end      
 
@@ -612,44 +690,44 @@ if (process.vertical),
    
   if (isempty(h)),
     disp(' ')
-    disp(['   GET_ROMS_GRID - input file does not have grid data:']);
+    disp('   GET_ROMS_GRID - input file does not have grid data:');
     disp(['            Ginp:  ',Ginp]);
   else
     if (~(got.s_rho || got.Cs_w)),
       kgrid = 0;
-      [Gout.s_rho,Gout.Cs_r] = stretching(Gout.Vstretching,         ...
-                                          Gout.theta_s,             ...
-                                          Gout.theta_b,             ...
-                                          Gout.hc, Gout.N,          ...
+      [Gout.s_rho,Gout.Cs_r] = stretching(Gout.Vstretching,             ...
+                                          Gout.theta_s,                 ...
+                                          Gout.theta_b,                 ...
+                                          Gout.hc, Gout.N,              ...
                                           kgrid, false);
     end
 
     if (~(got.s_w || got.Cs_w)),
       kgrid = 1;
-      [Gout.s_w,  Gout.Cs_w] = stretching(Gout.Vstretching,         ...
-                                          Gout.theta_s,             ...
-                                          Gout.theta_b,             ...
+      [Gout.s_w,  Gout.Cs_w] = stretching(Gout.Vstretching,             ...
+                                          Gout.theta_s,                 ...
+                                          Gout.theta_b,                 ...
                                           Gout.hc, Gout.N, kgrid);
     end
 
     igrid = 1;
-    Gout.z_r = set_depth(Gout.Vtransform, Gout.Vstretching,         ...
-                         Gout.theta_s, Gout.theta_b, Gout.hc,       ...
+    Gout.z_r = set_depth(Gout.Vtransform, Gout.Vstretching,             ...
+                         Gout.theta_s, Gout.theta_b, Gout.hc,           ...
                          Gout.N, igrid, h, zeta, false);
 
     igrid = 3;
-    Gout.z_u = set_depth(Gout.Vtransform, Gout.Vstretching,         ...
-                         Gout.theta_s, Gout.theta_b, Gout.hc,       ...
+    Gout.z_u = set_depth(Gout.Vtransform, Gout.Vstretching,             ...
+                         Gout.theta_s, Gout.theta_b, Gout.hc,           ...
                          Gout.N, igrid, h, zeta, false);
 
     igrid = 4;
-    Gout.z_v = set_depth(Gout.Vtransform, Gout.Vstretching,         ...
-                         Gout.theta_s, Gout.theta_b, Gout.hc,       ...
+    Gout.z_v = set_depth(Gout.Vtransform, Gout.Vstretching,             ...
+                         Gout.theta_s, Gout.theta_b, Gout.hc,           ...
                          Gout.N, igrid, h, zeta, false);
 
     igrid = 5;
-    Gout.z_w = set_depth(Gout.Vtransform, Gout.Vstretching,         ...
-                         Gout.theta_s, Gout.theta_b, Gout.hc,       ...
+    Gout.z_w = set_depth(Gout.Vtransform, Gout.Vstretching,             ...
+                         Gout.theta_s, Gout.theta_b, Gout.hc,           ...
                          Gout.N, igrid, h, zeta, false);
 
     N = Gout.N;

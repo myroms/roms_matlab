@@ -1,5 +1,5 @@
-function [s,C]=stretching(Vstretching, theta_s, theta_b, hc, N, kgrid, ...
-                          report);
+function [s,C]=stretching(Vstretching, theta_s, theta_b, hc, N, kgrid,  ...
+                          report)
 
 %
 % STRETCHING:  Compute ROMS vertical coordinate stretching function
@@ -7,9 +7,8 @@ function [s,C]=stretching(Vstretching, theta_s, theta_b, hc, N, kgrid, ...
 % [s,C]=stretching(Vstretching, theta_s, theta_b, hc, N, kgrid, report)
 %
 % Given vertical terrain-following vertical stretching parameters, this
-% this routine computes the vertical stretching function used used in
-% ROMS vertical coordinate transformation. Check the following link for
-% details:
+% routine computes the vertical stretching function used in ROMS vertical
+% coordinate transformation. Check the following link for details:
 %
 %    https://www.myroms.org/wiki/index.php/Vertical_S-coordinate
 %
@@ -57,25 +56,25 @@ C=[];
 
 if (nargin < 6),
   disp(' ');
-  disp(['*** Error:  STRETCHING - too few arguments.']);
-  disp(['                     number of supplied arguments: ',        ...
+  disp('*** Error:  STRETCHING - too few arguments.');
+  disp(['                     number of supplied arguments: ',          ...
         num2str(nargin)]);
-  disp(['                     number of required arguments: 6']);
+  disp('                     number of required arguments: 6');
   disp(' ');
   return
 end,
 
-if (Vstretching < 1 | Vstretching > 4),
+if (Vstretching < 1 || Vstretching > 4),
   disp(' ');
-  disp(['*** Error:  STRETCHING - Illegal parameter Vstretching = '   ...
-	num2str(Vstretching)]);
+  disp(['*** Error:  STRETCHING - Illegal parameter Vstretching = '     ...
+	num2str(Vstretching)]); 
   disp(' ');
   return
-end,
+end
 
 if (nargin < 7),
   report=false;
-end,
+end
 
 Np=N+1;
 
@@ -93,18 +92,18 @@ if (Vstretching == 1),
 
     lev=0:N;
     s=(lev-N).*ds;
-  else,
+  else
     Nlev=N;
-    lev=[1:N]-0.5;
+    lev=(1:N)-0.5;
     s=(lev-N).*ds;
-  end,
+  end
   if (theta_s > 0),
     Ptheta=sinh(theta_s.*s)./sinh(theta_s);
     Rtheta=tanh(theta_s.*(s+0.5))./(2.0*tanh(0.5*theta_s))-0.5;
     C=(1.0-theta_b).*Ptheta+theta_b.*Rtheta;
-  else,
+  else
     C=s;
-  end,
+  end
 
 % A. Shchepetkin (UCLA-ROMS, 2005) vertical stretching function.
 
@@ -119,9 +118,9 @@ elseif (Vstretching == 2),
     s=(lev-N).*ds;
   else
     Nlev=N;
-    lev=[1:N]-0.5;
+    lev=(1:N)-0.5;
     s=(lev-N).*ds;
-  end,
+  end
   if (theta_s > 0),
     Csur=(1.0-cosh(theta_s.*s))/(cosh(theta_s)-1.0);
     if (theta_b > 0),
@@ -130,10 +129,10 @@ elseif (Vstretching == 2),
       C=weigth.*Csur+(1.0-weigth).*Cbot;
     else
       C=Csur;
-    end,
-  else,
+    end
+  else
     C=s;
-  end,
+  end
 
 %  R. Geyer BBL vertical stretching function.
 
@@ -144,11 +143,11 @@ elseif (Vstretching == 3),
     Nlev=Np;
     lev=0:N;
     s=(lev-N).*ds;
-  else,
+  else
     Nlev=N;
-    lev=[1:N]-0.5;
+    lev=(1:N)-0.5;
     s=(lev-N).*ds;
-  end,
+  end
   if (theta_s > 0),
      exp_s=theta_s;      %  surface stretching exponent
      exp_b=theta_b;      %  bottom  stretching exponent
@@ -157,9 +156,9 @@ elseif (Vstretching == 3),
     Csur=-log(cosh(alpha*abs(s).^exp_s))/log(cosh(alpha));
     weight=(1-tanh( alpha*(s+.5)))/2;
     C=weight.*Cbot+(1-weight).*Csur;
-  else,
+  else
     C=s;
-  end,
+  end
 
 % A. Shchepetkin (UCLA-ROMS, 2010) double vertical stretching function
 % with bottom refinement
@@ -173,45 +172,45 @@ elseif (Vstretching == 4),
     s=(lev-N).*ds;
   else
     Nlev=N;
-    lev=[1:N]-0.5;
+    lev=(1:N)-0.5;
     s=(lev-N).*ds;
-  end,
+  end
   if (theta_s > 0),
     Csur=(1.0-cosh(theta_s.*s))/(cosh(theta_s)-1.0);
   else
     Csur=-s.^2;
-  end,
+  end
   if (theta_b > 0),
     Cbot=(exp(theta_b.*Csur)-1.0)/(1.0-exp(-theta_b));
     C=Cbot;
   else
     C=Csur;
-  end,
+  end
 
-end,
+end
 
 % Report S-coordinate parameters.
 
 if (report),
   disp(' ');
   if (Vstretching == 1),
-    disp(['Vstretching = ',num2str(Vstretching),                      ...
+    disp(['Vstretching = ',num2str(Vstretching),                        ...
           '   Song and Haidvogel (1994)']);
   elseif (Vstretching == 2),
-    disp(['Vstretching = ',num2str(Vstretching),                      ...
+    disp(['Vstretching = ',num2str(Vstretching),                        ...
           '   Shchepetkin (2005)']);
   elseif (Vstretching == 3),
-    disp(['Vstretching = ',num2str(Vstretching),                      ...
+    disp(['Vstretching = ',num2str(Vstretching),                        ...
           '   Geyer (2009), BBL']);
   elseif (Vstretching == 4),
-    disp(['Vstretching = ',num2str(Vstretching),                      ...
+    disp(['Vstretching = ',num2str(Vstretching),                        ...
           '   Shchepetkin (2010)']);
-  end,
+  end
   if (kgrid == 1)
     disp(['   kgrid    = ',num2str(kgrid), '   at vertical W-points']);
-  else,
+  else
     disp(['   kgrid    = ',num2str(kgrid), '   at vertical RHO-points']);
-  end,
+  end
   disp(['   theta_s  = ',num2str(theta_s)]);
   disp(['   theta_b  = ',num2str(theta_b)]);
   disp(['   hc       = ',num2str(hc)]);
@@ -223,15 +222,15 @@ if (report),
   if (kgrid == 1),
     for k=Nlev:-1:1,
       disp(['    ', ...
-	    sprintf('%3g',k-1     ), '   ', ...
-	    sprintf('%20.12e',s(k)), '   ', ...
+	    sprintf('%3g',k-1     ), '   ',                                 ...
+	    sprintf('%20.12e',s(k)), '   ',                                 ...
 	    sprintf('%20.12e',C(k))]);
     end,
   else
     for k=Nlev:-1:1,
       disp(['    ', ...
-	    sprintf('%3g',k       ), '   ', ...
-	    sprintf('%20.12e',s(k)), '   ', ...
+	    sprintf('%3g',k       ), '   ',                                 ...
+	    sprintf('%20.12e',s(k)), '   ',                                 ...
 	    sprintf('%20.12e',C(k))]);
     end,
   end,
