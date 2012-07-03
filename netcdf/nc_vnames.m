@@ -59,7 +59,7 @@ switch(method),
   case {'mexnc'}
     S = nc_vnames_mexnc (fname);                % MEXNC inteface
   otherwise
-    error(['NC_VNAMES: unable to determine NetCDF processing interface']);
+    error('NC_VNAMES: unable to determine NetCDF processing interface');
 end
 
 return
@@ -156,27 +156,27 @@ for n=1:nvars,
   vtype = char(Info.Variables(n).Datatype);
   switch (vtype)
     case 'int8'
-      S.Variables(n).ncType = nc_byte;
+      S.Variables(n).ncType = netcdf.getConstant('nc_byte');
     case 'uint8'
-      S.Variables(n).ncType = nc_ubyte;
+      S.Variables(n).ncType = netcdf.getConstant('nc_ubyte');
     case 'char'
-      S.Variables(n).ncType = nc_char;
+      S.Variables(n).ncType = netcdf.getConstant('nc_char');
     case 'int16'
-      S.Variables(n).ncType = nc_short;
+      S.Variables(n).ncType = netcdf.getConstant('nc_short');
     case 'uint16'
-      S.Variables(n).ncType = nc_ushort;
+      S.Variables(n).ncType = netcdf.getConstant('nc_ushort');
     case 'int32'
-      S.Variables(n).ncType = nc_int;
+      S.Variables(n).ncType = netcdf.getConstant('nc_int');
     case 'uint32'
-      S.Variables(n).ncType = nc_uint;
+      S.Variables(n).ncType = netcdf.getConstant('nc_uint');
     case 'single'
-      S.Variables(n).ncType = nc_float;
+      S.Variables(n).ncType = netcdf.getConstant('nc_float');
     case 'double'
-      S.Variables(n).ncType = nc_double;
+      S.Variables(n).ncType = netcdf.getConstant('nc_double');
     case 'int64'
-      S.Variables(n).ncType = nc_int64;
+      S.Variables(n).ncType = netcdf.getConstant('nc_int64');
     case 'uint64'
-      S.Variables(n).ncType = nc_uint64;
+      S.Variables(n).ncType = netcdf.getConstant('nc_uint64');
     otherwise
       S.Variables(n).ncType = [];
   end
@@ -285,27 +285,27 @@ for n=1:nvars,
   vtype = char(Info.Dataset(n).Datatype);
   switch (vtype)
     case 'int8'
-      S.Variables(n).ncType = nc_byte;
+      S.Variables(n).ncType = nc_constant('nc_byte');
     case 'uint8'
-      S.Variables(n).ncType = nc_ubyte;
+      S.Variables(n).ncType = nc_constant('nc_ubyte');
     case 'char'
-      S.Variables(n).ncType = nc_char;
+      S.Variables(n).ncType = nc_constant('nc_char');
     case 'int16'
-      S.Variables(n).ncType = nc_short;
+      S.Variables(n).ncType = nc_constant('nc_short');
     case 'uint16'
-      S.Variables(n).ncType = nc_ushort;
+      S.Variables(n).ncType = nc_constant('nc_ushort');
     case 'int32'
-      S.Variables(n).ncType = nc_int;
+      S.Variables(n).ncType = nc_constant('nc_int');
     case 'uint32'
-      S.Variables(n).ncType = nc_uint;
+      S.Variables(n).ncType = nc_constant('nc_uint');
     case 'single'
-      S.Variables(n).ncType = nc_float;
+      S.Variables(n).ncType = nc_constant('nc_float');
     case 'double'
-      S.Variables(n).ncType = nc_double;
+      S.Variables(n).ncType = nc_constant('nc_double');
     case 'int64'
-      S.Variables(n).ncType = nc_int64;
+      S.Variables(n).ncType = nc_constant('nc_int64');
     case 'uint64'
-      S.Variables(n).ncType = nc_uint64;
+      S.Variables(n).ncType = nc_constant('nc_uint64');
     otherwise
       S.Variables(n).ncType = [];
   end
@@ -448,7 +448,7 @@ for n=1:nvars
       end
 
       switch (atype)
-        case (nc_char)
+        case (nc_constant('nc_char'))
           [avalue,status]=mexnc('get_att_text',ncid,varid,attnam);
           if (status < 0),
             disp('  ');
@@ -457,7 +457,7 @@ for n=1:nvars
                    'attribute "',attnam,'"in variable: ',vname,'.']);
           end
           S.Variables(n).Attributes(m).Value = avalue;  
-        case (nc_int)
+        case (nc_constant('nc_int'))
           [avalue,status]=mexnc('get_att_int', ncid,varid,attnam);
           if (status < 0),
             disp('  ');
@@ -466,7 +466,7 @@ for n=1:nvars
                    'attribute "',attnam,'"in variable: ',vname,'.']);
           end
           S.Variables(n).Attributes(m).Value = avalue;   
-        case (nc_float)
+        case (nc_constant('nc_float'))
           [avalue,status]=mexnc('get_att_float',ncid,varid,attnam);
           if (status < 0),
             disp('  ');
@@ -475,7 +475,7 @@ for n=1:nvars
                    'attribute "',attnam,'"in variable: ',vname,'.']);
           end
           S.Variables(n).Attributes(m).Value = avalue;
-        case (nc_double)
+        case (nc_constant('nc_double'))
           [avalue,status]=mexnc('get_att_double',ncid,varid,attnam);
           if (status < 0),
             disp('  ');

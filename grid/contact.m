@@ -275,11 +275,23 @@ Ncontact = (Ngrids-1)*2;           % number of contact regions
 % Get nested grids information and set perimeters and boundary edges.
 %--------------------------------------------------------------------------
 
-% Get nested grid structures.
+% Get nested grid structures.  If the grid structure have the parent
+% fields, remove them to have an array of similar structures.
+
+parent = {'parent_grid',                                                ...
+          'parent_Imin', 'parent_Imax',                                 ...
+          'parent_Jmin', 'parent_Jmax'};
 
 for n=1:Ngrids,
-  G(n) = get_roms_grid(char(Gnames(n)));
+  g = get_roms_grid(char(Gnames(n)));
+  if (isfield(g, 'parent_grid')),
+    G(n) = rmfield(g, parent);
+  else
+    G(n) = g;
+  end
 end
+
+clear g
 
 % Set nested grids perimeters and boundary edges.
 
@@ -1823,7 +1835,7 @@ S = Sinp;
 Ncontact  = S.Ncontact;
 spherical = S.spherical;
 
-Ldebug = true;
+Ldebug = false;
 
 %--------------------------------------------------------------------------
 % Set horizontal interpolation weights.

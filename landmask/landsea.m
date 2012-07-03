@@ -23,7 +23,7 @@ function [F]=landsea(ncfile, clon, clat)
 %                  F.mask_v   =>  Mask at v-points
 %
 % Calls:   MEXNC (Interface to NetCDF library using Matlab):
-%          nc_dinfo, nc_read, nc_vdef, nc_vname, nc_write
+%          nc_dinfo, nc_read, nc_vdef, nc_vnames, nc_write
 %
 %          r_gshhs, x_gshhs
 %
@@ -163,7 +163,7 @@ if (defmode),
 
   if (~got.mask_rho),
     Var.name          = Vname.mask_rho;
-    Var.type          = nc_double;
+    Var.type          = nc_constant('nc_double');
     Var.dimid         = [did.yr did.xr];
     Var.long_name     = 'mask on RHO-points';
     Var.flag_values   = [0.0 1.0];
@@ -178,7 +178,7 @@ if (defmode),
 
   if (~got.mask_psi),
     Var.name          = Vname.mask_psi;
-    Var.type          = nc_double;
+    Var.type          = nc_constant('nc_double');
     Var.dimid         = [did.yp did.xp];
     Var.long_name     = 'mask on PSI-points';
     Var.flag_values   = [0.0 1.0];
@@ -193,7 +193,7 @@ if (defmode),
 
   if (~got.mask_u),
     Var.name          = Vname.mask_u;
-    Var.type          = nc_double;
+    Var.type          = nc_constant('nc_double');
     Var.dimid         = [did.yu did.xu];
     Var.long_name     = 'mask on U-points';
     Var.flag_values   = [0.0 1.0];
@@ -208,7 +208,7 @@ if (defmode),
 
   if (~got.mask_v),
     Var.name          = Vname.mask_v;
-    Var.type          = nc_double;
+    Var.type          = nc_constant('nc_double');
     Var.dimid         = [did.yv did.xv];
     Var.long_name     = 'mask on V-points';
     Var.flag_values   = [0.0 1.0];

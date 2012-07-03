@@ -56,7 +56,7 @@ switch(method),
   case {'mexnc'}
     V = nc_vinfo_mexnc (ncfile,Vname);           % MEXNC inteface
   otherwise
-    error(['NC_VINFO: unable to determine NetCDF processing interface']);
+    error('NC_VINFO: unable to determine NetCDF processing interface');
 end
 
 return
@@ -147,27 +147,27 @@ V.Datatype   = Info.Datatype;
 vtype = char(Info.Datatype);
 switch (vtype)
   case 'int8'
-    V.ncType = nc_byte;
+    V.ncType = netcdf.getConstant('nc_byte');
   case 'uint8'
-    V.ncType = nc_ubyte;
+    V.ncType = netcdf.getConstant('nc_ubyte');
   case 'char'
-    V.ncType = nc_char;
+    V.ncType = netcdf.getConstant('nc_char');
   case 'int16'
-    V.ncType = nc_short;
+    V.ncType = netcdf.getConstant('nc_short');
   case 'uint16'
-    V.ncType = nc_ushort;
+    V.ncType = netcdf.getConstant('nc_ushort');
   case 'int32'
-    V.ncType = nc_int;
+    V.ncType = netcdf.getConstant('nc_int');
   case 'uint32'
-    V.ncType = nc_uint;
+    V.ncType = netcdf.getConstant('nc_uint');
   case 'single'
-    V.ncType = nc_float;
+    V.ncType = netcdf.getConstant('nc_float');
   case 'double'
-    V.ncType = nc_double;
+    V.ncType = netcdf.getConstant('nc_double');
   case 'int64'
-    V.ncType = nc_int64;
+    V.ncType = netcdf.getConstant('nc_int64');
   case 'uint64'
-    V.ncType = nc_uint64;
+    V.ncType = netcdf.getConstant('nc_uint64');
   otherwise
     V.ncType = [];
 end
@@ -264,27 +264,27 @@ V.Datatype   = Info.Datatype;
 vtype = char(Info.Datatype);
 switch (vtype)
   case 'int8'
-    V.ncType = nc_byte;
+    V.ncType = nc_constant('nc_byte');
   case 'uint8'
-    V.ncType = nc_ubyte;
+    V.ncType = nc_constant('nc_ubyte');
   case 'char'
-    V.ncType = nc_char;
+    V.ncType = nc_constant('nc_char');
   case 'int16'
-    V.ncType = nc_short;
+    V.ncType = nc_constant('nc_short');
   case 'uint16'
-    V.ncType = nc_ushort;
+    V.ncType = nc_constant('nc_ushort');
   case 'int32'
-    V.ncType = nc_int;
+    V.ncType = nc_constant('nc_int');
   case 'uint32'
-    V.ncType = nc_uint;
+    V.ncType = nc_constant('nc_uint');
   case 'single'
-    V.ncType = nc_float;
+    V.ncType = nc_constant('nc_float');
   case 'double'
-    V.ncType = nc_double;
+    V.ncType = nc_constant('nc_double');
   case 'int64'
-    V.ncType = nc_int64;
+    V.ncType = nc_constant('nc_int64');
   case 'uint64'
-    V.ncType = nc_uint64;
+    V.ncType = nc_constant('nc_uint64');
   otherwise
     V.ncType = [];
 end
@@ -434,7 +434,7 @@ if (nvatts > 0),
     end
 
     switch (atype)
-      case (nc_char)
+      case (nc_constant('nc_char'))
         [avalue,status]=mexnc('get_att_text',ncid,varid,attnam);
         if (status < 0),
           disp('  ');
@@ -443,7 +443,7 @@ if (nvatts > 0),
                  '"',attnam,'"in variable: ',Vname,'.']);
         end
         V.Attributes(n).Value = avalue;  
-      case (nc_int)
+      case (nc_constant('nc_int'))
         [avalue,status]=mexnc('get_att_int', ncid,varid,attnam);
         if (status < 0),
           disp('  ');
@@ -452,7 +452,7 @@ if (nvatts > 0),
                  '"',attnam,'"in variable: ',Vname,'.']);
         end
         V.Attributes(n).Value = avalue;   
-      case (nc_float)
+      case (nc_constant('nc_float'))
         [avalue,status]=mexnc('get_att_float',ncid,varid,attnam);
         if (status < 0),
           disp('  ');
@@ -461,7 +461,7 @@ if (nvatts > 0),
                  '"',attnam,'"in variable: ',Vname,'.']);
         end
         V.Attributes(n).Value = avalue;
-      case (nc_double)
+      case (nc_constant('nc_double'))
         [avalue,status]=mexnc('get_att_double',ncid,varid,attnam);
         if (status < 0),
           disp('  ');
@@ -613,8 +613,8 @@ else
       try
         jncid = snc_opendap_open(ncfile);
         catch %#ok<CTCH>
-          error ( 'NC_VARINFO: fileOpenFailure ', ...
-                  'Could not open ''%s'' with java backend.' , ncfile);
+          error (['NC_VARINFO: fileOpenFailure ', ...
+                  'Could not open ''%s'' with java backend.' , ncfile]);
       end
   end
 end
@@ -625,8 +625,8 @@ else
   jvarid = jncid.findVariable(varname);
   if isempty(jvarid)
     close(jncid);
-    error ( 'NC_VARINFO: badVariableName ', ...
-            'Could not locate variable %s', varname );
+    error (['NC_VARINFO: badVariableName ', ...
+            'Could not locate variable %s', varname]);
   end
 end
 
@@ -675,29 +675,29 @@ datatype = char(jvarid.getDataType().toString());
 
 switch ( datatype )
   case 'double'
-    Dataset.Nctype = nc_double;
+    Dataset.Nctype = nc_constant('nc_double');
     Dataset.Datatype = datatype;
   case 'float'
-    Dataset.Nctype = nc_float;
+    Dataset.Nctype = nc_constant('nc_float');
     Dataset.Datatype = 'single';
   case {'int','long'}
-    Dataset.Nctype = nc_int;
+    Dataset.Nctype = nc_constant('nc_int');
     Dataset.Datatype = 'int32';
   case 'short'
-    Dataset.Nctype = nc_short;
+    Dataset.Nctype = nc_constant('nc_short');
     Dataset.Datatype = 'int16';
   case 'String'
     Dataset.Nctype = 12;           % Apparently, DODSNetcdfFile returns
     Dataset.Datatype = 'string';   % 'String', while NetcdfFile returns 'char'
   case 'char'
-    Dataset.Nctype = nc_char;
+    Dataset.Nctype = nc_constant('nc_char');
     Dataset.Datatype = 'char';
   case 'byte'
-    Dataset.Nctype = nc_byte;
+    Dataset.Nctype = nc_constant('nc_byte');
     Dataset.Datatype = 'int8';
   otherwise
-    error ( 'NC_VARINFO: unhandledDatatype ', ...
-            '%s:  unhandled datatype ''%s''\n', datatype );
+    error (['NC_VARINFO: unhandledDatatype ', ...
+            '%s:  unhandled datatype ''%s''\n', datatype]);
 end
 
 % Determine if it is unlimited or not.
@@ -855,8 +855,8 @@ switch ( datatype )
     Attribute.Value = int64(values)';
         
   otherwise
-    error('NC_VARINFO: unhandledDatatype  ', ...
-          'Unhandled attribute datatype ''%s''\n', datatype );
+    error(['NC_VARINFO: unhandledDatatype  ', ...
+           'Unhandled attribute datatype ''%s''\n', datatype]);
 end
 
 return

@@ -84,8 +84,9 @@ end,
 % Read in model grid variables.
 %----------------------------------------------------------------------------
 
-[vname,nvars]=nc_vname(GRDname);
-
+V = nc_vnames(GRDname);
+nvars = length(V.Variables);
+ 
 got.spherical = false;
 got.angle     = false;
 got.mask_rho  = false;
@@ -94,7 +95,7 @@ got.lat_rho   = false;
 got.coast     = false;
 
 for n=1:nvars
-  name=deblank(vname(n,:));
+  name = char(V.Variables(n).Name);
   switch name
     case 'spherical'
       got.spherical = true;

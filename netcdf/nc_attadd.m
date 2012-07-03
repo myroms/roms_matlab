@@ -144,15 +144,15 @@ if (got_var),
     if (strcmpi(Aname,'_FillValue')    ||                               ...
         strcmpi(Aname,'missing_value'))
       switch (vtype)
-        case (nc_byte)
+        case (netcdf.getConstant('nc_byte'))
           value = int8(Avalue);
-        case (nc_short)
+        case (netcdf.getConstant('nc_short'))
           value = int16(Avalue);
-        case (nc_int)
+        case (netcdf.getConstant('nc_int'))
           value = int32(Avalue);
-        case (nc_float)
+        case (netcdf.getConstant('nc_float'))
           value = single(Avalue);
-        case (nc_double)
+        case (netcdf.getConstant('nc_double'))
           value = double(Avalue);
       end
       netcdf.putAtt(ncid, varid, Aname, value);
@@ -182,7 +182,7 @@ else
   
 %  Add/modify character attribute.
 
-  varid  = netcdf.getConstant('GLOBAL');
+  varid  = netcdf.getConstant('nc_global');
   netcdf.putAtt(ncid, varid, Aname, Avalue);
   
 end
@@ -319,7 +319,8 @@ if (got_var),
 
   if ischar(Avalue),
     lstr = length(Avalue);
-    status = mexnc('put_att_text',ncid,varid,Aname,ncchar,lstr,Avalue);
+    status = mexnc('put_att_text',ncid,varid,Aname,                     ...
+                   nc_constant('nc_char'),lstr,Avalue);
     if (status < 0),
       disp(' ');
       disp(mexnc('strerror',status));
@@ -329,7 +330,7 @@ if (got_var),
   else
     nval = length(Avalue);
     switch (vtype)
-      case (ncint)
+      case (nc_constant('nc_int'))
         value = int32(Avalue);
         status = mexnc('put_att_int',   ncid,varid,Aname,vtype,nval,value);
         if (status < 0),
@@ -338,7 +339,7 @@ if (got_var),
           error(['NC_ATTADD_MEXNC: put_att_int - unable to define ',    ...
                  'attribute "',Aname,'"in variable: ',Vname,'.']);
         end
-      case (ncfloat)
+      case (nc_constant('nc_float'))
         value = single(Avalue);
         status = mexnc('put_att_float', ncid,varid,Aname,vtype,nval,value);
         if (status < 0),
@@ -347,7 +348,7 @@ if (got_var),
           error(['NC_ATTADD_MEXNC: put_att_float - unable to define ',  ...
                  'attribute "',Aname,'"in variable: ',Vname,'.']);
         end
-      case (ncdouble)
+      case (nc_constant('nc_double'))
         value = double(Avalue);
         status = mexnc('put_att_double',ncid,varid,Aname,vtype,nval,value);
         if (status < 0),
@@ -380,7 +381,8 @@ else
   found = false;
   
   for i=0:natts-1
-    [attnam,status] = mexnc('inq_attname',ncid,ncglobal,i);
+    [attnam,status] = mexnc('inq_attname',ncid,                         ...
+                            nc_constant('nc_global'),i);
     if (status < 0),
       disp(' ');
       disp(mexnc('strerror',status));
@@ -403,7 +405,8 @@ else
 
   if (ischar(Avalue)),
     lstr = length(Avalue);
-    status = mexnc('put_att_text',ncid,ncglobal,Aname,ncchar,lstr,Avalue);
+    status = mexnc('put_att_text',ncid,nc_constant('nc_global'),Aname,  ...
+                   nc_constant('nc_char'),lstr,Avalue);
     if (status < 0),
       disp(' ');
       disp(mexnc('strerror',status));
@@ -412,7 +415,8 @@ else
     end,
   elseif (isinteger(Avalue)),
     nval = length(Avalue); 
-    status = mexnc('put_att_int',ncid,ncglobal,Aname,ncint,nval,Avalue);
+    status = mexnc('put_att_int',ncid,nc_constant('nc_global'),Aname,   ...
+                   nc_constant('nc_int'),nval,Avalue);
     if (status ~= 0),
       disp(' ');
       disp(mexnc('strerror',status));
@@ -421,8 +425,8 @@ else
     end
   elseif (isfloat(Avalue)),
     nval = length(Avalue);
-    status = mexnc('put_att_double',ncid,ncglobal,Aname,ncdouble,nval,  ...
-                   double(Avalue));
+    status = mexnc('put_att_double',ncid,nc_constant('nc_global'),Aname,...
+                   nc_constant('nc_double'),nval,double(Avalue));
     if (status ~= 0),
       disp(' ');
       disp(mexnc('strerror',status));

@@ -108,7 +108,7 @@ if (define),
     for n=1:natts,
       aname  = char(S.Attributes(n).Name);
       avalue = S.Attributes(n).Value;
-      varid  = netcdf.getConstant('GLOBAL');
+      varid  = netcdf.getConstant('nc_global');
       netcdf.putAtt(ncid,varid,aname,avalue);  
     end
   end
@@ -140,27 +140,27 @@ if (define),
       xtype = char(S.Variables(n).Datatype);
       switch (xtype)
         case 'int8'
-          vtype = nc_byte;
+          vtype = netcdf.getConstant('nc_byte');
         case 'uint8'
-          vtype = nc_ubyte;
+          vtype = netcdf.getConstant('nc_ubyte');
         case 'char'
-          vtype = nc_char;
+          vtype = netcdf.getConstant('nc_char');
         case 'int16'
-          vtype = nc_short;
+          vtype = netcdf.getConstant('nc_short');
         case 'uint16'
-          vtype = nc_ushort;
+          vtype = netcdf.getConstant('nc_ushort');
         case 'int32'
-          vtype = nc_int;
+          vtype = netcdf.getConstant('nc_int');
         case 'uint32'
-          vtype = nc_uint;
+          vtype = netcdf.getConstant('nc_uint');
         case 'single'
-          vtype = nc_float;
+          vtype = netcdf.getConstant('nc_float');
         case 'double'
-          vtype = nc_double;
+          vtype = netcdf.getConstant('nc_double');
         case 'int64'
-          vtype = nc_int64;
+          vtype = netcdf.getConstant('nc_int64');
         case 'uint64'
-          vtype = nc_uint64;
+          vtype = netcdf.getConstant('nc_uint64');
         otherwise
           vtype = [];
       end

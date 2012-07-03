@@ -68,7 +68,7 @@ switch(method),
   case {'mexnc'}
     A = nc_getatt_mexnc (ncfile, Aname, Vname);  % MEXNC inteface
   otherwise
-    error(['NC_GETATT: unable to determine NetCDF processing interface']);
+    error('NC_GETATT: unable to determine NetCDF processing interface');
 end
 
 return
@@ -367,7 +367,7 @@ if (get_varatt),
       end
 
       switch (atype)
-        case (nc_char)
+        case (nc_constant('nc_char'))
           [avalue,status]=mexnc('get_att_text',ncid,varid,attnam);
           if (status < 0),
             disp('  ');
@@ -375,7 +375,7 @@ if (get_varatt),
             error(['NC_GETATT: get_att_text - unable to read ',         ...
                    'attribute "',attnam,'"in variable: ',Vname,'.']);
           end
-        case (nc_int)
+        case (nc_constant('nc_int'))
           [avalue,status]=mexnc('get_att_int', ncid,varid,attnam);
           if (status < 0),
             disp('  ');
@@ -383,7 +383,7 @@ if (get_varatt),
             error(['NC_GETATT: get_att_int - unable to read ',          ...
                    'attribute "',attnam,'"in variable: ',Vname,'.']);
           end
-        case (nc_float)
+        case (nc_constant('nc_float'))
           [avalue,status]=mexnc('get_att_float',ncid,varid,attnam);
           if (status < 0),
             disp('  ');
@@ -391,7 +391,7 @@ if (get_varatt),
             error(['NC_GETATT: get_att_float - unable to read ',        ...
                    'attribute "',attnam,'"in variable: ',Vname,'.']);
           end
-        case (nc_double)
+        case (nc_constant('nc_double'))
           [avalue,status]=mexnc('get_att_double',ncid,varid,attnam);
           if (status < 0),
             disp('  ');
@@ -438,11 +438,12 @@ if (get_global),
   found = false;
   
   for i=1:natts,
-    [attnam,status]=mexnc('inq_attname',ncid,nc_global,i-1);
+    [attnam,status]=mexnc('inq_attname',ncid,nc_constant('nc_global'),  ...
+                          i-1);
     if (status < 0),
       disp('  ');
       disp(mexnc('strerror',status));
-      error(['NC_GETATT: inq_attname: error while inquiring ',         ...
+      error(['NC_GETATT: inq_attname: error while inquiring ',          ...
              'attribute: ', num2str(i-1)]);
     end
     if (get_allatt),
@@ -457,7 +458,8 @@ if (get_global),
 %  Read in requested attribute.
 
     if (found),
-      [atype,status]=mexnc('inq_atttype',ncid,nc_global,attnam);
+      [atype,status]=mexnc('inq_atttype',ncid,nc_constant('nc_global'), ...
+                           attnam);
       if (status < 0),
         disp('  ');
         disp(mexnc('strerror',status));
@@ -466,32 +468,36 @@ if (get_global),
       end
 
       switch (atype)
-        case (nc_char)
-          [avalue,status]=mexnc('get_att_text',ncid,nc_global,attnam);
+        case (nc_constant('nc_char'))
+          [avalue,status]=mexnc('get_att_text',ncid,                    ...
+                                nc_constant('nc_global'),attnam);
           if (status < 0),
             disp('  ');
             disp(mexnc('strerror',status));
             error(['NC_GETATT: get_att_text - unable to read global ',  ...
                    'attribute: "',attnam,'".']);
           end
-        case (nc_int)
-          [avalue,status]=mexnc('get_att_int', ncid,nc_global,attnam);
+        case (nc_constant('nc_int'))
+          [avalue,status]=mexnc('get_att_int', ncid,                    ...
+                                nc_constant('nc_global'),attnam);
           if (status < 0),
             disp('  ');
             disp(mexnc('strerror',status));
             error(['NC_GETATT: get_att_int - unable to read global ',   ...
                    'attribute: "',attnam,'".']);
           end
-        case (nc_float)
-          [avalue,status]=mexnc('get_att_float',ncid,nc_global,attnam);
+        case (nc_constant('nc_float'))
+          [avalue,status]=mexnc('get_att_float',ncid,                   ...
+                                nc_constant('nc_global'),attnam);
           if (status < 0),
             disp('  ');
             disp(mexnc('strerror',status));
             error(['NC_GETATT: get_att_float - unable to read global ', ...
                    'attribute: "',attnam,'".']);
           end
-        case (nc_double)
-          [avalue,status]=mexnc('get_att_double',ncid,nc_global,attnam);
+        case (nc_constant('nc_double'))
+          [avalue,status]=mexnc('get_att_double',ncid,                  ...
+                                nc_constant('nc_global'),attnam);
           if (status < 0),
             disp('  ');
             disp(mexnc('strerror',status));

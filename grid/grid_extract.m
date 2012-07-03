@@ -3,7 +3,7 @@ function S = grid_extract(Ginp,Gout,Imin,Imax,Jmin,Jmax)
 %
 % GRID_EXTRACT:  Extracts a subdomain Grid NetCDF file
 %
-% S = grid_extract(Ginp,Gout,Imin,Jmin,Imax,Jmax)
+% S = grid_extract(Ginp,Gout,Imin,Imax,Jmin,Jmax)
 %
 % Given a larger Grid NetCDF file (Ginp), this function extracts and
 % creates a subdomain Grid NetCDF file (Gout) for the sampled region

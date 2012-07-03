@@ -36,17 +36,9 @@ else,
           'in structure array S']);
 end,
 
-%  Set NetCDF parameters.
-
-[ncdouble]=mexnc('parameter','nc_double');
-[ncfloat ]=mexnc('parameter','nc_float');
-[ncglobal]=mexnc('parameter','nc_global');
-[ncchar  ]=mexnc('parameter','nc_char');
-[ncint   ]=mexnc('parameter','nc_int');
-
 %  Set variables type.
 
-vartype=ncdouble;
+vartype=nc_constant('nc_double');
 
 %  Inquire NetCDF file dimensions and their IDs.
 

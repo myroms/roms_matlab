@@ -68,7 +68,8 @@ S=[];
 %  Read in all available variables.
 %----------------------------------------------------------------------------
 
-[Vnames,nvars]=nc_vname(ncfile);
+V=nc_vnames(ncfile);
+nvars=length(V.Variables);
 
 S.ncfile=ncfile;
 S.Nsurvey=0;
@@ -81,7 +82,7 @@ got.provenance=0;
 %  dimension to allow vector concatenation when merging several datasets.
 
 for n=1:nvars,
-  name=deblank(Vnames(n,:));
+  name=char(V.Variables(n).Name);
   switch name
     case 'spherical'
       S.spherical=nc_read(ncfile,'spherical');

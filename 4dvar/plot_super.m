@@ -74,12 +74,13 @@ end,
   
 %  Read in application grid.
 
-[vnames,nvars] = nc_vname(GRDfile);
+V = nc_vnames(GRDfile);
+nvars = length(V.Variables);
 
 got_coast = false;
 
 for n=1:nvars,
-  name=deblank(vnames(n,:));
+  name = char(V.Variables(n).Name);
   switch name
     case 'lon_rho'
       rlon = nc_read(GRDfile, 'lon_rho');

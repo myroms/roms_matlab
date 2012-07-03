@@ -423,24 +423,31 @@ if (isnumeric(f)),
   if (got.add_offset),
     if (got.scale_factor),
       switch nctype
-        case {nc_float, nc_double}
+       case {netcdf.getConstant('nc_float'),                            ...
+             netcdf.getConstant('nc_double')}
           f = f.*scale+offset;
         case {nc_int, nc_short, nc_byte}
           f = double(f).*scale+offset;
       end
     else
       switch nctype
-        case {nc_float, nc_double}
+        case {netcdf.getConstant('nc_float'),                           ...
+              netcdf.getConstant('nc_double')}
           f = f+offset;
-        case {nc_int, nc_short, nc_byte}
+        case {netcdf.getConstant('nc_int'),                             ...
+              netcdf.getConstant('nc_short'),                           ...
+              netcdf.getConstant('nc_byte')}
           f = double(f)+offset;
       end
     end
   elseif (got.scale_factor);
     switch nctype
-      case {nc_float, nc_double}
+      case {netcdf.getConstant('nc_float'),                             ...
+            netcdf.getConstant('nc_double')}
         f = f.*scale;
-      case {nc_int, nc_short, nc_byte}
+      case {netcdf.getConstant('nc_int'),                               ...
+            netcdf.getConstant('nc_short'),                             ...
+            netcdf.getConstant('nc_byte')}
         f = double(f).*scale;
     end
   end
@@ -617,24 +624,33 @@ if (isnumeric(f)),
   if (got.add_offset),
     if (got.scale_factor),
       switch nctype
-        case {nc_float, nc_double}
+        case {nc_constant('nc_float'),                                  ...
+              nc_constant('nc_double')}
           f = f.*scale+offset;
-        case {nc_int, nc_short, nc_byte}
+        case {nc_constant('nc_int'),                                    ...
+              nc_constant('nc_short'),                                  ...
+              nc_constant('nc_byte')}
           f = double(f).*scale+offset;
       end
     else
       switch nctype
-        case {nc_float, nc_double}
+        case {nc_constant('nc_float'),                                  ...
+              nc_constant('nc_double')}
           f = f+offset;
-        case {nc_int, nc_short, nc_byte}
+       case {nc_constant('nc_int'),                                     ...
+             nc_constant('nc_short'),                                   ...
+             nc_constant('nc_byte')}
           f = double(f)+offset;
       end
     end
   elseif (got.scale_factor);
     switch nctype
-      case {nc_float, nc_double}
+      case {nc_constant('nc_float'),                                    ...
+            nc_constant('nc_double')}
         f = f.*scale;
-      case {nc_int, nc_short, nc_byte}
+      case {nc_constant('nc_int'),                                      ...
+            nc_constant('nc_short'),                                    ...
+            nc_constant('nc_byte')}
         f = double(f).*scale;
     end
   end
@@ -764,38 +780,38 @@ for i = 0:nvatts-1,
   end
   switch (attnam)
     case 'add_offset'
-      if (atype == nc_double),
+      if (atype == nc_constant('nc_double')),
         [offset,status] = mexnc('get_att_double',ncid,varid,attnam); 
-      elseif (atype == nc_float),
+      elseif (atype == nc_constant('nc_float')),
         [offset,status] = mexnc('get_att_float' ,ncid,varid,attnam);
-      elseif (atype == nc_int),
+      elseif (atype == nc_constant('nc_int')),
         [offset,status] = mexnc('get_att_int'   ,ncid,varid,attnam);
-      elseif (atype == nc_short),
+      elseif (atype == nc_constant('nc_short')),
         [offset,status] = mexnc('get_att_short' ,ncid,varid,attnam);
-      elseif (atype == nc_byte),
+      elseif (atype == nc_constant('nc_byte')),
         [offset,status] = mexnc('get_att_schar' ,ncid,varid,attnam);
-      elseif (atype == nc_char),
+      elseif (atype == nc_constant('nc_char')),
         [offset,status] = mexnc('get_att_text'  ,ncid,varid,attnam);
       else
         [offset,status] = mexnc('ncattget'      ,ncid,varid,attnam);
       end
       if (status == -1),
         error(['NC_READ_MEXNC: ncattget error while reading: ',         ...
-               attnam(1:lstr)])
+               attnam])
       end
       got.add_offset = true;
     case {'_FillValue', '_fillvalue', 'missing_value'}
-      if (atype == nc_double),
+      if (atype == nc_constant('nc_double')),
         [spval,status] = mexnc('get_att_double',ncid,varid,attnam); 
-      elseif (atype == nc_float),
+      elseif (atype == nc_constant('nc_float')),
         [spval,status] = mexnc('get_att_float' ,ncid,varid,attnam);
-      elseif (atype == nc_int),
+      elseif (atype == nc_constant('nc_int')),
         [spval,status] = mexnc('get_att_int'   ,ncid,varid,attnam);
-      elseif (atype == nc_short),
+      elseif (atype == nc_constant('nc_short')),
         [spval,status] = mexnc('get_att_short' ,ncid,varid,attnam);
-      elseif (atype == nc_byte),
+      elseif (atype == nc_constant('nc_byte')),
         [spval,status] = mexnc('get_att_schar' ,ncid,varid,attnam);
-      elseif (atype == nc_char),
+      elseif (atype == nc_constant('nc_char')),
         [spval,status] = mexnc('get_att_text'  ,ncid,varid,attnam);
       else
         [spval,status] = mexnc('ncattget'      ,ncid,varid,attnam);
@@ -809,17 +825,17 @@ for i = 0:nvatts-1,
         got.FillValue = true;
       end
     case 'scale_factor'
-      if (atype == nc_double),
+      if (atype == nc_constant('nc_double')),
         [scale,status] = mexnc('get_att_double',ncid,varid,attnam); 
-      elseif (atype == nc_float),
+      elseif (atype == nc_constant('nc_float')),
         [scale,status] = mexnc('get_att_float' ,ncid,varid,attnam);
-      elseif (atype == nc_int),
+      elseif (atype == nc_constant('nc_int')),
         [scale,status] = mexnc('get_att_int'   ,ncid,varid,attnam);
-      elseif (atype == nc_short),
+      elseif (atype == nc_constant('nc_short')),
         [scale,status] = mexnc('get_att_short' ,ncid,varid,attnam);
-      elseif (atype == nc_byte),
+      elseif (atype == nc_constant('nc_byte')),
         [scale,status] = mexnc('get_att_schar' ,ncid,varid,attnam);
-      elseif (atype == nc_char),
+      elseif (atype == nc_constant('nc_char')),
         [scale,status] = mexnc('get_att_text'  ,ncid,varid,attnam);
       else
         [scale,status] = mexnc('ncattget'      ,ncid,varid,attnam);
@@ -868,22 +884,22 @@ end
 
 if (nvdim == 0),
   switch nctype
-    case nc_double
+    case (nc_constant('nc_double'))
       [f,status] = mexnc('get_var_double',ncid,varid);
       myfunc = 'get_var_double';
-    case nc_float
+    case (nc_constant('nc_float'))
       [f,status] = mexnc('get_var_float' ,ncid,varid);
       myfunc = 'get_var_float';
-    case nc_int
+    case (nc_constant('nc_int'))
       [f,status] = mexnc('get_var_int'   ,ncid,varid);
       myfunc = 'get_var_int';
-    case nc_short
+    case (nc_constant('nc_short'))
       [f,status] = mexnc('get_var_short' ,ncid,varid);
       myfunc = 'get_var_short';
-    case nc_byte
+    case (nc_constant('nc_byte'))
       [f,status] = mexnc('get_var_schar' ,ncid,varid);
       myfunc = 'get_var_schar';
-    case nc_char
+    case (nc_constant('nc_char'))
       [f,status] = mexnc('get_var_text'  ,ncid,varid);
       myfunc = 'get_var_text';
     otherwise
@@ -899,19 +915,19 @@ if (nvdim == 0),
 else
 
   switch nctype
-    case nc_double
+    case (nc_constant('nc_double'))
       [f,status] = mexnc('get_vara_double',ncid,varid,start,count);
       myfunc = 'get_vara_double';
-    case nc_float
+    case (nc_constant('nc_float'))
       [f,status] = mexnc('get_vara_float' ,ncid,varid,start,count);
       myfunc = 'get_vara_float';
-    case nc_int
+    case (nc_constant('nc_int'))
       [f,status] = mexnc('get_vara_int'   ,ncid,varid,start,count);
       myfunc = 'get_vara_int';
-    case nc_short
+    case (nc_constant('nc_short'))
       [f,status] = mexnc('get_vara_short' ,ncid,varid,start,count);
       myfunc = 'get_vara_short';
-    case nc_byte
+    case (nc_constant('nc_byte'))
       [f,status] = mexnc('get_vara_schar' ,ncid,varid,start,count);
       myfunc = 'get_vara_schar';
     otherwise
@@ -984,24 +1000,33 @@ if (isnumeric(f)),
   if (got.add_offset),
     if (got.scale_factor),
       switch nctype
-        case {nc_float, nc_double}
+        case {nc_constant('nc_float'),                                  ...
+              nc_constant('nc_double')}
           f = f.*scale+offset;
-        case {nc_int, nc_short, nc_byte}
+        case {nc_constant('nc_int'),                                    ...
+              nc_constant('nc_short'),                                  ...
+              nc_constant('nc_byte')}
           f = double(f).*scale+offset;
       end
     else
       switch nctype
-        case {nc_float, nc_double}
+        case {nc_constant('nc_float'),                                  ...
+              nc_constant('nc_double')}
           f = f+offset;
-        case {nc_int, nc_short, nc_byte}
+        case {nc_constant('nc_int'),                                    ...
+              nc_constant('nc_short'),                                  ...
+              nc_constant('nc_byte')}
           f = double(f)+offset;
       end
     end
   elseif (got.scale_factor);
     switch nctype
-      case {nc_float, nc_double}
+      case {nc_constant('nc_float'),                                    ...
+            nc_constant('nc_double')}
         f = f.*scale;
-      case {nc_int, nc_short, nc_byte}
+      case {nc_constant('nc_int'),                                      ...
+            nc_constant('nc_short'),                                    ...
+            nc_constant('nc_byte')}
         f = double(f).*scale;
     end
   end

@@ -147,17 +147,17 @@ if (isfield(Var,'type')),
   if (ischar(type)),
     switch type
       case 'byte'
-        vartyp = nc_byte;
+        vartyp = netcdf.getConstant('nc_byte');
       case 'char'
-        vartyp = nc_char;
+        vartyp = netcdf.getConstant('nc_char');
       case 'short'
-        vartyp = nc_short;
+        vartyp = netcdf.getConstant('nc_short');
       case 'int'
-        vartyp = nc_int;
+        vartyp = netcdf.getConstant('nc_int');
       case 'float'
-        vartyp = nc_float;
+        vartyp = netcdf.getConstant('nc_float');
       case 'double'
-        vartyp = nc_double;
+        vartyp = netcdf.getConstant('nc_double');
     end
   else
     vartyp = type;
@@ -215,15 +215,15 @@ for n = 1:nfields,
     else
 
       switch (vartyp)
-        case (nc_byte)
+        case (netcdf.getConstant('nc_byte'))
           value = int8(value);
-        case (nc_short)
+        case (netcdf.getConstant('nc_short'))
           value = int16(value);
-        case (nc_int)   
+        case (netcdf.getConstant('nc_int'))   
           value = int32(value);
-        case (nc_float)
+        case (netcdf.getConstant('nc_float'))
           value = single(value);
-        case (nc_double)
+        case (netcdf.getConstant('nc_double'))
           value = double(value);
       end
       netcdf.putAtt(ncid, varid, Aname, value);    
@@ -309,17 +309,17 @@ if (isfield(Var,'type')),
   if (ischar(type)),
     switch type
       case 'byte'
-        vartyp = nc_byte;
+        vartyp = nc_constant('nc_byte');
       case 'char'
-        vartyp = nc_char;
+        vartyp = nc_constant('nc_char');
       case 'short'
-        vartyp = nc_short;
+        vartyp = nc_constant('nc_short');
       case 'int'
-        vartyp = nc_int;
+        vartyp = nc_constant('nc_int');
       case 'float'
-        vartyp = nc_float;
+        vartyp = nc_constant('nc_float');
       case 'double'
-        vartyp = nc_double;
+        vartyp = nc_constant('nc_double');
     end
   else
     vartyp = type;
@@ -376,7 +376,8 @@ for n = 1:nfields,
         value = char(value);          % need figure out this one
       end,
       lstr = length(value);
-      status = mexnc('put_att_text',ncid,varid,Aname,ncchar,lstr,value);
+      status = mexnc('put_att_text',ncid,varid,Aname,                   ...
+                     nc_constant('nc_char'),lstr,value);
       if (status ~= 0),
         disp(' ');
         disp(mexnc('strerror',status));
@@ -391,7 +392,7 @@ for n = 1:nfields,
 
       nval = length(value);
       switch (vartyp)
-        case (nc_int)   
+        case (nc_constant('nc_int'))   
           value = int32(value);
           status = mexnc('put_att_int',   ncid,varid,Aname,vartyp,      ...
                          nval,value);
@@ -401,7 +402,7 @@ for n = 1:nfields,
             error(['NC_VDEF_MEXNC: PUT_ATT_INT - unable to define ',    ...
                    'attribute: ',Vname.name,':',Aname,'.']);
           end
-        case (ncfloat)
+        case (nc_constant('nc_float'))
           value = single(value);
           status = mexnc('put_att_float', ncid,varid,Aname,vartyp,      ...
                           nval,value);
@@ -411,7 +412,7 @@ for n = 1:nfields,
             error(['NC_VDEF_MEXNC: PUT_ATT_FLOAT - unable to define ',  ...
                    'attribute: ',Vname.name,':',Aname,'.']);
           end
-        case (ncdouble)
+        case (nc_constant('nc_double'))
           value = double(value);
           status = mexnc('put_att_double',ncid,varid,Aname,vartyp,      ...
                          nval,value);

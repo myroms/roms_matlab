@@ -87,13 +87,15 @@ if (define.Clon || define.Clat),
 %  Define coastline longitude.
 
   if (define.Clon),
-    varid=netcdf.defVar(ncid,Vname.Clon,'nc_double',did.Clon);
+    varid=netcdf.defVar(ncid,Vname.Clon,                                ...
+                        netcdf.getConstant('nc_double'),did.Clon);
     netcdf.putAtt(ncid,varid,'long_name','coastline longitude');
     netcdf.putAtt(ncid,varid,'units','degree_east');
   end
 
   if (define.Clat),
-    varid=netcdf.defVar(ncid,Vname.Clat,'nc_double',did.Clat);
+    varid=netcdf.defVar(ncid,Vname.Clat,                                ...
+                        netcdf.getConstant('nc_double'),did.Clat);
     netcdf.putAtt(ncid,varid,'long_name','coastline latitude');
     netcdf.putAtt(ncid,varid,'units','degree_north');
   end

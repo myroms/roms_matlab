@@ -130,28 +130,33 @@ A_byte(ind)   = fill_byte;
 did.Im=netcdf.defDim(ncid,'x',Im);
 did.Jm=netcdf.defDim(ncid,'y',Jm);
 
-varid=netcdf.defVar(ncid,'A_byte','nc_byte',[did.Im did.Jm]);
+varid=netcdf.defVar(ncid,'A_byte',netcdf.getConstant('nc_byte'),        ...
+                    [did.Im did.Jm]);
 netcdf.putAtt(ncid,varid,'long_name'   ,'a byte variable, int8');
 netcdf.putAtt(ncid,varid,'scale_factor',scale_byte);
 netcdf.putAtt(ncid,varid,'add_offset'  ,offset_byte);
 netcdf.putAtt(ncid,varid,'_FillValue'  ,fill_byte);
 
-varid=netcdf.defVar(ncid,'A_short','nc_short',[did.Im did.Jm]);
+varid=netcdf.defVar(ncid,'A_short',netcdf.getConstant('nc_short'),      ...
+                    [did.Im did.Jm]);
 netcdf.putAtt(ncid,varid,'long_name'   ,'a short variable, int16');
 netcdf.putAtt(ncid,varid,'scale_factor',scale_short);
 netcdf.putAtt(ncid,varid,'add_offset'  ,offset_short);
 netcdf.putAtt(ncid,varid,'_FillValue'  ,fill_short);
 
-varid=netcdf.defVar(ncid,'A_int','nc_int',[did.Im did.Jm]);
+varid=netcdf.defVar(ncid,'A_int',netcdf.getConstant('nc_int'),          ...
+                    [did.Im did.Jm]);
 netcdf.putAtt(ncid,varid,'long_name'   ,'an integer variable, int32');
 netcdf.putAtt(ncid,varid,'scale_factor',scale_int);
 netcdf.putAtt(ncid,varid,'_FillValue'  ,fill_int);
 
-varid=netcdf.defVar(ncid,'A_single','nc_float',[did.Im did.Jm]);
+varid=netcdf.defVar(ncid,'A_single',netcdf.getConstant('nc_float'),     ...
+                    [did.Im did.Jm]);
 netcdf.putAtt(ncid,varid,'long_name'   ,'a single precision variable');
 netcdf.putAtt(ncid,varid,'_FillValue'  ,fill_single);
 
-varid=netcdf.defVar(ncid,'A_double','nc_double',[did.Im did.Jm]);
+varid=netcdf.defVar(ncid,'A_double',netcdf.getConstant('nc_double'),    ...
+                    [did.Im did.Jm]);
 netcdf.putAtt(ncid,varid,'long_name'   ,'a double precision variable');
 netcdf.putAtt(ncid,varid,'_FillValue'  ,fill_double);
 

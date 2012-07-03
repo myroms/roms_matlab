@@ -123,7 +123,7 @@ if (define.pmask || define.rmask || define.umask || define.pmask),
 
   if (define.rmask),
     Var.name          = Vname.rmask;
-    Var.type          = nc_double;
+    Var.type          = nc_constant('nc_double');
     Var.dimid         = [did.yr did.xr];
     Var.long_name     = 'mask on RHO-points';
     Var.flag_values   = [0.0 1.0];
@@ -138,7 +138,7 @@ if (define.pmask || define.rmask || define.umask || define.pmask),
 
   if (define.pmask),
     Var.name          = Vname.pmask;
-    Var.type          = nc_double;
+    Var.type          = nc_constant('nc_double');
     Var.dimid         = [did.yp did.xp];
     Var.long_name     = 'mask on PSI-points';
     Var.flag_values   = [0.0 1.0];
@@ -153,7 +153,7 @@ if (define.pmask || define.rmask || define.umask || define.pmask),
 
   if (define.umask),
     Var.name          = Vname.umask;
-    Var.type          = nc_double;
+    Var.type          = nc_constant('nc_double');
     Var.dimid         = [did.yu did.xu];
     Var.long_name     = 'mask on U-points';
     Var.flag_values   = [0.0 1.0];
@@ -168,7 +168,7 @@ if (define.pmask || define.rmask || define.umask || define.pmask),
 
   if (define.vmask),
     Var.name          = Vname.vmask;
-    Var.type          = nc_double;
+    Var.type          = nc_constant('nc_double');
     Var.dimid         = [did.yv did.xv];
     Var.long_name     = 'mask on V-points';
     Var.flag_values   = [0.0 1.0];

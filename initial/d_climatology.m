@@ -176,7 +176,8 @@ end,
 %  Set grid variables.
 %---------------------------------------------------------------------------
 
-[vname,nvars]=nc_vname(GRDname);
+V=nc_vnames(GRDfile);
+nvars=length(V.Variables);
 
 %  Horizontal grid variables. Read in for input GRID NetCDF file.
 
@@ -194,16 +195,16 @@ else,
   S.y_rho   = nc_read(GRDname, 'y_rho');
   
   S.x_u     = nc_read(GRDname, 'x_u');
-  S.x_u     = nc_read(GRDname, 'y_u');
+  S.y_u     = nc_read(GRDname, 'y_u');
   
-  S.y_v     = nc_read(GRDname, 'x_v');
+  S.x_v     = nc_read(GRDname, 'x_v');
   S.y_v     = nc_read(GRDname, 'y_v');  
 end,  
 
 %  Read in Land/Sea mask, if appropriate.
 
 for n=1:nvars,
-  name=deblank(vname(n,:));
+  name=char(V.Variables(n).Name);
   switch (name),
     case 'mask_rho'
       S.mask_rho = nc_read(GRDname, 'mask_rho');

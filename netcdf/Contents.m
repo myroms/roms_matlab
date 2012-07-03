@@ -35,6 +35,7 @@
 %   nc_check      - Checks the information structure returned from calls
 %                     to "nc_inq" or native "ncinfo" for compliance and
 %                     changes variables types and attributes.
+%   nc_constant   - Gets numeric value of a named NetCDF library contant.
 %   nc_create     - Creates a new NetCDF file according to the file
 %                     creation mode flag. If a structure S is provided,
 %                     it defines the dimensions, global attributes,
@@ -54,6 +55,9 @@
 %                     to test the NetCDF interface in Matlab.
 %   nc_vdef       - Creates a ROMS variable in a NetCDF file.
 %   nc_vinfo      - Inquires information about requested NetCDF variable.
+%   nc_vname      - Gets the names of all variables in a NetCDF file. This
+%                   function is OBSOLETE but it is kept for backward
+%                   compatibility. Use "nc_vnames" in the future.
 %   nc_vnames     - Gets the names of all variables in a NetCDF file.
 %   nc_vrename    - Renames a NetCDF variable.
 %

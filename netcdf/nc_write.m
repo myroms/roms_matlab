@@ -216,15 +216,15 @@ if (got.FillValue),
   ind = isnan(f);
   if (~isempty(ind))
     switch nctype
-      case nc_double
+      case (netcdf.getConstant('nc_double'))
         f(ind) = double(spval);
-      case nc_float
+      case (netcdf.getConstant('nc_float'))
         f(ind) = single(spval);
-      case nc_int
+      case (netcdf.getConstant('nc_int'))
         f(ind) = int32(spval);
-      case nc_short
+      case (netcdf.getConstant('nc_short'))
         f(ind) = int16(spval);
-      case nc_byte
+      case (netcdf.getConstant('nc_byte'))
         f(ind) = int8(spval);
       otherwise
         f(ind) = spval;
@@ -403,19 +403,19 @@ for i = 0:nvatts-1,
   if (strcmp(attnam(1:lstr),'_FillValue')     ||                        ...
       strcmp(attnam(1:lstr),'missing_value')),
     switch atype
-      case nc_double
+      case (nc_constant('nc_double'))
         [spval,status] = mexnc('get_att_double',ncid,varid,attnam(1:lstr));
         myfunc = 'get_att_double';
-      case nc_float
+      case (nc_constant('nc_float'))
         [spval,status] = mexnc('get_att_float' ,ncid,varid,attnam(1:lstr));
         myfunc = 'get_att_float';
-      case nc_int
+      case (nc_constant('nc_int'))
         [spval,status] = mexnc('get_att_int'   ,ncid,varid,attnam(1:lstr));
         myfunc = 'get_att_int';
-      case nc_short
+      case (nc_constant('nc_short'))
         [spval,status] = mexnc('get_att_short' ,ncid,varid,attnam(1:lstr));
         myfunc = 'get_att_short';
-      case nc_byte
+      case (nc_constant('nc_byte'))
         [spval,status] = mexnc('get_att_schar' ,ncid,varid,attnam(1:lstr));
         myfunc = 'get_att_schar';
       otherwise
@@ -467,15 +467,15 @@ if (got.FillValue),
   ind = isnan(f);
   if (~isempty(ind))
     switch nctype
-      case nc_double
+      case (nc_constant('nc_double'))
         f(ind) = double(spval);
-      case nc_float
+      case (nc_constant('nc_float'))
         f(ind) = single(spval);
-      case nc_int
+      case (nc_constant('nc_int'))
         f(ind) = int32(spval);
-      case nc_short
+      case (nc_constant('nc_short'))
         f(ind) = int16(spval);
-      case nc_byte
+      case (nc_constant('nc_byte'))
         f(ind) = int8(spval);
       otherwise
         f(ind) = spval;
@@ -489,22 +489,22 @@ end
 
 if (nvdims > 0),
   switch nctype
-    case nc_double
+    case (nc_constant('nc_double'))
       status = mexnc('put_vara_double',ncid,varid,start,count,f);
       myfunc = 'put_vara_double';
-    case nc_float
+    case (nc_constant('nc_float'))
       status = mexnc('put_vara_float' ,ncid,varid,start,count,f);
       myfunc = 'put_vara_float';
-    case nc_int
+    case (nc_constant('nc_int'))
       status = mexnc('put_vara_int'   ,ncid,varid,start,count,f);
       myfunc = 'put_vara_int';
-    case nc_short
+    case (nc_constant('nc_short'))
       status = mexnc('put_vara_short' ,ncid,varid,start,count,f);
       myfunc = 'put_vara_short';
-    case nc_byte
+    case (nc_constant('nc_byte'))
       status = mexnc('put_vara_schar' ,ncid,varid,start,count,f);
       myfunc = 'put_vara_schar';
-    case nc_char
+    case (nc_constant('nc_char'))
       status = mexnc('put_vara_text'  ,ncid,varid,start,count,f);
       myfunc = 'put_var_text';
     otherwise
@@ -512,22 +512,22 @@ if (nvdims > 0),
   end
 else
   switch nctype
-    case nc_double
+    case (nc_constant('nc_double'))
       status = mexnc('put_var_double',ncid,varid,f);
       myfunc = 'put_var_double';
-    case nc_float
+    case (nc_constant('nc_float'))
       status = mexnc('put_var_float' ,ncid,varid,f);
       myfunc = 'put_var_float';
-    case nc_int
+    case (nc_constant('nc_int'))
       status = mexnc('put_var_int'   ,ncid,varid,f);
       myfunc = 'put_var_int';
-    case nc_short
+    case (nc_constant('nc_short'))
       status = mexnc('put_var_short' ,ncid,varid,f);
       myfunc = 'put_var_short'; 
-    case nc_byte
+    case (nc_constant('nc_byte'))
       status = mexnc('put_var_schar' ,ncid,varid,f);
       myfunc = 'put_var_schar';
-    case nc_char
+    case (nc_constant('nc_char'))
       status = mexnc('put_var_text'  ,ncid,varid,f);
       myfunc = 'put_var_text';
    otherwise

@@ -1,4 +1,4 @@
-function [status]=c_boundary(S);
+function [status]=c_boundary(S)
 
 %
 % C_BOUNDARY:  Create a ROMS lateral boundary conditions NetCDF file
@@ -27,80 +27,74 @@ function [status]=c_boundary(S);
 %
 
 % svn $Id$
-%===========================================================================%
-%  Copyright (c) 2002-2012 The ROMS/TOMS Group                              %
-%    Licensed under a MIT/X style license                                   %
-%    See License_ROMS.txt                           Hernan G. Arango        %
-%===========================================================================%
+%=========================================================================%
+%  Copyright (c) 2002-2012 The ROMS/TOMS Group                            %
+%    Licensed under a MIT/X style license                                 %
+%    See License_ROMS.txt                           Hernan G. Arango      %
+%=========================================================================%
 
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Set some NetCDF parameters.
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
-[ncglobal ]=mexnc('parameter', 'nc_global');
-[ncdouble ]=mexnc('parameter', 'nc_double');
-[ncunlim  ]=mexnc('parameter', 'nc_unlimited');
-[ncint    ]=mexnc('parameter', 'nc_int');
-[ncfloat  ]=mexnc('parameter', 'nc_float');
-[ncchar   ]=mexnc('parameter', 'nc_char');
+ vartype=nc_constant('nc_float');         % single precision
+%vartype=nc_constant('nc_double');        % double precision
 
-vartype=ncfloat;
-
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Get lateral boundary condition creation parameters.
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 if (isfield(S,'ncname')),
   ncname=S.ncname;
-else,
-  error([ 'C_BOUNDARY - Cannot find dimension parameter: ncname, ', ...
-          'in structure array S']);
-end,
+else
+  error(['C_BOUNDARY - Cannot find dimension parameter: ncname, ',      ...
+         'in structure array S']);
+end
 
 if (isfield(S,'spherical')),
   spherical=S.spherical;
-else,
+else
   spherical=0;
-end,
+end
 
 if (isfield(S,'Vtransform')),
   Vtransform=S.Vtransform;
-else,
-  error([ 'C_BOUNDARY - Cannot find dimension parameter: Vtransform, ', ...
-          'in structure array S']);
-end,
+else
+  error(['C_BOUNDARY - Cannot find dimension parameter: Vtransform, ',  ...
+         'in structure array S']);
+end
 
 if (isfield(S,'Lm')),
   Lp=S.Lm+2;
-else,
-  error([ 'C_BOUNDARY - Cannot find dimension parameter: Lm, ', ...
-          'in structure array S']);
+else
+  error(['C_BOUNDARY - Cannot find dimension parameter: Lm, ',          ...
+         'in structure array S']);
 end,
 
 if (isfield(S,'Mm')),
   Mp=S.Mm+2;
-else,
-  error([ 'C_BOUNDARY - Cannot find dimension parameter: Mm, ', ...
-          'in structure array S']);
-end,
+else
+  error(['C_BOUNDARY - Cannot find dimension parameter: Mm, ',          ...
+         'in structure array S']);
+end
 
 if (isfield(S,'N')),
   N=S.N;
-else,
-  error([ 'C_BOUNDARY - Cannot find dimension parameter: N, ', ...
-          'in structure array S']);
-end,
+else
+  error(['C_BOUNDARY - Cannot find dimension parameter: N, ',           ...
+         'in structure array S']);
+end
 
 if (isfield(S,'NT')),
   NT=S.NT;
-else,
-  error([ 'C_BOUNDARY - Cannot find dimension parameter: NT, ', ...
-          'in structure S']);
-end,
+else
+  error(['C_BOUNDARY - Cannot find dimension parameter: NT, ',          ...
+         'in structure S']);
+end
 
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Set dimensions.
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 Dname.xr   = 'xi_rho';       Dsize.xr   = Lp;
 Dname.xu   = 'xi_u';         Dsize.xu   = Lp-1;
@@ -115,9 +109,9 @@ Dname.Nw   = 's_w';          Dsize.Nw   = N+1;
 Dname.NT   = 'tracer';       Dsize.NT   = NT;
 Dname.time = 'bry_time';     Dsize.time = ncunlim;
 
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Set Variables.
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 Vname.spherical   = 'spherical';
 
@@ -149,9 +143,9 @@ Vname.salt        = 'salt';
 
 Bname = {'west','east','south','north'};
 
-Blong = {'western boundary condition', ...
-         'eastern boundary condition', ...
-         'southern boundary condition', ...
+Blong = {'western boundary condition',                                  ...
+         'eastern boundary condition',                                  ...
+         'southern boundary condition',                                 ...
          'northern boundary condition'};
 
 if (spherical),
@@ -161,7 +155,7 @@ if (spherical),
   BcoorYu = {'lat_u_west','lat_u_east','lat_u_south','lat_u_north'};
   BcoorXv = {'lon_v_west','lon_v_east','lon_v_south','lon_v_north'};
   BcoorYv = {'lat_v_west','lat_v_east','lat_v_south','lat_v_north'};
-else,
+else
   BcoorXr = {'x_rho_west','x_rho_east','x_rho_south','x_rho_north'};
   BcoorYr = {'y_rho_west','y_rho_east','y_rho_south','y_rho_north'};
   BcoorXu = {'x_u_west','x_u_east','x_u_south','x_u_north'};
@@ -170,101 +164,90 @@ else,
   BcoorYv = {'y_v_west','y_v_east','y_v_south','y_v_north'};
 end,
 
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Create open boundary conditions NetCDF file.
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 [ncid,status]=mexnc('create',ncname,'clobber');
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_BOUNDARY: CREATE - unable to create file: ', ncname]);
-  return
-end,
+  error(['C_BOUNDARY: CREATE - unable to create file: ', ncname]);
+end
 
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Define dimensions.
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 [did.xr,status]=mexnc('def_dim',ncid,Dname.xr,Dsize.xr); 
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
   error([ 'C_BOUNDARY: ncdimdef - unable to define dimension: ',Dname.xr]);
-  return
-end,
+end
 
 [did.xu,status]=mexnc('def_dim',ncid,Dname.xu,Dsize.xu);
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_BOUNDARY: DEF_DIM - unable to define dimension: ',Dname.xu]);
-  return
-end,
+  error(['C_BOUNDARY: DEF_DIM - unable to define dimension: ',Dname.xu]);
+end
 
 [did.xv,status]=mexnc('def_dim',ncid,Dname.xv,Dsize.xv);
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_BOUNDARY: DEF_DIM - unable to define dimension: ',Dname.xv]);
-  return
-end,
+  error(['C_BOUNDARY: DEF_DIM - unable to define dimension: ',Dname.xv]);
+end
 
 [did.yr,status]=mexnc('def_dim',ncid,Dname.yr,Dsize.yr);
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
   error(['C_BOUNDARY: DEF_DIM - unable to define dimension: ',Dname.yr]);
-  return
-end,
+end
 
 [did.yu,status]=mexnc('def_dim',ncid,Dname.yu,Dsize.yu);
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_BOUNDARY: DEF_DIM - unable to define dimension: ',Dname.yu]);
-  return
-end,
+  error(['C_BOUNDARY: DEF_DIM - unable to define dimension: ',Dname.yu]);
+end
 
 [did.yv,status]=mexnc('def_dim',ncid,Dname.yv,Dsize.yv);
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_BOUNDARY: DEF_DIM - unable to define dimension: ',Dname.yv]);
-  return
-end,
+  error(['C_BOUNDARY: DEF_DIM - unable to define dimension: ',Dname.yv]);
+end
 
 [did.Nr,status]=mexnc('def_dim',ncid,Dname.Nr,Dsize.Nr);
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_BOUNDARY: DEF_DIM - unable to define dimension: ',Dname.Nr]);
-  return
-end,
+  error(['C_BOUNDARY: DEF_DIM - unable to define dimension: ',Dname.Nr]);
+end
 
 [did.Nw,status]=mexnc('def_dim',ncid,Dname.Nw,Dsize.Nw);
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_BOUNDARY: DEF_DIM - unable to define dimension: ',Dname.Nw]);
-  return
-end,
+  error(['C_BOUNDARY: DEF_DIM - unable to define dimension: ',Dname.Nw]);
+end
 
 [did.NT,status]=mexnc('def_dim',ncid,Dname.NT,Dsize.NT);
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_BOUNDARY: DEF_DIM - unable to define dimension: ',Dname.NT]);
-  return
-end,
+  error(['C_BOUNDARY: DEF_DIM - unable to define dimension: ',Dname.NT]);
+end
 
 [did.time,status]=mexnc('def_dim',ncid,Dname.time,Dsize.time);
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_BOUNDARY: DEF_DIM - unable to define dimension: ',Dname.time]);
-  return
-end,
+  error(['C_BOUNDARY: DEF_DIM - unable to define dimension: ',Dname.time]);
+end
 
 %  Set dimensions for each boundary segment.
 
@@ -272,101 +255,101 @@ did.br=[did.yr did.yr did.xr did.xr];
 did.bu=[did.yu did.yu did.xu did.xu];
 did.bv=[did.yv did.yv did.xv did.xv];
 
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Create global attributes.
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 type='BOUNDARY file';
 lstr=max(size(type));
-[status]=mexnc('PUT_ATT_TEXT',ncid,ncglobal,'type',ncchar,lstr,type);
+[status]=mexnc('PUT_ATT_TEXT',ncid,nc_constant('nc_global'),            ...
+               'type',nc_constant('nc_char'),lstr,type);
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_BOUNDARY: PUT_ATT_TEXT - unable to global attribure: type.']);
-  return
+  error('C_BOUNDARY: PUT_ATT_TEXT - unable to global attribure: type.');
 end,
 
 history=['Boundary file using Matlab script: c_boundary, ',date_stamp];
 lstr=max(size(history));
-[status]=mexnc('put_att_text',ncid,ncglobal,'history',ncchar,lstr,history);
+[status]=mexnc('put_att_text',ncid,nc_constant('nc_global'),            ...
+               'history',nc_constant('nc_char'),lstr,history);
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_BOUNDARY: PUT_ATT_TEXT - unable to global attribure: history.']);
-  return
-end,
+  error('C_BOUNDARY: PUT_ATT_TEXT - unable to global attribure: history.');
+end
 
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Define configuration variables.
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 % Define spherical switch.
 
 Var.name                = Vname.spherical;
-Var.type                = ncint;
+Var.type                = nc_constant('nc_int');
 Var.dimid               = [];
 Var.long_name           = 'grid type logical switch';
 Var.flag_values         = [0 1];
 Var.flag_meanings       = ['Cartesian', blanks(1), ...
                            'spherical'];
-[varid,status]=nc_vdef(ncid,Var);
+[~,status]=nc_vdef(ncid,Var);
 if (status ~= 0), return, end,
 clear Var
 
 % Define vertical coordinate variables.
 
 Var.name                = Vname.Vtransform;
-Var.type                = ncint;
+Var.type                = nc_constant('nc_int');
 Var.dimid               = [];
 Var.long_name           = 'vertical terrain-following transformation equation';
-[varid,status]=nc_vdef(ncid,Var);
+[~,status]=nc_vdef(ncid,Var);
 if (status ~= 0), return, end,
 clear Var
 
 Var.name                = Vname.Vstretching;
-Var.type                = ncint;
+Var.type                = nc_constant('nc_int');
 Var.dimid               = [];
 Var.long_name           = 'vertical terrain-following stretching function';
-[varid,status]=nc_vdef(ncid,Var);
+[~,status]=nc_vdef(ncid,Var);
 if (status ~= 0), return, end,
 clear Var
 
 Var.name                = Vname.theta_s;
-Var.type                = ncdouble;
+Var.type                = nc_constant('nc_double');
 Var.dimid               = [];
 Var.long_name           = 'S-coordinate surface control parameter';
-[varid,status]=nc_vdef(ncid,Var);
+[~,status]=nc_vdef(ncid,Var);
 if (status ~= 0), return, end,
 clear Var
 
 Var.name                = Vname.theta_b;
-Var.type                = ncdouble;
+Var.type                = nc_constant('nc_double');
 Var.dimid               = [];
 Var.long_name           = 'S-coordinate bottom control parameter';
-[varid,status]=nc_vdef(ncid,Var);
+[~,status]=nc_vdef(ncid,Var);
 if (status ~= 0), return, end,
 clear Var
 
 Var.name                = Vname.Tcline;
-Var.type                = ncdouble;
+Var.type                = nc_constant('nc_double');
 Var.dimid               = [];
 Var.long_name           = 'S-coordinate surface/bottom layer width';
 Var.units               = 'meter';
-[varid,status]=nc_vdef(ncid,Var);
+[~,status]=nc_vdef(ncid,Var);
 if (status ~= 0), return, end,
 clear Var
 
 Var.name                = Vname.hc;
-Var.type                = ncdouble;
+Var.type                = nc_constant('nc_double');
 Var.dimid               = [];
 Var.long_name           = 'S-coordinate parameter, critical depth';
 Var.units               = 'meter';
-[varid,status]=nc_vdef(ncid,Var);
+[~,status]=nc_vdef(ncid,Var);
 if (status ~= 0), return, end,
 clear Var
 
 Var.name                = Vname.s_rho;
-Var.type                = ncdouble;
+Var.type                = nc_constant('nc_double');
 Var.dimid               = [did.Nr];
 Var.long_name           = 'S-coordinate at RHO-points';
 Var.valid_min           = -1;
@@ -374,16 +357,16 @@ Var.valid_max           = 0;
 Var.positive            = 'up';
 if (Vtransform == 1),
   Var.standard_name     = 'ocena_s_coordinate_g1';
-elseif (Vtransform == 2),
+elseif (Vtransform == 2)
   Var.standard_name     = 'ocena_s_coordinate_g2';
 end,
 Var.formula_terms       = 's: s_rho C: Cs_r eta: zeta depth: h depth_c: hc';
-[varid,status]=nc_vdef(ncid,Var);
+[~,status]=nc_vdef(ncid,Var);
 if (status ~= 0), return, end,
 clear Var
 
 Var.name                = Vname.s_w;
-Var.type                = ncdouble;
+Var.type                = nc_constant('nc_double');
 Var.dimid               = [did.Nw];
 Var.long_name           = 'S-coordinate at W-points';
 Var.valid_min           = -1;
@@ -391,31 +374,31 @@ Var.valid_max           = 0;
 Var.positive            = 'up';
 if (Vtransform == 1),
   Var.standard_name     = 'ocena_s_coordinate_g1';
-elseif (Vtransform == 2),
+elseif (Vtransform == 2)
   Var.standard_name     = 'ocena_s_coordinate_g2';
 end,
 Var.formula_terms       = 's: s_w C: Cs_w eta: zeta depth: h depth_c: hc';
-[varid,status]=nc_vdef(ncid,Var);
+[~,status]=nc_vdef(ncid,Var);
 if (status ~= 0), return, end,
 clear Var
 
 Var.name                = Vname.Cs_r;
-Var.type                = ncdouble;
+Var.type                = nc_constant('nc_double');
 Var.dimid               = [did.Nr];
 Var.long_name           = 'S-coordinate stretching function at RHO-points';
 Var.valid_min           = -1;
 Var.valid_max           = 0;
-[varid,status]=nc_vdef(ncid,Var);
+[~,status]=nc_vdef(ncid,Var);
 if (status ~= 0), return, end,
 clear Var
 
 Var.name                = Vname.Cs_w;
-Var.type                = ncdouble;
+Var.type                = nc_constant('nc_double');
 Var.dimid               = [did.Nw];
 Var.long_name           = 'S-coordinate stretching function at W-points';
 Var.valid_min           = -1;
 Var.valid_max           = 0;
-[varid,status]=nc_vdef(ncid,Var);
+[~,status]=nc_vdef(ncid,Var);
 if (status ~= 0), return, end,
 clear Var
 
@@ -426,153 +409,166 @@ if (spherical),
     if (S.boundary(ib)),
       Var.name          = char(BcoorXr(ib));
       Var.type          = vartype;
-      Var.dimid         = [did.br(ib)];
-      Var.long_name     = strcat(['longitude of RHO-points, ',char(Blong(ib))]);
+      Var.dimid         = did.br(ib);
+      Var.long_name     = strcat(['longitude of RHO-points, ',          ...
+                                  char(Blong(ib))]);
       Var.units         = 'degree_east';
       Var.standard_name = 'longitude';
-      [varid,status]=nc_vdef(ncid,Var);
+      [~,status]=nc_vdef(ncid,Var);
       if (status ~= 0), return, end,
       clear Var
 
       Var.name          = char(BcoorYr(ib));
       Var.type          = vartype;
-      Var.dimid         = [did.br(ib)];
-      Var.long_name     = strcat(['latitute of RHO-points, ',char(Blong(ib))]);
+      Var.dimid         = did.br(ib);
+      Var.long_name     = strcat(['latitute of RHO-points, ',           ...
+                                  char(Blong(ib))]);
       Var.units         = 'degree_north';
       Var.standard_name = 'latitude';
-      [varid,status]=nc_vdef(ncid,Var);
+      [~,status]=nc_vdef(ncid,Var);
       if (status ~= 0), return, end,
       clear Var
-    end,
-  end,
+    end
+  end
   
   for ib=1:4,
     if (S.boundary(ib)),
       Var.name          = char(BcoorXu(ib));
       Var.type          = vartype;
-      Var.dimid         = [did.bu(ib)];
-      Var.long_name     = strcat(['longitude of U-points, ',char(Blong(ib))]);
+      Var.dimid         = did.bu(ib);
+      Var.long_name     = strcat(['longitude of U-points, ',            ...
+                                  char(Blong(ib))]);
       Var.units         = 'degree_east';
       Var.standard_name = 'longitude';
-      [varid,status]=nc_vdef(ncid,Var);
+      [~,status]=nc_vdef(ncid,Var);
       if (status ~= 0), return, end,
       clear Var
 
       Var.name          = char(BcoorYu(ib));
       Var.type          = vartype;
-      Var.dimid         = [did.bu(ib)];
-      Var.long_name     = strcat(['latitute of U-points, ',char(Blong(ib))]);
+      Var.dimid         = did.bu(ib);
+      Var.long_name     = strcat(['latitute of U-points, ',             ...
+                                  char(Blong(ib))]);
       Var.units         = 'degree_north';
       Var.standard_name = 'latitude';
-      [varid,status]=nc_vdef(ncid,Var);
+      [~,status]=nc_vdef(ncid,Var);
       if (status ~= 0), return, end,
       clear Var
-    end,
-  end,
+    end
+  end
       
   for ib=1:4,
     if (S.boundary(ib)),
       Var.name          = char(BcoorXv(ib));
       Var.type          = vartype;
-      Var.dimid         = [did.bv(ib)];
-      Var.long_name     = strcat(['longitude of V-points, ',char(Blong(ib))]);
+      Var.dimid         = did.bv(ib);
+      Var.long_name     = strcat(['longitude of V-points, ',            ...
+                                  char(Blong(ib))]);
       Var.units         = 'degree_east';
       Var.standard_name = 'longitude';
-      [varid,status]=nc_vdef(ncid,Var);
+      [~,status]=nc_vdef(ncid,Var);
       if (status ~= 0), return, end,
       clear Var
 
       Var.name          = char(BcoorYv(ib));
       Var.type          = vartype;
-      Var.dimid         = [did.bv(ib)];
-      Var.long_name     = strcat(['latitute of V-points, ',char(Blong(ib))]);
+      Var.dimid         = did.bv(ib);
+      Var.long_name     = strcat(['latitute of V-points, ',             ...
+                                  char(Blong(ib))]);
       Var.units         = 'degree_north';
       Var.standard_name = 'latitude';
-      [varid,status]=nc_vdef(ncid,Var);
+      [~,status]=nc_vdef(ncid,Var);
       if (status ~= 0), return, end,
       clear Var
-    end,
-  end,
+    end
+  end
 
-else,
+else
 
   for ib=1:4,
     if (S.boundary(ib)),
       Var.name          = char(BcoorXr(ib));
       Var.type          = vartype;
-      Var.dimid         = [did.br(ib)];
-      Var.long_name     = strcat(['X-location of RHO-points, ',char(Blong(ib))]);
+      Var.dimid         = did.br(ib);
+      Var.long_name     = strcat(['X-location of RHO-points, ',         ...
+                                  char(Blong(ib))]);
       Var.units         = 'meter';
-      [varid,status]=nc_vdef(ncid,Var);
+      [~,status]=nc_vdef(ncid,Var);
+      if (status ~= 0), return, end,
       clear Var
 
       Var.name          = char(BcoorYr(ib));
       Var.type          = vartype;
-      Var.dimid         = [did.br(ib)];
-      Var.long_name     = strcat(['Y-location of RHO-points, ',char(Blong(ib))]);
+      Var.dimid         = did.br(ib);
+      Var.long_name     = strcat(['Y-location of RHO-points, ',         ...
+                                 char(Blong(ib))]);
       Var.units         = 'meter';
-      [varid,status]=nc_vdef(ncid,Var);
+      [~,status]=nc_vdef(ncid,Var);
       if (status ~= 0), return, end,
       clear Var
-    end,
-  end,
+    end
+  end
 
   for ib=1:4,
     if (S.boundary(ib)),
       Var.name          = char(BcoorXu(ib));
       Var.type          = vartype;
-      Var.dimid         = [did.bu(ib)];
-      Var.long_name     = strcat(['X-location of U-points, ',char(Blong(ib))]);
+      Var.dimid         = did.bu(ib);
+      Var.long_name     = strcat(['X-location of U-points, ',           ...
+                                  char(Blong(ib))]);
       Var.units         = 'meter';
-      [varid,status]=nc_vdef(ncid,Var);
+      [~,status]=nc_vdef(ncid,Var);
       if (status ~= 0), return, end,
       clear Var
 
       Var.name          = char(BcoorYu(ib));
       Var.type          = vartype;
-      Var.dimid         = [did.bu(ib)];
-      Var.long_name     = strcat(['Y-location of U-points, ',char(Blong(ib))]);
+      Var.dimid         = did.bu(ib);
+      Var.long_name     = strcat(['Y-location of U-points, ',           ...
+                                  char(Blong(ib))]);
       Var.units         = 'meter';
-      [varid,status]=nc_vdef(ncid,Var);
+      [~,status]=nc_vdef(ncid,Var);
       if (status ~= 0), return, end,
       clear Var
-    end,
-  end,
+    end
+  end
   
   for ib=1:4,
     if (S.boundary(ib)),
       Var.name          = char(BcoorXv(ib));
       Var.type          = vartype;
-      Var.dimid         = [did.bv(ib)];
-      Var.long_name     = strcat(['X-location of V-points, ',char(Blong(ib))]);
+      Var.dimid         = did.bv(ib);
+      Var.long_name     = strcat(['X-location of V-points, ',           ...
+                                  char(Blong(ib))]);
       Var.units         = 'meter';
-      [varid,status]=nc_vdef(ncid,Var);
+      [~,status]=nc_vdef(ncid,Var);
       if (status ~= 0), return, end,
       clear Var
 
       Var.name          = char(BcoorYv(ib));
       Var.type          = vartype;
-      Var.dimid         = [did.bv(ib)];
-      Var.long_name     = strcat(['Y-location of V-points, ',char(Blong(ib))]);
+      Var.dimid         = did.bv(ib);
+      Var.long_name     = strcat(['Y-location of V-points, ',           ...
+                                  char(Blong(ib))]);
       Var.units         = 'meter';
-      [varid,status]=nc_vdef(ncid,Var);
+      [~,status]=nc_vdef(ncid,Var);
       if (status ~= 0), return, end,
       clear Var
-    end,
-  end,
+    end
+  end
   
-end,
+end
 
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Define open boundary conditions variables.
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 Var.name                = Vname.time;
-Var.type                = ncdouble;
+Var.type                = nc_constant('nc_double');
 Var.dimid               = [did.time];
 Var.long_name           = 'time since initialization';
 Var.units               = 'seconds';
-[varid,status]=nc_vdef(ncid,Var);
+[~,status]=nc_vdef(ncid,Var);
 if (status ~= 0), return, end,
 clear Var
 
@@ -584,43 +580,46 @@ for ib=1:4
     Var.long_name       = strcat(['free-surface, ',char(Blong(ib))]);
     Var.units           = 'meter';
     Var.time            = Vname.time;
-    Var.coordinates     = strcat([char(BcoorXr(ib)),' ',char(BcoorYr(ib)),' ',...
+    Var.coordinates     = strcat([char(BcoorXr(ib)),' ',                ...
+                                  char(BcoorYr(ib)),' ',                ...
                                   Vname.time]);
-    [varid,status]=nc_vdef(ncid,Var);
+    [~,status]=nc_vdef(ncid,Var);
     if (status ~= 0), return, end,
     clear Var
-  end,
-end,
+  end
+end
 
 for ib=1:4
   if (S.boundary(ib)),
     Var.name            = strcat([Vname.ubar,'_',char(Bname(ib))]);
     Var.type            = vartype;
     Var.dimid           = [did.time did.bu(ib)];
-    Var.long_name       = strcat(['vertically integrated u-momentum component, ',...
-                                  char(Blong(ib))]);
+    Var.long_name       = strcat(['vertically integrated u-momentum ',  ...
+                                  'component, ',char(Blong(ib))]);
     Var.units           = 'meter second-1';
     Var.time            = Vname.time;
-    Var.coordinates     = strcat([char(BcoorXu(ib)),' ',char(BcoorYu(ib)),' ',...
+    Var.coordinates     = strcat([char(BcoorXu(ib)),' ',                ...
+                                  char(BcoorYu(ib)),' ',                ...
                                   Vname.time]); 
-    [varid,status]=nc_vdef(ncid,Var);
+    [~,status]=nc_vdef(ncid,Var);
     if (status ~= 0), return, end,
     clear Var
-  end,
-end,
+  end
+end
 
 for ib=1:4
   if (S.boundary(ib)),
     Var.name            = strcat([Vname.vbar,'_',char(Bname(ib))]);
     Var.type            = vartype;
     Var.dimid           = [did.time did.bv(ib)];
-    Var.long_name       = strcat(['vertically integrated v-momentum component, ',...
-                                  char(Blong(ib))]);
+    Var.long_name       = strcat(['vertically integrated v-momentum ',  ...
+                                  'component, ',char(Blong(ib))]);
     Var.units           = 'meter second-1';
     Var.time            = Vname.time;
-    Var.coordinates     = strcat([char(BcoorXv(ib)),' ',char(BcoorYv(ib)),' ',...
+    Var.coordinates     = strcat([char(BcoorXv(ib)),' ',                ...
+                                  char(BcoorYv(ib)),' ',                ...
                                   Vname.time]); 
-    [varid,status]=nc_vdef(ncid,Var);
+    [~,status]=nc_vdef(ncid,Var);
     if (status ~= 0), return, end,
     clear Var
   end,
@@ -631,48 +630,54 @@ for ib=1:4
     Var.name            = strcat([Vname.u,'_',char(Bname(ib))]);
     Var.type            = vartype;
     Var.dimid           = [did.time did.Nr did.bu(ib)];
-    Var.long_name       = strcat(['u-momentum component, ',char(Blong(ib))]);
+    Var.long_name       = strcat(['u-momentum component, ',             ...
+                                  char(Blong(ib))]);
     Var.units           = 'meter second-1';
     Var.time            = Vname.time;
-    Var.coordinates     = strcat([char(BcoorXu(ib)),' ',char(BcoorYu(ib)),' ',...
+    Var.coordinates     = strcat([char(BcoorXu(ib)),' ',                ...
+                                  char(BcoorYu(ib)),' ',...
                                   Vname.s_rho,' ',Vname.time]); 
-    [varid,status]=nc_vdef(ncid,Var);
+    [~,status]=nc_vdef(ncid,Var);
     if (status ~= 0), return, end,
     clear Var
-  end,
-end,
+  end
+end
 
 for ib=1:4
   if (S.boundary(ib)),
     Var.name            = strcat([Vname.v,'_',char(Bname(ib))]);
     Var.type            = vartype;
     Var.dimid           = [did.time did.Nr did.bv(ib)];
-    Var.long_name       = strcat(['v-momentum component, ',char(Blong(ib))]);
+    Var.long_name       = strcat(['v-momentum component, ',             ...
+                                  char(Blong(ib))]);
     Var.units           = 'meter second-1';
     Var.time            = Vname.time;
-    Var.coordinates     = strcat([char(BcoorXv(ib)),' ',char(BcoorYv(ib)),' ',...
+    Var.coordinates     = strcat([char(BcoorXv(ib)),' ',                ...
+                                  char(BcoorYv(ib)),' ',                ...
                                   Vname.s_rho,' ',Vname.time]); 
-    [varid,status]=nc_vdef(ncid,Var);
+    [~,status]=nc_vdef(ncid,Var);
     if (status ~= 0), return, end,
     clear Var
-  end,
-end,
+  end
+end
 
 for ib=1:4
   if (S.boundary(ib)),
     Var.name            = strcat([Vname.temp,'_',char(Bname(ib))]);
     Var.type            = vartype;
     Var.dimid           = [did.time did.Nr did.br(ib)];
-    Var.long_name       = strcat(['potential temperature, ',char(Blong(ib))]);
+    Var.long_name       = strcat(['potential temperature, ',            ...
+                                  char(Blong(ib))]);
     Var.units           = 'Celsius';
     Var.time            = Vname.time;
-    Var.coordinates     = strcat([char(BcoorXr(ib)),' ',char(BcoorYr(ib)),' ',...
+    Var.coordinates     = strcat([char(BcoorXr(ib)),' ',                ...
+                                  char(BcoorYr(ib)),' ',                ...
                                   Vname.s_rho,' ',Vname.time]); 
-    [varid,status]=nc_vdef(ncid,Var);
+    [~,status]=nc_vdef(ncid,Var);
     if (status ~= 0), return, end,
     clear Var
-  end,
-end,
+  end
+end
 
 for ib=1:4
   if (S.boundary(ib)),
@@ -681,33 +686,32 @@ for ib=1:4
     Var.dimid           = [did.time did.Nr did.br(ib)];
     Var.long_name       = strcat(['salinity, ',char(Blong(ib))]);
     Var.time            = Vname.time;
-    Var.coordinates     = strcat([char(BcoorXr(ib)),' ',char(BcoorYr(ib)),' ',...
+    Var.coordinates     = strcat([char(BcoorXr(ib)),' ',                ...
+                                  char(BcoorYr(ib)),' ',                ...
                                   Vname.s_rho,' ',Vname.time]); 
-    [varid,status]=nc_vdef(ncid,Var);
+    [~,status]=nc_vdef(ncid,Var);
     if (status ~= 0), return, end,
     clear Var
   end,
 end,
 
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Leave definition mode and close NetCDF file.
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 [status]=mexnc('enddef',ncid);
 if (status == -1),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_BOUNDARY: ENDDEF - unable to leave definition mode.']);
-  return
-end,
+  error('C_BOUNDARY: ENDDEF - unable to leave definition mode.');
+end
 
 [status]=mexnc('close',ncid);
 if (status == -1),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_BOUNDARY: CLOSE - unable to close NetCDF file: ', ncname]);
-  return
-end,
+  error(['C_BOUNDARY: CLOSE - unable to close NetCDF file: ', ncname]);
+end
 
 return
 

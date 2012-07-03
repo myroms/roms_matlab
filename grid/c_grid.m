@@ -170,7 +170,7 @@ end
 %--------------------------------------------------------------------------
 
 if (~GOT_NCFILE),
-  varid  = netcdf.getConstant('GLOBAL');
+  varid  = netcdf.getConstant('nc_global');
 
   type = 'GRID file';
   netcdf.putAtt(ncid, varid, 'type', type);
@@ -198,7 +198,7 @@ end
 
 if (~gotVar.spherical),
   Var.name          = Vname.spherical;
-  Var.type          = nc_int;
+  Var.type          = netcdf.getConstant('nc_int');
   Var.dimid         = [];
   Var.long_name     = 'grid type logical switch';
   Var.flag_values   = [0 1];
@@ -213,7 +213,7 @@ end
 
 if (~gotVar.xl),
   Var.name          = Vname.xl;
-  Var.type          = nc_double;
+  Var.type          = netcdf.getConstant('nc_double');
   Var.dimid         = [];
   Var.long_name     = 'basin length in the XI-direction';
   Var.units         = 'meter';
@@ -224,7 +224,7 @@ end
 
 if (~gotVar.el),
   Var.name          = Vname.el;
-  Var.type          = nc_double;
+  Var.type          = netcdf.getConstant('nc_double');
   Var.dimid         = [];
   Var.long_name     = 'basin length in the ETA-direction';
   Var.units         = 'meter';
@@ -237,7 +237,7 @@ end
 
 if (~gotVar.angle),
   Var.name          = Vname.angle;
-  Var.type          = nc_double;
+  Var.type          = netcdf.getConstant('nc_double');
   Var.dimid         = [did.eta_rho did.xi_rho];
   Var.long_name     = 'angle between XI-axis and EAST';
   Var.units         = 'radians';
@@ -250,7 +250,7 @@ end
 
 if (~gotVar.pm),
   Var.name          = Vname.pm;
-  Var.type          = nc_double;
+  Var.type          = netcdf.getConstant('nc_double');
   Var.dimid         = [did.eta_rho did.xi_rho];
   Var.long_name     = 'curvilinear coordinate metric in XI';
   Var.units         = 'meter-1';
@@ -261,7 +261,7 @@ end
 
 if (~gotVar.pn),
   Var.name          = Vname.pn;
-  Var.type          = nc_double;
+  Var.type          = netcdf.getConstant('nc_double');
   Var.dimid         = [did.eta_rho did.xi_rho];
   Var.long_name     = 'curvilinear coordinate metric in ETA';
   Var.units         = 'meter-1';
@@ -274,7 +274,7 @@ end
 
 if (~gotVar.dndx),
   Var.name          = Vname.dndx;
-  Var.type          = nc_double;
+  Var.type          = netcdf.getConstant('nc_double');
   Var.dimid         = [did.eta_rho did.xi_rho];
   Var.long_name     = 'XI-derivative of inverse metric factor pn';
   Var.units         = 'meter';
@@ -285,7 +285,7 @@ end
 
 if (~gotVar.dmde),
   Var.name          = Vname.dmde;
-  Var.type          = nc_double;
+  Var.type          = netcdf.getConstant('nc_double');
   Var.dimid         = [did.eta_rho did.xi_rho];
   Var.long_name     = 'ETA-derivative of inverse metric factor pm';
   Var.units         = 'meter';
@@ -298,7 +298,7 @@ end
 
 if (~gotVar.f),
   Var.name          = Vname.f;
-  Var.type          = nc_double;
+  Var.type          = netcdf.getConstant('nc_double');
   Var.dimid         = [did.eta_rho did.xi_rho];
   Var.long_name     = 'Coriolis parameter at RHO-points';
   Var.units         = 'second-1';
@@ -311,7 +311,7 @@ end
 
 if (~gotVar.hraw),
   Var.name          = Vname.hraw;
-  Var.type          = nc_double;
+  Var.type          = netcdf.getConstant('nc_double');
   Var.dimid         = [did.bath did.eta_rho did.xi_rho];
   Var.long_name     = 'Working bathymetry at RHO-points';
   Var.units         = 'meter';
@@ -324,7 +324,7 @@ end
 
 if (~gotVar.h),
   Var.name          = Vname.h;
-  Var.type          = nc_double;
+  Var.type          = netcdf.getConstant('nc_double');
   Var.dimid         = [did.eta_rho did.xi_rho];
   Var.long_name     = 'model bathymetry at RHO-points';
   Var.units         = 'meter';
@@ -338,7 +338,7 @@ end
 if (Cartesian),
   if (~gotVar.x_rho),
     Var.name          = Vname.x_rho;
-    Var.type          = nc_double;
+    Var.type          = netcdf.getConstant('nc_double');
     Var.dimid         = [did.eta_rho did.xi_rho];
     Var.long_name     = 'X-location of RHO-points';
     Var.units         = 'meter';
@@ -349,7 +349,7 @@ if (Cartesian),
 
   if (~gotVar.y_rho),
     Var.name          = Vname.y_rho;
-    Var.type          = nc_double;
+    Var.type          = netcdf.getConstant('nc_double');
     Var.dimid         = [did.eta_rho did.xi_rho];
     Var.long_name     = 'Y-location of RHO-points';
     Var.units         = 'meter';
@@ -364,7 +364,7 @@ end
 if (Cartesian),
   if (~gotVar.x_psi),
     Var.name          = Vname.x_psi;
-    Var.type          = nc_double;
+    Var.type          = netcdf.getConstant('nc_double');
     Var.dimid         = [did.eta_psi did.xi_psi];
     Var.long_name     = 'X-location of PSI-points';
     Var.units         = 'meter';
@@ -375,7 +375,7 @@ if (Cartesian),
 
   if (~gotVar.y_psi),
     Var.name          = Vname.y_psi;
-    Var.type          = nc_double;
+    Var.type          = netcdf.getConstant('nc_double');
     Var.dimid         = [did.eta_psi did.xi_psi];
     Var.long_name     = 'Y-location of PSI-points';
     Var.units         = 'meter';
@@ -390,7 +390,7 @@ end
 if (Cartesian),
   if (~gotVar.x_u),
     Var.name          = Vname.x_u;
-    Var.type          = nc_double;
+    Var.type          = netcdf.getConstant('nc_double');
     Var.dimid         = [did.eta_u did.xi_u];
     Var.long_name     = 'X-location of U-points';
     Var.units         = 'meter';
@@ -401,7 +401,7 @@ if (Cartesian),
 
   if (~gotVar.y_u),
     Var.name          = Vname.y_u;
-    Var.type          = nc_double;
+    Var.type          = netcdf.getConstant('nc_double');
     Var.dimid         = [did.eta_u did.xi_u];
     Var.long_name     = 'Y-location of U-points';
     Var.units         = 'meter';
@@ -416,7 +416,7 @@ end
 if (Cartesian),
   if (~gotVar.x_v),
     Var.name          = Vname.x_v;
-    Var.type          = nc_double;
+    Var.type          = netcdf.getConstant('nc_double');
     Var.dimid         = [did.eta_v did.xi_v];
     Var.long_name     = 'X-location of V-points';
     Var.units         = 'meter';
@@ -427,7 +427,7 @@ if (Cartesian),
 
   if (~gotVar.y_v),
     Var.name          = Vname.y_v;
-    Var.type          = nc_double;
+    Var.type          = netcdf.getConstant('nc_double');
     Var.dimid         = [did.eta_v did.xi_v];
     Var.long_name     = 'Y-location of V-points';
     Var.units         = 'meter';
@@ -442,7 +442,7 @@ end
 if (spherical),
   if (~gotVar.lon_rho),
     Var.name          = Vname.lon_rho;
-    Var.type          = nc_double;
+    Var.type          = netcdf.getConstant('nc_double');
     Var.dimid         = [did.eta_rho did.xi_rho];
     Var.long_name     = 'longitude of RHO-points';
     Var.units         = 'degree_east';
@@ -454,7 +454,7 @@ if (spherical),
 
   if (~gotVar.lat_rho),
     Var.name          = Vname.lat_rho;
-    Var.type          = nc_double;
+    Var.type          = netcdf.getConstant('nc_double');
     Var.dimid         = [did.eta_rho did.xi_rho];
     Var.long_name     = 'latitute of RHO-points';
     Var.units         = 'degree_north';
@@ -470,7 +470,7 @@ end
 if (spherical)
   if (~gotVar.lon_psi),
     Var.name          = Vname.lon_psi;
-    Var.type          = nc_double;
+    Var.type          = netcdf.getConstant('nc_double');
     Var.dimid         = [did.eta_psi did.xi_psi];
     Var.long_name     = 'longitude of PSI-points';
     Var.units         = 'degree_east';
@@ -482,7 +482,7 @@ if (spherical)
 
   if (~gotVar.lat_psi),
     Var.name          = Vname.lat_psi;
-    Var.type          = nc_double;
+    Var.type          = netcdf.getConstant('nc_double');
     Var.dimid         = [did.eta_psi did.xi_psi];
     Var.long_name     = 'latitute of PSI-points';
     Var.units         = 'degree_north';
@@ -498,7 +498,7 @@ end
 if (spherical),
   if (~gotVar.lon_u),
     Var.name          = Vname.lon_u;
-    Var.type          = nc_double;
+    Var.type          = netcdf.getConstant('nc_double');
     Var.dimid         = [did.eta_u did.xi_u];
     Var.long_name     = 'longitude of U-points';
     Var.units         = 'degree_east';
@@ -510,7 +510,7 @@ if (spherical),
   
   if (~gotVar.lat_u),
     Var.name          = Vname.lat_u;
-    Var.type          = nc_double;
+    Var.type          = netcdf.getConstant('nc_double');
     Var.dimid         = [did.eta_u did.xi_u];
     Var.long_name     = 'latitute of U-points';
     Var.units         = 'degree_north';
@@ -526,7 +526,7 @@ end
 if (spherical),
   if (~gotVar.lon_v),
     Var.name          = Vname.lon_v;
-    Var.type          = nc_double;
+    Var.type          = netcdf.getConstant('nc_double');
     Var.dimid         = [did.eta_v did.xi_v];
     Var.long_name     = 'longitude of V-points';
     Var.units         = 'degree_east';
@@ -538,7 +538,7 @@ if (spherical),
 
   if (~gotVar.lat_v),
     Var.name          = Vname.lat_v;
-    Var.type          = nc_double;
+    Var.type          = netcdf.getConstant('nc_double');
     Var.dimid         = [did.eta_v did.xi_v];
     Var.long_name     = 'latitute of V-points';
     Var.units         = 'degree_north';
@@ -553,7 +553,7 @@ end
 
 if (~gotVar.mask_rho),
   Var.name          = Vname.mask_rho;
-  Var.type          = nc_double;
+  Var.type          = netcdf.getConstant('nc_double');
   Var.dimid         = [did.eta_rho did.xi_rho];
   Var.long_name     = 'mask on RHO-points';
   Var.flag_values   = [0.0 1.0];
@@ -568,7 +568,7 @@ end
 
 if (~gotVar.mask_psi),
   Var.name          = Vname.mask_psi;
-  Var.type          = nc_double;
+  Var.type          = netcdf.getConstant('nc_double');
   Var.dimid         = [did.eta_psi did.xi_psi];
   Var.long_name     = 'mask on PSI-points';
   Var.flag_values   = [0.0 1.0];
@@ -583,7 +583,7 @@ end
 
 if (~gotVar.mask_u),
   Var.name          = Vname.mask_u;
-  Var.type          = nc_double;
+  Var.type          = netcdf.getConstant('nc_double');
   Var.dimid         = [did.eta_u did.xi_u];
   Var.long_name     = 'mask on U-points';
   Var.flag_values   = [0.0 1.0];
@@ -598,7 +598,7 @@ end
 
 if (~gotVar.mask_v),
   Var.name          = Vname.mask_v;
-  Var.type          = nc_double;
+  Var.type          = netcdf.getConstant('nc_double');
   Var.dimid         = [did.eta_v did.xi_v];
   Var.long_name     = 'mask on V-points';
   Var.flag_values   = [0.0 1.0];

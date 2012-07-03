@@ -50,9 +50,9 @@ for n=1:nvars,
   end,
 end,
 
-%-------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  If appropriate, define scope variables.
-%-------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 if (define.Rscope || define.Uscope || define.Vscope),
 
@@ -111,7 +111,7 @@ if (define.Rscope || define.Uscope || define.Vscope),
 
   if (define.Rscope),
     Var.name          = Vname.Rscope;
-    Var.type          = ncdouble;
+    Var.type          = nc_constant('nc_double');
     Var.dimid         = [did.yr did.xr];
     Var.long_name     = 'adjoint sensitivity scope mask on RHO-points';
     Var.flag_values   = [0.0 1.0];
@@ -119,6 +119,7 @@ if (define.Rscope || define.Uscope || define.Vscope),
                          'active'];
 
     [~,status]=nc_vdef(ncid,Var);
+    if (status ~= 0), return, end,
     clear Var
   end
 
@@ -126,7 +127,7 @@ if (define.Rscope || define.Uscope || define.Vscope),
 
   if (define.Uscope),
     Var.name          = Vname.Uscope;
-    Var.type          = ncdouble;
+    Var.type          = nc_constant('nc_double');
     Var.dimid         = [did.yu did.xu];
     Var.long_name     = 'adjoint sensitivity scope mask on U-points';
     Var.flag_values   = [0.0 1.0];
@@ -134,6 +135,7 @@ if (define.Rscope || define.Uscope || define.Vscope),
                          'active'];
 
     [~,status]=nc_vdef(ncid,Var);
+    if (status ~= 0), return, end,
     clear Var
   end
 
@@ -141,7 +143,7 @@ if (define.Rscope || define.Uscope || define.Vscope),
 
   if (define.Vscope),
     Var.name          = Vname.Vscope;
-    Var.type          = ncdouble;
+    Var.type          = nc_constant('nc_double');
     Var.dimid         = [did.yv did.xv];
     Var.long_name     = 'adjoint sensitivity scope mask on V-points';
     Var.flag_values   = [0.0 1.0];
@@ -149,6 +151,7 @@ if (define.Rscope || define.Uscope || define.Vscope),
                          'active'];
 
     [~,status]=nc_vdef(ncid,Var);
+    if (status ~= 0), return, end,
     clear Var
   end
 
@@ -172,9 +175,9 @@ if (define.Rscope || define.Uscope || define.Vscope),
 
 end
 
-%-------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Write out mask data into GRID NetCDF file.
-%-------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 [status]=nc_write(ncfile,Vname.Rscope,Rscope);
 [status]=nc_write(ncfile,Vname.Uscope,Uscope);

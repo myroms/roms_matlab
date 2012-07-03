@@ -162,10 +162,11 @@ K.pnom_v=(K.pn(1:Lp,1:M)+K.pn(1:Lp,2:Mp))./                          ...
 	      
 %  Read in or set land/sea masking.
 
-[vname,nvars]=nc_vname(Gname);
+V=nc_vnames(Gname);
+nvars=length(V.Variables);
 
 for n=1:nvars
-  name=deblank(vname(n,:));
+  name=char(V.Variables(n).Name);
   switch name
     case 'mask_psi'
       K.pmask=nc_read(Gname,'mask_psi');

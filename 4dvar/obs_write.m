@@ -99,8 +99,8 @@ disp(['*** Writing observations into:   ', ncfile]);
 %  Write all available variables in the structure.
 %----------------------------------------------------------------------------
 
-V=nc_vname(ncfile);
-nvars=length(V.variables);
+V=nc_vnames(ncfile);
+nvars=length(V.Variables);
 
 notwritten=[];
 

@@ -84,15 +84,16 @@ inorth = 4;
 
 %  Set NetCDF file creation parameters.
 
-[vnames,nvars] = nc_vname(INIfile);
-
+V = nc_vnames(INIfile);
+nvars = length(V.Variables);
+ 
 S.curvilinear = false;
 S.masking     = false;
 S.Vtransform  = 1;
 S.Vstretching = 1;
 
 for n=1:nvars,
-  name=deblank(vnames(n,:));
+  name = char(V.Variables(n).Name);
   switch name
     case 'spherical'
       S.spherical = nc_read(INIfile, 'spherical');
