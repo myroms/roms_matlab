@@ -104,7 +104,7 @@ if (GOT_NCFILE),
     if (~gotDim.eta_v),   Dsize.eta_v   = Dsize.eta_rho - 1; end
     if (~gotDim.eta_psi), Dsize.eta_psi = Dsize.eta_rho - 1; end
   end
-  if (~gotDim.bath), Dsize.bath = ncunlim; end
+  if (~gotDim.bath), Dsize.bath = nc_constant('nc_unlimited'); end
 
 end
 

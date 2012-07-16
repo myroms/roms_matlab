@@ -98,7 +98,7 @@ Ncount = 0;
 
 %  Get information about requested variable.
  
-Info = nc_varinfo(ncname,Vname);
+Info = nc_vinfo(ncname,Vname);
 
 nvdims = length(Info.Dimension);
 

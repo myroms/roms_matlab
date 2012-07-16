@@ -7,19 +7,21 @@
 %
 
 % svn $Id$
-%===========================================================================%
-%  Copyright (c) 2002-2012 The ROMS/TOMS Group                              %
-%    Licensed under a MIT/X style license                                   %
-%    See License_ROMS.txt                           Hernan G. Arango        %
-%===========================================================================%
+%=========================================================================%
+%  Copyright (c) 2002-2012 The ROMS/TOMS Group                            %
+%    Licensed under a MIT/X style license                                 %
+%    See License_ROMS.txt                           Hernan G. Arango      %
+%=========================================================================%
 
 %  Set input/output NetCDF files.
 
- my_root = '/home/arango/ocean/toms/repository/Projects/damee';
+ my_root = '~/ocean/repository/Projects/damee';
 
  GRDname = fullfile(my_root, 'Data/netcdf3', 'damee4_grid_a.nc');
  OAname  = fullfile(my_root, 'Data/OA',      'oa4_lev94_feb.nc');
- INIname = fullfile(my_root, 'Data/netcdf3', 'damee4_levfeb_b.nc');
+%INIname = fullfile(my_root, 'Data/netcdf3', 'damee4_levfeb_b.nc');
+
+ INIname = 'damee4_levfeb_b.nc';
 
 %  Set local variables.
 
@@ -27,9 +29,9 @@
 %method='linear';                  % linear interpolation
  method='spline';                  % spline interpolation
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Set application parameters in structure array, S.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 %  Initial conditions output file name.
 
@@ -89,25 +91,25 @@ S.Tcline  = 200.0;
 
 S.hc = S.Tcline;
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Create initial condition Netcdf file.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
-[status]=c_initial(S);
+[~]=c_initial(S);
 
 %  Set attributes for "ocean_time".
 
 avalue='seconds since 0001-01-01 00:00:00';
-[status]=nc_attadd(INIname,'units',avalue,'ocean_time');
+[~]=nc_attadd(INIname,'units',avalue,'ocean_time');
   
 avalue='360.0 days in every year';
-[status]=nc_attadd(INIname,'calendar',avalue,'ocean_time');
+[~]=nc_attadd(INIname,'calendar',avalue,'ocean_time');
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Set grid variables.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
-V=nc_vnames(GRDfile);
+V=nc_vnames(GRDname);
 nvars=length(V.Variables);
 
 %  Horizontal grid variables. Read in for input GRID NetCDF file.
@@ -121,7 +123,7 @@ if (S.spherical),
   
   S.lon_v   = nc_read(GRDname, 'lon_v');
   S.lat_v   = nc_read(GRDname, 'lat_v');
-else,  
+else  
   S.x_rho   = nc_read(GRDname, 'x_rho');
   S.y_rho   = nc_read(GRDname, 'y_rho');
   
@@ -130,7 +132,7 @@ else,
   
   S.x_v     = nc_read(GRDname, 'x_v');
   S.y_v     = nc_read(GRDname, 'y_v');  
-end,  
+end  
 
 %  Read in Land/Sea mask, if appropriate.
 
@@ -154,16 +156,16 @@ S.h = nc_read(GRDname, 'h');
 %  Set vertical grid variables.
 
 [S.s_rho, S.Cs_r]=stretching(S.Vstretching, ...
-                             S.theta_s, S.theta_b, S.hc, S.N, ...
+                             S.theta_s, S.theta_b, S.hc, S.N,           ...
 			     0, 1);
 
 [S.s_w,   S.Cs_w]=stretching(S.Vstretching, ...
-                             S.theta_s, S.theta_b, S.hc, S.N, ...
+                             S.theta_s, S.theta_b, S.hc, S.N,           ...
 			     1, 1);
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Set zero initial conditions.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 Lr = S.Lm+2;   Lu = Lr-1;   Lv = Lr;
 Mr = S.Mm+2;   Mu = Mr;     Mv = Mr-1;
@@ -182,61 +184,61 @@ if (~isfield(S, 'mask_rho')),  S.mask_rho = ones([Lr Mr]);  end,
 if (~isfield(S, 'mask_u'  )),  S.mask_u   = ones([Lu Mu]);  end,
 if (~isfield(S, 'mask_v'  )),  S.mask_v   = ones([Lv Mv]);  end,
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Write out grid variables.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 			 
-[status]=nc_write(INIname,   'spherical',   S.spherical);
+[~]=nc_write(INIname,   'spherical',   S.spherical);
 
-[status]=nc_write(INIname,   'Vtransform',  S.Vtransform);
-[status]=nc_write(INIname,   'Vstretching', S.Vstretching);
-[status]=nc_write(INIname,   'theta_s',     S.theta_s);
-[status]=nc_write(INIname,   'theta_b',     S.theta_b);
-[status]=nc_write(INIname,   'Tcline',      S.Tcline);
-[status]=nc_write(INIname,   'hc',          S.hc);
+[~]=nc_write(INIname,   'Vtransform',  S.Vtransform);
+[~]=nc_write(INIname,   'Vstretching', S.Vstretching);
+[~]=nc_write(INIname,   'theta_s',     S.theta_s);
+[~]=nc_write(INIname,   'theta_b',     S.theta_b);
+[~]=nc_write(INIname,   'Tcline',      S.Tcline);
+[~]=nc_write(INIname,   'hc',          S.hc);
 
-[status]=nc_write(INIname,   's_rho',       S.s_rho);
-[status]=nc_write(INIname,   's_w',         S.s_w);
-[status]=nc_write(INIname,   'Cs_r',        S.Cs_r);
-[status]=nc_write(INIname,   'Cs_w',        S.Cs_w);
+[~]=nc_write(INIname,   's_rho',       S.s_rho);
+[~]=nc_write(INIname,   's_w',         S.s_w);
+[~]=nc_write(INIname,   'Cs_r',        S.Cs_r);
+[~]=nc_write(INIname,   'Cs_w',        S.Cs_w);
 
-[status]=nc_write(INIname,   'h',           S.h);
+[~]=nc_write(INIname,   'h',           S.h);
 
 if (S.spherical),
-  [status]=nc_write(INIname, 'lon_rho',     S.lon_rho);
-  [status]=nc_write(INIname, 'lat_rho',     S.lat_rho);
-  [status]=nc_write(INIname, 'lon_u',       S.lon_u);
-  [status]=nc_write(INIname, 'lat_u',       S.lat_u);
-  [status]=nc_write(INIname, 'lon_v',       S.lon_v);
-  [status]=nc_write(INIname, 'lat_v',       S.lat_v);
-else,
-  [status]=nc_write(INIname, 'x_rho',       S.x_rho);
-  [status]=nc_write(INIname, 'y_rho',       S.y_rho);
-  [status]=nc_write(INIname, 'x_u',         S.x_u);
-  [status]=nc_write(INIname, 'y_u',         S.y_u);
-  [status]=nc_write(INIname, 'x_v',         S.x_v);
-  [status]=nc_write(INIname, 'y_v',         S.y_v);
-end,
+  [~]=nc_write(INIname, 'lon_rho',     S.lon_rho);
+  [~]=nc_write(INIname, 'lat_rho',     S.lat_rho);
+  [~]=nc_write(INIname, 'lon_u',       S.lon_u);
+  [~]=nc_write(INIname, 'lat_u',       S.lat_u);
+  [~]=nc_write(INIname, 'lon_v',       S.lon_v);
+  [~]=nc_write(INIname, 'lat_v',       S.lat_v);
+else
+  [~]=nc_write(INIname, 'x_rho',       S.x_rho);
+  [~]=nc_write(INIname, 'y_rho',       S.y_rho);
+  [~]=nc_write(INIname, 'x_u',         S.x_u);
+  [~]=nc_write(INIname, 'y_u',         S.y_u);
+  [~]=nc_write(INIname, 'x_v',         S.x_v);
+  [~]=nc_write(INIname, 'y_v',         S.y_v);
+end
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Compute depths at horizontal and vertical RHO-points.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 igrid = 1;
 
-[z_r]=set_depth(S.Vtransform, S.Vstretching, ...
-                S.theta_s, S.theta_b, S.hc, S.N, ...
-                igrid, S.h, S.zeta);
+[z_r] = set_depth(S.Vtransform, S.Vstretching,                          ...
+                  S.theta_s, S.theta_b, S.hc, S.N,                      ...
+                  igrid, S.h, S.zeta);
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Interpolate OA of temperature and salinity from standard levels to
 %  model depths.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 if (OA_INTERPOLATE),
 
   disp(' ')
-  disp([ 'Interpolating from OA fields, please wait ...']);
+  disp('Interpolating from OA fields, please wait ...');
   
   InpRec = 1;
 
@@ -266,12 +268,12 @@ IniRec = 1;                               % NetCDF time record
 
 S.ocean_time = 30.0*86400;                % initial conditions time (s)
 
-[status]=nc_write(INIname, 'ocean_time', S.ocean_time, IniRec);
+[~]=nc_write(INIname, 'ocean_time', S.ocean_time, IniRec);
 
-[status]=nc_write(INIname, 'zeta', S.zeta, IniRec);
-[status]=nc_write(INIname, 'ubar', S.ubar, IniRec);
-[status]=nc_write(INIname, 'vbar', S.vbar, IniRec);
-[status]=nc_write(INIname, 'u',    S.u,    IniRec);
-[status]=nc_write(INIname, 'v',    S.v,    IniRec);
-[status]=nc_write(INIname, 'temp', S.temp, IniRec);
-[status]=nc_write(INIname, 'salt', S.salt, IniRec);
+[~]=nc_write(INIname, 'zeta', S.zeta, IniRec);
+[~]=nc_write(INIname, 'ubar', S.ubar, IniRec);
+[~]=nc_write(INIname, 'vbar', S.vbar, IniRec);
+[~]=nc_write(INIname, 'u',    S.u,    IniRec);
+[~]=nc_write(INIname, 'v',    S.v,    IniRec);
+[~]=nc_write(INIname, 'temp', S.temp, IniRec);
+[~]=nc_write(INIname, 'salt', S.salt, IniRec);

@@ -107,7 +107,7 @@ Dname.yp   = 'eta_psi';      Dsize.yp   = Mp-1;
 Dname.Nr   = 's_rho';        Dsize.Nr   = N;
 Dname.Nw   = 's_w';          Dsize.Nw   = N+1;
 Dname.NT   = 'tracer';       Dsize.NT   = NT;
-Dname.time = 'bry_time';     Dsize.time = ncunlim;
+Dname.time = 'bry_time';     Dsize.time = nc_constant('nc_unlimited');
 
 %--------------------------------------------------------------------------
 %  Set Variables.

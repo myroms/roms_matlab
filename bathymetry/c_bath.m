@@ -29,9 +29,13 @@ function [status]=c_bath(Im, Jm, Bname)
 %  Inquire dimensions from a existing NeTCDF file.
 %--------------------------------------------------------------------------
 
-Dname.lon ='lon';   Dsize.lon =Im;       Vname.lon ='lon';
-Dname.lat ='lat';   Dsize.lat =Jm;       Vname.lat ='lat';
-Dname.bath='bath';  Dsize.bath=ncunlim;  Vname.bath='hraw';
+Dname.lon ='lon';   Dsize.lon =Im;
+Dname.lat ='lat';   Dsize.lat =Jm;
+Dname.bath='bath';  Dsize.bath=nc_constant('nc_unlimited');
+
+Vname.lon ='lon';
+Vname.lat ='lat';
+Vname.bath='hraw';
 
 %--------------------------------------------------------------------------
 %  Create topography NetCDF file.

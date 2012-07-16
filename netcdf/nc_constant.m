@@ -45,6 +45,8 @@ else
         value = -1;
       case {'NC_CLOBBER'}
         value = 0;
+      case {'NC_UNLIMITED'}
+        value = 0;
       case {'NC_FILL'}
         value = 0;
       case {'NC_NOWRITE'}
@@ -76,7 +78,7 @@ else
       case {'NC_SHARE'}
         value = 2048;
       otherwise
-        error('NC_CONSTANT: unable to determine NetCDF constant value'      
+        error('NC_CONSTANT: unable to determine NetCDF constant value');
     end
   end
 end

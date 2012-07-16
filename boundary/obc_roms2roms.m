@@ -148,7 +148,7 @@ for var = VarList,
 
 %  Get information about variable to process.
 
-  Info = nc_varinfo(ncfile,Vname);
+  Info = nc_vinfo(ncfile,Vname);
 
   nvdims = length(Info.Dimension);
 
