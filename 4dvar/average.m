@@ -29,34 +29,35 @@ function [Favg]=average(Fname,Vname,Tstr,Tend);
 
 % Inquire number of time records.
 
-[dnames,dsizes,igrid]=nc_vinfo(Fname,Vname);
-ndims=length(dsizes);
+Info = nc_vinfo(Fname,Vname);
 
-for n=1:ndims,
-  name=deblank(dnames(n,:));
+nvdims = length(Info.Dimensions);
+
+for n=1:nvdims,
+  name = char(Info.Dimensions(n).Name);
   switch name
     case 'time',
-      Nrec=dsizes(n);
-  end,
-end,
+      Nrec = dsizes(n);
+  end
+end
 
 if (nargin < 3),
-  Tstr=1;
-  Tend=Nrec;
-end,
+  Tstr = 1;
+  Tend = Nrec;
+end
 
 % Read in field and compute its time mean.
 
-Favg=nc_read(Fname,Vname,Tstr);
+Favg = nc_read(Fname,Vname,Tstr);
 
-ic=1;
+ic = 1;
 
 for n=Tstr+1:Tend,
-  f=nc_read(Fname,Vname,n);
-  Favg=Favg+f;
-  ic=ic+1;
-end,
+  f = nc_read(Fname,Vname,n);
+  Favg = Favg+f;
+  ic = ic+1;
+end
 
-Favg=Favg./ic;
+Favg = Favg./ic;
 
 return

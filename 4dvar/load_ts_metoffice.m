@@ -81,11 +81,11 @@ function [T,S]=load_ts_metoffice(ncfile, GRDfile, StartDay, EndDay)
 %
 
 % svn $Id$
-%===========================================================================%
-%  Copyright (c) 2002-2012 The ROMS/TOMS Group                              %
-%    Licensed under a MIT/X style license                                   %
-%    See License_ROMS.txt                           Hernan G. Arango        %
-%===========================================================================%
+%=========================================================================%
+%  Copyright (c) 2002-2012 The ROMS/TOMS Group                            %
+%    Licensed under a MIT/X style license                                 %
+%    See License_ROMS.txt                           Hernan G. Arango      %
+%=========================================================================%
 
 debugging  = true;
 got_grid   = false;
@@ -109,9 +109,9 @@ end,
 
 if (iscell(ncfile)),
   Nfiles = length(ncfile);       % multiple monthly file names cell array
-else,
+else
   Nfiles = 1;                    % single monthly file name string
-end,
+end
 
 %  Read in application grid longitude and latitude. Set grid application
 %  polygon.
@@ -131,7 +131,7 @@ if (got_grid),
         squeeze(rlat(Im,2:Jm))'; ...
         squeeze(flipud(rlat(1:Im-1,Jm))); ...
         squeeze(fliplr(rlat(1,1:Jm-1)))'];
-end,
+end
 
 %  Set observations dynamical fields (cell array) in output structures.
 
@@ -143,11 +143,11 @@ for value = field_list,
   field = char(value);
   T.(field) = [];
   S.(field) = [];
-end,
+end
 
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Read in UK Met Office dataset(s).
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 tindex    = [];                         % data do not have record dimension
 FillValue = NaN;                        % replace fill values with NaN
@@ -161,20 +161,20 @@ while (N <= Nfiles),
 
   if (iscell(ncfile)),
     ncname = char(ncfile(N));
-  else,
+  else
     ncname = ncfile;
-  end,
+  end
 
 %  Check if input file is compressed.  If so uncmpress before processing.
 %  It slows down the processing a little but it saves disk space.
 
   lstr = length(ncname);
   uncompress = false;
-  if (findstr(ncname,'.gz')),
+  if (strfind(ncname,'.gz')),
     s = unix(['gunzip ', ncname]);
     ncname = ncname(1:lstr-3);
     uncompress = true;
-  end,
+  end
 
 %  Read in time, spatial location, and WMO instrument type string.
 %
@@ -252,15 +252,15 @@ while (N <= Nfiles),
     for value = field_list,
       field = char(value);
       Temp.(field)(ind_T) = [];
-    end,
-  end,
+    end
+  end
 
   if (~isempty(ind_S)),
     for value = field_list,
       field = char(value);
       Salt.(field)(ind_S) = [];
-    end,
-  end,
+    end
+  end
 
   NobsT(2) = length (Temp.time);
   NobsS(2) = length (Salt.time);
@@ -279,15 +279,15 @@ while (N <= Nfiles),
     for value = field_list,
       field = char(value);
       Temp.(field)(ind_T) = [];
-    end,
-  end,
+    end
+  end
 
   if (~isempty(ind_S)),
     for value = field_list,
       field = char(value);
       Salt.(field)(ind_S) = [];
-    end,
-  end,
+    end
+  end
 
   NobsT(3) = length (Temp.time);
   NobsS(3) = length (Salt.time);
@@ -309,8 +309,8 @@ while (N <= Nfiles),
       for value = field_list,
         field = char(value);
         Temp.(field)(ind_T) = [];
-      end,
-    end,
+      end
+    end
 
     bounded = false(size(Salt.lon));
     [IN ON] = inpolygon(Salt.lon, Salt.lat, Xbox, Ybox);
@@ -323,14 +323,14 @@ while (N <= Nfiles),
       for value = field_list,
         field = char(value);
         Salt.(field)(ind_S) = [];
-      end,
-    end,
+      end
+    end
 
     NobsT(4) = length (Temp.time);
     NobsS(4) = length (Salt.time);
 
     clear IN ON bounded ind_S ind_T
-  end,
+  end
 
 %  If data period is provided, extract observations for the specified
 %  times.
@@ -343,8 +343,8 @@ while (N <= Nfiles),
       for value = field_list,
         field = char(value);
         Temp.(field)(ind_T) = [];
-      end,
-    end,
+      end
+    end
 
     if (~isempty(ind_S)),
       for value = field_list,
@@ -357,7 +357,7 @@ while (N <= Nfiles),
     NobsS(5) = length (Salt.time);
 
     clear ind_S ind_T
-  end,
+  end
 
 %  Load extracted data into structure.  Sort in ascending order of time.
 
@@ -378,27 +378,27 @@ while (N <= Nfiles),
     if (got_period),
       disp(['                  Number after time screening = ', ...
             num2str(NobsT(5),'%8.8i'), '  ', num2str(NobsS(5),'%8.8i')]);
-    end,
-  end,
+    end
+  end
   
   if (isempty(Temp.time) && isempty(Salt.time)),
     disp([' LOAD_TS_METOFFICE: no data extracted from file: ', ncname]);
     return
-  end,
+  end
 
-  [Y,I] = sort(Temp.time, 'ascend');           % sort in time ascending order
+  [~,I] = sort(Temp.time, 'ascend');           % sort in time ascending order
   
   for value = field_list,
     field = char(value);
     T.(field) = [T.(field), transpose(Temp.(field)(I))];
-  end,
+  end
 
-  [Y,I] = sort(Salt.time, 'ascend');           % sort in time ascending order
+  [~,I] = sort(Salt.time, 'ascend');           % sort in time ascending order
   
   for value = field_list,
     field = char(value);
     S.(field) = [S.(field), transpose(Salt.(field)(I))];
-  end,
+  end
   
   clear I Temp Salt Y
 
@@ -409,9 +409,9 @@ while (N <= Nfiles),
 
   if (uncompress),
     s = unix(['gzip ', ncname]);
-  end,
+  end
 
-end,
+end
 
 %  Add number of observations, survery time, and number of obserbations
 %  per survey time.
@@ -428,13 +428,13 @@ S.Ndatum  = length(S.time);
 for n=1:T.Nsurvey,
   ind = find(T.time == Tsurvey(n));
   T.Nobs(n) = length(ind);
-end,
+end
 T.Nobs = T.Nobs';
 
 for n=1:S.Nsurvey,
   ind = find(S.time == Ssurvey(n));
   S.Nobs(n) = length(ind);
-end,
+end
 S.Nobs = S.Nobs';
 
 T.survey_time = Tsurvey;

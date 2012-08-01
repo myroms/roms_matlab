@@ -30,35 +30,36 @@ function [Fvar]=variance(Fname,Vname,Favg,Tstr,Tend);
 
 % Inquire number of time records.
 
-[dnames,dsizes,igrid]=nc_vinfo(Fname,Vname);
-ndims=length(dsizes);
+Info = nc_vinfo(Fname,Vname);
 
-for n=1:ndims,
-  name=deblank(dnames(n,:));
+nvdims = length(Info.Dimensions);
+
+for n=1:nvdims,
+  name = char(Info.Dimensions(n).Name);
   switch name
     case 'time',
-      Nrec=dsizes(n);
-  end,
-end,
+      Nrec = dsizes(n);
+  end
+end
 
 if (nargin < 4),
-  Tstr=1;
-  Tend=Nrec;
-end,
+  Tstr = 1;
+  Tend = Nrec;
+end
 
 % Read in field and compute the variance from its time mean (unbiased
 % estimate since we are dividing by (ic-1).
 
-Fvar=zeros(size(nc_read(Fname,Vname,Tstr)));
+Fvar = zeros(size(nc_read(Fname,Vname,Tstr)));
 
-ic=0;
+ic = 0;
 
 for n=Tstr:Tend,
-  f=nc_read(Fname,Vname,n);
-  Fvar=Fvar+(f-Favg).^2;
-  ic=ic+1;
-end,
+  f = nc_read(Fname,Vname,n);
+  Fvar = Fvar+(f-Favg).^2;
+  ic = ic+1;
+end
 
-Fvar=Fvar./max(1,ic-1);
+Fvar = Fvar./max(1,ic-1);
 
 return

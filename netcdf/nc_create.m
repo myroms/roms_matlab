@@ -43,7 +43,7 @@ function ncid = nc_create(ncfile,mode,S)
 %
 %    S          NetCDF file Schema Structure (struct array)
 %
-% On Input:
+% On Output:
 %
 %    ncid       NetCDF file ID. If no function output arguments are
 %                 given, the file is closed after it is created.

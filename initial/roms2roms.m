@@ -100,14 +100,14 @@ Ncount = 0;
  
 Info = nc_vinfo(ncname,Vname);
 
-nvdims = length(Info.Dimension);
+nvdims = length(Info.Dimensions);
 
 %  Check variable dimensions and determine horizontal/vertical
 %  coordinates and Land/Sea mask arrays.
 
 if (nvdims > 0),
   for n=1:nvdims,
-    dimnam = Info.Dimension{n};
+    dimnam = char(Info.Dimensions(n).Name);
     switch dimnam
       case 's_rho'
         isr3d = true;
@@ -392,8 +392,8 @@ switch (ivdims),
 
    if (~isempty(ind)),
      if (RemoveNaN),
-       R = TriScatteredInterp(x,y,v,'nearest');
-       V(ind) = R(XR(ind),YR(ind));
+       FN = TriScatteredInterp(x,y,v,'nearest');
+       V(ind) = FN(XR(ind),YR(ind));
        Rmin = min(Rmin, min(V(ind)));
        Rmax = max(Rmax, max(V(ind)));
 
@@ -467,8 +467,8 @@ switch (ivdims),
 
    if (~isempty(ind)),
      if (RemoveNaN),
-       R = TriScatteredInterp(x,y,z,v,'nearest');
-       V(ind) = R(X(ind),Y(ind), ZR(ind));
+       FN = TriScatteredInterp(x,y,z,v,'nearest');
+       V(ind) = FN(X(ind),Y(ind), ZR(ind));
        Rmin = min(Rmin, min(V(ind)));
        Rmax = max(Rmax, max(V(ind)));
 

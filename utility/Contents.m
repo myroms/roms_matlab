@@ -21,6 +21,14 @@
 % ROMS Data Processing:
 %
 %   nanland       - Mask Land points to NaN to facilitate plotting.
+%   plot_field    - Plots requested ROMS variable from input history
+%                     NetCDF file. This function is very usefull when
+%                     debugging a ROMS application. The ploting is not
+%                     that fancy but it provides enough information for
+%                     browsing ROMS variables very quickly. The location
+%                     of the minimum is marked with a filled magenta
+%                     circle whereas the maximum is marked with a filled
+%                     magenta square.
 %   roms_vectors  - Processes vector data for either the full grid
 %                     or boundary edges. The strategy is to get any
 %                     horizontal vector field at RHO-points for the

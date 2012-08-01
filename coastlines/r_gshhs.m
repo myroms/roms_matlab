@@ -1,4 +1,4 @@
-function [C]=r_gshhs(Llon, Rlon, Blat, Tlat, Fname);
+function [C]=r_gshhs(Llon, Rlon, Blat, Tlat, Fname)
 
 %
 % R_GSHHS:  Read and extract coastline data from GSHHS dataset
@@ -34,15 +34,15 @@ function [C]=r_gshhs(Llon, Rlon, Blat, Tlat, Fname);
 %
 
 % svn $Id$
-%===========================================================================%
-%  Copyright (c) 2002-2012 The ROMS/TOMS Group                              %
-%    Licensed under a MIT/X style license                                   %
-%    See License_ROMS.txt                           Hernan G. Arango        %
-%===========================================================================%
+%=========================================================================%
+%  Copyright (c) 2002-2012 The ROMS/TOMS Group                            %
+%    Licensed under a MIT/X style license                                 %
+%    See License_ROMS.txt                           Hernan G. Arango      %
+%=========================================================================%
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Set extracting coordinates.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 llim=rem(Llon+360,360)*1e6;          %   micro-degrees
 rlim=rem(Rlon+360,360)*1e6;
@@ -54,45 +54,44 @@ mrlim=rem(Rlon+360+180,360)-180;
 mblim=Blat;
 mtlim=Tlat;
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Initialize output data: "decfac" is for decimation of areas outside the
 %  lat/lon boundarys.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
-if (findstr(Fname,'gshhs_f')),         % Full resolution database
+if (strfind(Fname,'gshhs_f')),         % Full resolution database
   C.lon=NaN+zeros(492283,1);
   C.lat=NaN+zeros(492283,1);
   C.area=zeros(41520,1);
   k=ones(41521,1);
   decfac=12500;
-elseif (findstr(Fname,'gshhs_h')),     % High resolution database
+elseif (strfind(Fname,'gshhs_h')),     % High resolution database
   C.lon=NaN+zeros(492283,1);
   C.lat=NaN+zeros(492283,1);
   C.area=zeros(41520,1);
   k=ones(41521,1);
   decfac=2500;
-elseif (findstr(Fname,'gshhs_i')),     % Intermediate resolution database
+elseif (strfind(Fname,'gshhs_i')),     % Intermediate resolution database
   C.lon=NaN+zeros(492283,1);
   C.lat=NaN+zeros(492283,1);
   C.area=zeros(41520,1);
   k=ones(41521,1);
   decfac=500;
-elseif (findstr(Fname,'gshhs_l')),     % Low resolution database
+elseif (strfind(Fname,'gshhs_l')),     % Low resolution database
   C.lon=NaN+zeros(101023,1);
   C.lat=NaN+zeros(101023,1);
   C.area=zeros(10768,1);
   k=ones(10769,1);
   decfac=100;
-elseif (findstr(Fname,'gshhs_c')),     % Crude resolution databse
+elseif (strfind(Fname,'gshhs_c')),     % Crude resolution databse
   C.lon=NaN+zeros(14872,1);
   C.lat=NaN+zeros(14872,1);
   C.area=zeros(1868,1);
   k=ones(1869,1);
   decfac=20;
-else,
+else
   error(['READ_GSHHS - unable to process database: ',Fname]);
-  return
-end,
+end
 
 %---------------------------------------------------------------------------
 %   Read in GSHHS database.
@@ -102,8 +101,7 @@ fid=fopen(Fname,'r','ieee-be');
 
 if (fid==-1),
   error(['read_GSHHS - unable to open file: ',Fname]);
-  return
-end;
+end
 
 Area2=C.area;
 
@@ -139,7 +137,7 @@ while cnt > 0,
 %  of the map. There are various cases to consider, depending on whether map
 %  limits and/or the line limits cross the longitude jump or not.
  
-  if (e & (a & ((b&c&d) | (~b&(c|d))) | (~a & (~b | (b&(c|d)))))),
+  if (e && (a && ((b&&c&&d) || (~b&&(c||d))) || (~a && (~b || (b&&(c||d)))))),
  
     l=l+1;
 
@@ -154,17 +152,17 @@ while cnt > 0,
 %  Antarctic is a special case - extend contour to make nice closed polygon
 %  that doesn't surround the pole.   
 
-    if ( abs(x(1))<1 & abs(y(1)+68.9)<1 ),
+    if ( abs(x(1))<1 && abs(y(1)+68.9)<1 ),
       y=[-89.9; -78.4; y(x<=-180);     y(x>-180); -78.4; -89.9*ones(18,1)];
       x=[  180;   180; x(x<=-180)+360; x(x>-180);  -180; [-180:20:160]'];
-    end;
+    end
 
 %  First and last point should be the same.
    
-    if ( x(end)~=x(1) | y(end)~=y(1) ),
+    if ( x(end)~=x(1) || y(end)~=y(1) ),
       x=[x; x(1)];
       y=[y; y(1)];
-    end;
+    end
 
 %  Get correct curve orientation for patch-fill algorithm.
    

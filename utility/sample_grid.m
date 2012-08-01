@@ -128,7 +128,7 @@ end
 %--------------------------------------------------------------------------
 %  If requested, plot donor and receiver grids.
 %--------------------------------------------------------------------------
-XS
+
 if (plt),
 
   X = XD(Istr:1:Iend,Jstr:1:Jend);
@@ -145,6 +145,6 @@ if (plt),
   title(['Sampled Donor and Receiver Grids']);
   hold off
 
-end,
+end
 
 return

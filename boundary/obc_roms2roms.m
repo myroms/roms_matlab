@@ -150,14 +150,14 @@ for var = VarList,
 
   Info = nc_vinfo(ncfile,Vname);
 
-  nvdims = length(Info.Dimension);
+  nvdims = length(Info.Dimensions);
 
 %  Check variable dimensions and determine horizontal/vertical
 %  coordinates and Land/Sea mask arrays.
 
   if (nvdims > 0),
     for n=1:nvdims,
-      dimnam = Info.Dimension{n};
+      dimnam = char(Info.Dimensions(n).Name);
       switch dimnam
         case 's_rho'
           isr3d = true;
@@ -494,9 +494,9 @@ for var = VarList,
 
           if (~isempty(ind)),
             if (RemoveNaN),
-              R = TriScatteredInterp(x,y,v,'nearest');
+              FN = TriScatteredInterp(x,y,v,'nearest');
 
-              B.(field)(ind) = R(RX.(edge)(ind), RY.(field)(ind));
+              B.(field)(ind) = FN(RX.(edge)(ind), RY.(field)(ind));
               Rmin = min(Rmin, min(B.(field)(ind)));
               Rmax = max(Rmax, max(B.(field)(ind)));
 
@@ -510,8 +510,8 @@ for var = VarList,
           end
 
           disp(['   ',sprintf(frmt,field),':  ',                        ...
-                'Donor Min = ', sprintf('%12.5e',Dmin), '   ',          ...
-                'Donor Max = ', sprintf('%12.5e',Dmax)]);
+                '   Donor Min = ', sprintf('%12.5e',Dmin), '   ',       ...
+                '   Donor Max = ', sprintf('%12.5e',Dmax)]);
           disp(['   ',sprintf(frmt,field),':  ',                        ...
                 'Receiver Min = ', sprintf('%12.5e',Rmin), '   ',       ...
                 'Receiver Max = ', sprintf('%12.5e',Rmax), '   ',       ...
@@ -582,9 +582,9 @@ for var = VarList,
 
           if (~isempty(ind)),
             if (RemoveNaN),
-              R = TriScatteredInterp(x,y,z,v,'nearest');
+              FN = TriScatteredInterp(x,y,z,v,'nearest');
 
-              B.(field)(ind) = R(X(ind),Y(ind), RZ.(edge)(ind));
+              B.(field)(ind) = FN(X(ind),Y(ind), RZ.(edge)(ind));
               Rmin = min(Rmin, min(B.(field)(ind)));
               Rmax = max(Rmax, max(B.(field)(ind)));
 
@@ -598,8 +598,8 @@ for var = VarList,
           end
 
           disp(['   ',sprintf(frmt,field),':  ',                        ...
-                'Donor Min = ', sprintf('%12.5e',Dmin), '   ',          ...
-                'Donor Max = ', sprintf('%12.5e',Dmax)]);
+                '   Donor Min = ', sprintf('%12.5e',Dmin), '   ',       ...
+                '   Donor Max = ', sprintf('%12.5e',Dmax)]);
           disp(['   ',sprintf(frmt,field),':  ',                        ...
                 'Receiver Min = ', sprintf('%12.5e',Rmin), '   ',       ...
                 'Receiver Max = ', sprintf('%12.5e',Rmax), '   ',       ...

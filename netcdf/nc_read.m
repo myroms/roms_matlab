@@ -37,9 +37,9 @@ function f = nc_read(ncfile, Vname, Tindex, ReplaceValue, PreserveType)
 %
 %    f             Field (scalar or array)
 %
-% calls:           nc_dinfo, nc_url, nc_vinfo, nc_Vname
-%                  nc_info, nc_vargetr (SNCTOOLS java interface to OpenDAT)
-%                  read_nc, read_nc_url (private functions below)
+% calls:           nc_inq
+%                  nc_vargetr (SNCTOOLS java interface to OpenDAT)
+%                  nc_read_matlab, nc_read_java, nc_read_mexnc (private)
 %
 
 % svn $Id$
@@ -372,6 +372,7 @@ if (nvdims > 0),
     if (time_rec && got.RecDim),
       if (strcmp(dname, TimeDimName)),
         start(n) = Tindex-1;
+%       start(n) = Tindex;
         count(n) = 1;
       end
     end
