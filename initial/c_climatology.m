@@ -465,9 +465,9 @@ Var.valid_min       = -1;
 Var.valid_max       = 0;
 Var.positive        = 'up';
 if (Vtransform == 1),
-  Var.standard_name = 'ocena_s_coordinate_g1';
+  Var.standard_name = 'ocean_s_coordinate_g1';
 elseif (Vtransform == 2),
-  Var.standard_name = 'ocena_s_coordinate_g2';
+  Var.standard_name = 'ocean_s_coordinate_g2';
 end
 Var.formula_terms   = 's: s_rho C: Cs_r eta: zeta depth: h depth_c: hc';
 [~,status]=nc_vdef(ncid,Var);
@@ -482,9 +482,9 @@ Var.valid_min       = -1;
 Var.valid_max       = 0;
 Var.positive        = 'up';
 if (Vtransform == 1),
-  Var.standard_name = 'ocena_s_coordinate_g1';
+  Var.standard_name = 'ocean_s_coordinate_g1';
 elseif (Vtransform == 2),
-  Var.standard_name = 'ocena_s_coordinate_g2';
+  Var.standard_name = 'ocean_s_coordinate_g2';
 end
 Var.formula_terms   = 's: s_w C: Cs_w eta: zeta depth: h depth_c: hc';
 [~,status]=nc_vdef(ncid,Var);

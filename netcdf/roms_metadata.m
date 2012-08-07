@@ -99,9 +99,9 @@ switch Vname
     V.Attributes(1).Name      = 'long_name';
     V.Attributes(1).Value     = 'grid type logical switch';
     V.Attributes(2).Name      = 'flag_values';
-    V.Attributes(2).Value     = [0 1];
+    V.Attributes(2).Value     = [int32(0) int32(1)];
     V.Attributes(3).Name      = 'flag_meanings';
-    V.Attributes(2).Value     = 'Cartesian spherical';
+    V.Attributes(3).Value     = 'Cartesian spherical';
     V.Cgridtype.Name          = 'none';
     V.Cgridtype.Value         = 0;
     V.Datatype                = 'int32';
@@ -1200,7 +1200,7 @@ switch Vname
 
   case 'tide_period'
     V.Name                    = Vname;
-    V.Dimensions(1).Name      = 'wind_time';
+    V.Dimensions(1).Name      = 'tide_period';
     V.Dimensions(1).Length    = [];
     V.Dimensions(1).Unlimited = false;
     V.Size                    = [];

@@ -321,7 +321,7 @@ end
 
 % Open NetCDF file.
 
-[ncid]=mexnc('ncopen',ncfile,'NC_WRITE_MEXNC');
+[ncid]=mexnc('ncopen',ncfile,'NC_WRITE');
 if (ncid == -1),
   error(['NC_WRITE_MEXNC: ncopen - unable to open file: ', ncfile]);
 end

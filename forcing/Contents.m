@@ -11,6 +11,10 @@
 %                     Air-Sea Flux Dataset. Notice that the original
 %                     data set is sampled for the Gulf of Mexico (GOM).
 %
+%  write_tides    - Creates ROMS tidal forcing NetCDF file and writes
+%                     data extracted from either OTPS or ADCIRC and
+%                     processed with the "t_tide" utility.
+%
 
 % svn $Id$
 %=========================================================================%

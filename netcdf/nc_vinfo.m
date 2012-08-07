@@ -110,20 +110,23 @@ if (nvdims > 0),
   for n=1:nvdims,
     dname = Info.Dimensions(n).Name;
     switch (dname)
-      case 'xi_rho'
+      case {'xi_rho', 'lon_rho', 'lon'}
         Ctype.Name  = 'density point';
         Ctype.Value = 1;
-      case 'xi_psi'
+      case {'xi_psi', 'lon_psi'}
         Ctype.Name  = 'streamfunction point';
         Ctype.Value = 2;
-      case 'xi_u'
+      case {'xi_u', 'lon_u'}
         Ctype.Name  = 'u-velocity point';
         Ctype.Value = 3;
-      case 'xi_v'
+      case {'xi_v', 'lon_v'}
         Ctype.Name  = 'v-velocity point';
         Ctype.Value = 4;
       case 's_w'
         wgrid = 5;
+      otherwise
+        Ctype.Name  = 'density point';
+        Ctype.Value = 1;
     end
   end  
   if (wgrid == 5),
@@ -223,20 +226,23 @@ if (nvdims > 0),
     dname = char(Info.Dimension{n});
     Unlimited(n) = nc_getdiminfo(ncfile,dname,'Unlimited');
     switch (dname)
-      case 'xi_rho'
+      case {'xi_rho', 'lon_rho', 'lon'}
         Ctype.Name  = 'density point';
         Ctype.Value = 1;
-      case 'xi_psi'
+      case {'xi_psi', 'lon_psi'}
         Ctype.Name  = 'streamfunction point';
         Ctype.Value = 2;
-      case 'xi_u'
+      case {'xi_u', 'lon_u'}
         Ctype.Name  = 'u-velocity point';
         Ctype.Value = 3;
-      case 'xi_v'
+      case {'xi_v', 'lon_v'}
         Ctype.Name  = 'v-velocity point';
         Ctype.Value = 4;
       case 's_w'
         wgrid = 5;
+      otherwise
+        Ctype.Name  = 'density point';
+        Ctype.Value = 1;
     end
   end  
   if (wgrid == 5),
@@ -378,20 +384,23 @@ if (nvdims > 0),
              'ID: ',num2str(dimids(n))]);
     else
       switch (name)
-        case 'xi_rho'
+        case {'xi_rho', 'lon_rho', 'lon'}
           Ctype.Name  = 'density point';
           Ctype.Value = 1;
-        case 'xi_psi'
+        case {'xi_psi', 'lon_psi'}
           Ctype.Name  = 'streamfunction point';
           Ctype.Value = 2;
-        case 'xi_u'
+        case {'xi_u', 'lon_u'}
           Ctype.Name  = 'u-velocity point';
           Ctype.Value = 3;
-        case 'xi_v'
+        case {'xi_v', 'lon_v'}
           Ctype.Name  = 'v-velocity point';
           Ctype.Value = 4;
         case 's_w'
           wgrid = 5;
+        otherwise
+          Ctype.Name  = 'density point';
+          Ctype.Value = 1;
       end      
       V.Dimensions(n).Name   = name;
       V.Dimensions(n).Length = size;

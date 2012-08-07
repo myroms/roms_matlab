@@ -82,11 +82,11 @@ if (nvdims > 0),
   for n=1:nvdims,
     dimnam = char(I.Dimensions(n).Name);
     switch dimnam
-      case 's_rho'
+      case {'s_rho', 'level'}
         isr3d = true;
       case 's_w'
         isw3d = true;
-      case {'xi_rho','eta_rho'}
+      case {'xi_rho','lon_rho'}
         Mname = 'mask_rho';
         got.Mname = true;
         if (~(got.Xname || got.Yname)),
@@ -102,7 +102,7 @@ if (nvdims > 0),
           got.Yname = true;
           got.Zname = true;
         end
-      case {'xi_psi','eta_psi'}
+      case {'xi_psi','lon_psi'}
         Mname = 'mask_psi';
         got.Mname = true;
         if (~(got.Xname || got.Yname)),
@@ -116,7 +116,7 @@ if (nvdims > 0),
           got.Xname = true;
           got.Yname = true;       
         end
-      case {'xi_u','eta_u'}
+      case {'xi_u','lon_u'}
         Mname = 'mask_u';
         got.Mname = true;
         if (~(got.Xname || got.Yname)),
@@ -133,7 +133,7 @@ if (nvdims > 0),
           got.Zname = true;
         end
         isvec = true;
-     case {'xi_v','eta_v'}
+     case {'xi_v','lon_v'}
         Mname = 'mask_v';
         got.Mname = true;
         if (~(got.Xname || got.Yname)),
@@ -150,7 +150,7 @@ if (nvdims > 0),
           got.Zname = true;
         end
         isvec = true;
-      case 'ocean_time'
+      case 'ocean_time, time'
         recordless = false;    
         Tsize = I.Dimensions(n).Length;
     end

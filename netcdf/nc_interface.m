@@ -101,14 +101,15 @@ else
 end
 
 % Determine NetCDF interface to use. The 'native' interface is the
-% preferred method.
+% preferred method. The native function 'ncinfo' is not available in
+% 2010 versions.
 
 method = 'native';
 
 if (url && Vyear < 2012),
   method = 'java';
 else
-  if (~native),
+  if (~native || Vyear == 2010),
     method = 'mexnc';
   end
 end
