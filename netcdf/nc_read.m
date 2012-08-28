@@ -525,9 +525,6 @@ nctype = Info.Variables(ivar).ncType;
 % Check value of persistent switch to process data in column-major or
 % row-major order.
 
-I think a better to handle use of PRESERVE_FVD=true option is that in
-any routine where you want to use that, you start out with
-
 if (ispref('SNCTOOLS','PRESERVE_FVD')),
   saved_preserve_fvd = getpref('SNCTOOLS','PRESERVE_FVD');
 else
