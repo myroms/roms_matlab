@@ -56,6 +56,11 @@
 %   eos           - ROMS equation of state for seawater.
 %   gcircle       - Great circle distance between two (lon,lat) points.
 %   geodesic_dist - Geodesic distance between two (lon,lat) points.
+%   roms_eos.m    - Computes 'in situ' density using ROMS nonlinear
+%                     equation of state for seawater. It assumes no
+%                     pressure variation along geopotential surfaces,
+%                     that is, depth (meters; negative) and pressure
+%                     (dbar; assumed negative here) are interchangeable.
 %
 % Time Management:
 %

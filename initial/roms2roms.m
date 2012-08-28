@@ -3,7 +3,7 @@ function V = roms2roms(ncname,D,R,Vname,Tindex,Rvector,varargin)
 %
 % ROMS2ROMS: Interpolates requested ROMS variable to specified ROMS grid
 %
-% V = roms2roms(ncname,D,R,Vname,Tindex,Rvector,method,offset,RemoveNaN);
+% V = roms2roms(ncname,D,R,Vname,Tindex,Rvector,Hmethod,offset,RemoveNaN);
 %
 % This function interpolates requested 2D/3D variable between two ROMS
 % application grids. The receiver grid must be inside of the donor grid.
@@ -35,7 +35,7 @@ function V = roms2roms(ncname,D,R,Vname,Tindex,Rvector,varargin)
 %                    in curvilinear grid applications somewhere
 %                    else (logical)
 %
-%    method        Interpolation method in 'TriScatteredInterp'
+%    Hmethod       Interpolation method for 'TriScatteredInterp'
 %                    (string):
 %
 %                    'natural'     natural neighbor interpolation
@@ -65,21 +65,25 @@ function V = roms2roms(ncname,D,R,Vname,Tindex,Rvector,varargin)
 
 %  Set optional arguments.
 
-method = 'linear';
+Hmethod = 'linear';
 offset = 5;
 RemoveNaN = false;
 
 switch numel(varargin)
   case 1
-    method = varargin{1};
+    Hmethod = varargin{1};
   case 2
-    method = varargin{1};
+    Hmethod = varargin{1};
     offset = varargin{2};
   case 3
-    method = varargin{1};
+    Hmethod = varargin{1};
     offset = varargin{2};
     RemoveNaN = varargin{3};
 end
+
+%  Set vertical interpolation method.
+
+Vmethod = 'linear';               
 
 %  Initialize.
 
@@ -94,7 +98,6 @@ isvec = false;
 recordless = true;
 
 V = [];
-Ncount = 0;
 
 %  Get information about requested variable.
  
@@ -173,12 +176,12 @@ if (nvdims > 0),
           end
           Zname = 'z_v';
           got.Xname = true;
-          got.Yname = true;        
+          got.Yname = true;
           got.Zname = true;
         end
         isvec = true;
       case 'ocean_time'
-        recordless = false;    
+        recordless = false;
     end
   end
   if (isw3d),
@@ -332,21 +335,26 @@ VD = nc_read(ncname,Vname,Tindex,ReplaceValue,PreserveType);
 [Istr,Iend,Jstr,Jend] = sample_grid(XD,YD,XR,YR,offset);
 
 %--------------------------------------------------------------------------
-%  Interpolate requested variable to receiver grid.
+%  Interpolate requested variable to receiver grid: Build interpolation
+%  data structure, I.
 %--------------------------------------------------------------------------
+
+I.Vname = Vname;   
 
 %  Determine if interpolating 2D or 3D variables.  Notice that it is
 %  possible to interpolate recordless 2D or 3D variables.  That is,
 %  variables with no time dimension.
 
 if (recordless),
-  ivdims = nvdims;
+  I.nvdims = nvdims;
 else
-  ivdims = nvdims-1;
+  I.nvdims = nvdims-1;
 end
 
-switch (ivdims),
- 
+%  Set interpolation data.
+
+switch (I.nvdims),
+
  case 2
 
    [ImD,JmD]=size(XD);
@@ -357,61 +365,22 @@ switch (ivdims),
           ' (', num2str(ImR), 'x', num2str(JmR),') from donor ',        ...
            '(', num2str(ImD), 'x', num2str(JmD),') ...']);
    disp(' ');
-
-   x = XD(Istr:1:Iend,Jstr:1:Jend);
-   y = YD(Istr:1:Iend,Jstr:1:Jend);
-   v = VD(Istr:1:Iend,Jstr:1:Jend);
-
-   x = x(:);
-   y = y(:);
-   v = v(:);
-
-   Dind = find(Dmask(Istr:1:Iend,Jstr:1:Jend) < 0.5);    
-   if (~isempty(Dind)),
-     x(Dind) = [];                     % remove land points, if any
-     y(Dind) = [];
-     v(Dind) = [];
-   end
-   Dmin = min(v);
-   Dmax = max(v);
-
-   F = TriScatteredInterp(x,y,v,method);
-   V = F(XR,YR);
-   Rmin = min(V(:));
-   Rmax = max(V(:));
-    
-   Rind = find(Rmask < 0.5);
-   if (~isempty(Rind)),
-     V(Rind) = 0;
-   end,
-
-%  If applicable, remove interpolated variable NaNs values with a
-%  nearest neighbor interpolant.
-
-   ind = find(isnan(V));
-
-   if (~isempty(ind)),
-     if (RemoveNaN),
-       FN = TriScatteredInterp(x,y,v,'nearest');
-       V(ind) = FN(XR(ind),YR(ind));
-       Rmin = min(Rmin, min(V(ind)));
-       Rmax = max(Rmax, max(V(ind)));
-
-       ind = find(isnan(V));
-       if (~isempty(ind)),
-         Ncount = length(ind);
-       end       
-     else
-       Ncount = length(ind);
-     end
-   end
    
-   disp(['   Donor Min = ', sprintf('%12.5e',Dmin), '  ',               ...
-           ' Donor Max = ', sprintf('%12.5e',Dmax)]);
-   disp(['   Receiver Min = ', sprintf('%12.5e',Rmin), '  ',            ...
-           ' Receiver Max = ', sprintf('%12.5e',Rmax), '  ',            ...
-           ' Nan count = ',  num2str(Ncount)]);
+   I.VD    = VD(Istr:1:Iend,Jstr:1:Jend);  
+
+   I.Dmask = Dmask(Istr:1:Iend,Jstr:1:Jend);
+   I.XD    = XD(Istr:1:Iend,Jstr:1:Jend);
+   I.YD    = YD(Istr:1:Iend,Jstr:1:Jend);
+   I.ZD    = [];
    
+   I.Rmask = Rmask;
+   I.XR    = XR;
+   I.YR    = YR;
+   I.ZR    = [];
+
+   I.Zsur  = [];
+   I.Zbot  = [];
+
  case 3
 
    [ImD,JmD,KmD]=size(ZD);
@@ -424,69 +393,25 @@ switch (ivdims),
            '(', num2str(ImD), 'x', num2str(JmD), 'x',                   ...
 	        num2str(KmD), ') ...']);
    disp(' ');
-  
-   x = XD(Istr:1:Iend,Jstr:1:Jend);
-   x = repmat(x,[1,1,KmD]); 
-   y = YD(Istr:1:Iend,Jstr:1:Jend);
-   y = repmat(y,[1,1,KmD]);
-   z = ZD(Istr:1:Iend,Jstr:1:Jend,1:KmD);
-   v = VD(Istr:1:Iend,Jstr:1:Jend,1:KmD);
-  
-   x = x(:);
-   y = y(:);
-   z = z(:);
-   v = v(:);
-  
-   mask = Dmask(Istr:1:Iend,Jstr:1:Jend);
-   Dind = find(repmat(mask,[1,1,KmD]) < 0.5);
-   if (~isempty(Dind)),
-     x(Dind) = [];                     % remove land points, if any
-     y(Dind) = [];
-     z(Dind) = [];
-     v(Dind) = [];
-   end
-   Dmin = min(v);
-   Dmax = max(v);
+   
+   I.VD    = VD(Istr:1:Iend,Jstr:1:Jend,:);
 
-   F = TriScatteredInterp(x,y,z,v,method);
-   X = repmat(XR,[1,1,KmR]);
-   Y = repmat(YR,[1,1,KmR]);
-   V = F(X,Y,ZR);
-   Rmin = min(V(:));
-   Rmax = max(V(:));
-    
-   Rind = find(repmat(Rmask,[1,1,KmR]) < 0.5);
-   if (~isempty(Rind)),
-     V(Rind) = 0;
-   end,
+   I.Dmask = Dmask(Istr:1:Iend,Jstr:1:Jend);
+   I.XD    = XD(Istr:1:Iend,Jstr:1:Jend);
+   I.YD    = YD(Istr:1:Iend,Jstr:1:Jend);
+   I.ZD    = ZD(Istr:1:Iend,Jstr:1:Jend,:);
 
-%  If applicable, remove interpolated variable NaNs values with a
-%  nearest neighbor interpolant.
+   I.Rmask = Rmask;
+   I.XR    = XR;
+   I.YR    = YR;
+   I.ZR    = ZR;
 
-   ind = find(isnan(V));
-
-   if (~isempty(ind)),
-     if (RemoveNaN),
-       FN = TriScatteredInterp(x,y,z,v,'nearest');
-       V(ind) = FN(X(ind),Y(ind), ZR(ind));
-       Rmin = min(Rmin, min(V(ind)));
-       Rmax = max(Rmax, max(V(ind)));
-
-       ind = find(isnan(V));
-       if (~isempty(ind)),
-         Ncount = length(ind);
-       end       
-     else
-       Ncount = length(ind);
-     end
-   end
-
-   disp(['   Donor Min = ', sprintf('%12.5e',Dmin), '  ',               ...
-           ' Donor Max = ', sprintf('%12.5e',Dmax)]);
-   disp(['   Receiver Min = ', sprintf('%12.5e',Rmin), '  ',            ...
-           ' Receiver Max = ', sprintf('%12.5e',Rmax), '  ',            ...
-           ' Nan count = ',  num2str(Ncount)]);
-
+   I.Zsur  = max(R.z_w(:))+eps;
+   I.Zbot  = min(R.z_w(:))-eps;
 end
+
+%  Interplate requested variable.
+
+V = interp_field(I,Hmethod,Vmethod,RemoveNaN);
 
 return

@@ -104,6 +104,7 @@ nvdims = length(Info.Dimensions);
 
 Ctype.Name  = 'none';
 Ctype.Value = 0;
+
 wgrid = 0;
 
 if (nvdims > 0),
@@ -219,6 +220,7 @@ nvdims = length(Info.Dimension);
 
 Ctype.Name  = 'none';
 Ctype.Value = 0;
+
 wgrid = 0;
 
 if (nvdims > 0),
@@ -372,6 +374,7 @@ V.Name     = Vname;
 
 Ctype.Name  = 'none';
 Ctype.Value = 0;
+
 wgrid = 0;
 
 if (nvdims > 0),

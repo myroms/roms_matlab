@@ -171,8 +171,8 @@ if (~isstruct(Ginp)),
   Gout.curvilinear = false;
   Gout.vector_rotation = false;
 else
-  if (~isempty(Gout.spherical)),
-    spherical = Gout.spherical;
+  if (~isempty(Ginp.spherical)),
+    spherical = Ginp.spherical;
   end
 end
 
@@ -343,64 +343,23 @@ end
 
 %--------------------------------------------------------------------------
 % The "Sinp" argument is a structure array containing application
-% vertical coordonate parameters.
+% vertical coordinate parameters.
 %--------------------------------------------------------------------------
 
 if (process.parameters),
-  if (isfield(Sinp,'N')),
-    Gout.N = Sinp.N;
-    got.N  = true;
-  else
-    error([' GET_ROMS_GRID: unable to find field ''N''',                ...
-           ' in structure: Sinp']);
-  end
+  
+  parlist = {'N', 'Vtransform', 'Vstretching',                          ...
+             'theta_s', 'theta_b', 'Tcline', 'hc'};
 
-  if (isfield(Sinp,'Vtransform')),
-    Gout.Vtransform = Sinp.Vtransform;
-    got.Vtransform  = true;
-  else
-    error([' GET_ROMS_GRID: unable to find field ''Vtransform''',       ...
-           ' in structure: Sinp']);
-  end
-
-  if (isfield(Sinp,'Vstretching')),
-    Gout.Vstretching = Sinp.Vstretching;
-    got.Vstretching  = true;
-  else
-    error([' GET_ROMS_GRID: unable to find field ''Vstretching''',      ...
-           ' in structure: Sinp']);
-  end
-
-  if (isfield(Sinp,'theta_s')),
-    Gout.theta_s = Sinp.theta_s;
-    got.theta_s  = true;
-  else
-    error([' GET_ROMS_GRID: unable to find field ''theta_s''',          ...
-           ' in structure: Sinp']);
-  end
-
-  if (isfield(Sinp,'theta_b')),
-    Gout.theta_b = Sinp.theta_b;
-    got.theta_b  = true;
-  else
-    error([' GET_ROMS_GRID: unable to find field ''theta_b''',          ...
-           ' in structure: Sinp']);
-  end
-
-  if (isfield(Sinp,'Tcline')),
-    Gout.Tcline = Sinp.Tcline;
-    got.Tcline  = true;
-  else
-    error([' GET_ROMS_GRID: unable to find field ''Tcline''',           ...
-           ' in structure: Sinp']);
-  end
-
-  if (isfield(Sinp,'hc')),
-    Gout.hc = Sinp.hc;
-    got.hc  = true;
-  else
-    error([' GET_ROMS_GRID: unable to find field ''hc''',               ...
-           ' in structure: Sinp']);
+  for par = parlist,
+    field = char(par);
+    if (isfield(Sinp,field)),
+       Gout.(field) = Sinp.(field);
+       got.(field)  = true;
+    else
+      error([' GET_ROMS_GRID: unable to find field "',field,'", in',    ...
+             ' in structure: Sinp']);
+    end
   end
 
   process.vertical = true;

@@ -522,9 +522,21 @@ nvdims = length(Info.Variables(ivar).Dimensions);
 nvatts = length(Info.Variables(ivar).Attributes);
 nctype = Info.Variables(ivar).ncType;
 
-% Clear and set persistent switch to process data in column-major order.
+% Check value of persistent switch to process data in column-major or
+% row-major order.
 
-clear nc_getpref                          % clear defining function
+I think a better to handle use of PRESERVE_FVD=true option is that in
+any routine where you want to use that, you start out with
+
+if (ispref('SNCTOOLS','PRESERVE_FVD')),
+  saved_preserve_fvd = getpref('SNCTOOLS','PRESERVE_FVD');
+else
+  saved_preserve_fvd = false;             % default value in SNCTOOLS
+end
+
+% Set temporarily persistent switch to process array data in column-major
+% order.
+
 setpref('SNCTOOLS','PRESERVE_FVD',true);
 
 % Activate switch for reading specific record.
@@ -601,6 +613,10 @@ if (nvdims == 0),
 else
   f = nc_vargetr(ncfile,Vname,start,count);
 end
+
+% Set persistent switch back to user or SNCTOOLS default value.
+
+setpref('SNCTOOLS','PRESERVE_FVD', saved_preserve_fvd);
 
 %--------------------------------------------------------------------------
 % Post-process read data.

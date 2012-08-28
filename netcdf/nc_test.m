@@ -44,14 +44,16 @@ original = false;        % switch for SNCTOOLS: original 'nc_varput' does
 %  Create NetCDF file.
 
 mode = netcdf.getConstant('CLOBBER');
-mode = bitor(mode, netcdf.getConstant('CLASSIC_MODEL'));
-
 ncid = netcdf.create(ncfile,mode);
 
 %  Clear and set persistent switch to process data in column-major order.
 
 if (strncmpi(Interface, 'SNCTOOLS', 3)),
-  clear nc_getpref                              % clear defining function
+  if (ispref('SNCTOOLS','PRESERVE_FVD')),
+    saved_preserve_fvd = getpref('SNCTOOLS','PRESERVE_FVD');
+  else
+    saved_preserve_fvd = false;             % default value in SNCTOOLS
+  end
   setpref('SNCTOOLS','PRESERVE_FVD',true);
 end
 
@@ -248,11 +250,11 @@ elseif (strncmpi(Interface,'SNCTOOLS',3)),
     nc_varput(ncfile, 'A_single', A_single);    % double precision. Even
     nc_varput(ncfile, 'A_double', A       );    % the reverse linear
   else                                          % transformation is wrong!
-    ncwrite(ncfile, 'A_byte'  , A_byte  );
-    ncwrite(ncfile, 'A_short' , A_short );
-    ncwrite(ncfile, 'A_int'   , A_int   );
-    ncwrite(ncfile, 'A_single', A_single);
-    ncwrite(ncfile, 'A_double', A       );
+    nc_write(ncfile, 'A_byte'  , A_byte  );
+    nc_write(ncfile, 'A_short' , A_short );
+    nc_write(ncfile, 'A_int'   , A_int   );
+    nc_write(ncfile, 'A_single', A_single);
+    nc_write(ncfile, 'A_double', A       );
   end
 
   R.byte   = nc_varget(ncfile, 'A_byte'  );
@@ -262,6 +264,12 @@ elseif (strncmpi(Interface,'SNCTOOLS',3)),
   R.double = nc_varget(ncfile, 'A_double');
  
   disp(' ');
+end
+
+% Set persistent switch back to user or SNCTOOLS default value.
+
+if (strncmpi(Interface, 'SNCTOOLS', 3)),
+ setpref('SNCTOOLS','PRESERVE_FVD', saved_preserve_fvd);
 end
 
 %  Report.

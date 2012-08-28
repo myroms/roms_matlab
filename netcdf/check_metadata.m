@@ -55,8 +55,40 @@ for n=1:nvars,
   
   for i=1:nvdims,
     dname   = char(S.Variables(n).Dimensions(i).Name);
-    dsize   = S.Dimensions(strcmp({S.Dimensions.Name}, dname)).Length;
+    dindex  = strcmp({S.Dimensions.Name}, dname);
 
+    RenameDim = false;
+    if (any(dindex)),
+      dsize = S.Dimensions(dindex).Length;
+    else
+      RenameDim = true;
+    end
+
+% If applicable, rename time dimension. In 'roms_metadata' all the state
+% variables have 'ocean_time' as default.  However, it posible to have
+% other names like 'time', 'clm_time', etc when processing climatology
+% or other type of files that have ROMS state variables names.  Here the
+% file dimensions are scanned for the substring 'time' and the structure
+% is corrected with the appropriate available dimension.
+
+    if (RenameDim),
+      foundit = false;
+      if (strcmp(dname, 'ocean_time'))
+	dindex = strfind({S.Dimensions.Name}, 'time');
+        dindex = ~cellfun(@isempty, dindex);
+	if (any(dindex)),
+          dname = S.Dimensions(dindex).Name;
+          dsize = S.Dimensions(dindex).Length;
+	  S.Variables(n).Dimensions(i).Name = dname;
+          foundit = true;
+	end
+      end
+      if (~foundit),
+	error(['CHECK_METADATA: dimension '',dname,'' is not ',         ...
+               'available for variable ', char(S.Variables(n).Name)]);
+      end
+    end     
+    
     Dcel{i} = dname;                                % horizontal cell array
 
     if (S.Variables(n).Dimensions(i).Unlimited);

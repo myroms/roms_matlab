@@ -4,7 +4,7 @@ function B = obc_roms2roms(ncfile,D,R,VarList,Tindex,boundary,varargin)
 % OBC_ROMS2ROMS: Interpolates ROMS LBC variable to specified ROMS grid
 %
 % B = obc_roms2roms(ncfile,D,R,VarList,Tindex,boundary, ...
-%                   method,offset,RemoveNaN);
+%                   Hmethod,offset,RemoveNaN);
 %
 % This function interpolates lateral boundary conditions (LBC) variables
 % between two ROMS application grids. The receiver grid must be inside
@@ -40,7 +40,7 @@ function B = obc_roms2roms(ncfile,D,R,VarList,Tindex,boundary,varargin)
 %                    boundary.south       Southern edge
 %                    boundary.north       Northern edge
 %
-%    method        Interpolation method in 'TriScatteredInterp'
+%    Hmethod       Horizontal Interpolation method in 'TriScatteredInterp'
 %                    (string):
 %
 %                    'natural'     natural neighbor interpolation
@@ -70,7 +70,8 @@ function B = obc_roms2roms(ncfile,D,R,VarList,Tindex,boundary,varargin)
 
 %  Set optional arguments.
 
-method = 'linear';
+Hmethod = 'linear';
+Vmethod = 'linear';
 offset = 5;
 RemoveNaN = false;
 
@@ -117,21 +118,16 @@ end
 Ucomponent = false;
 Vcomponent = false;
 
-%  Set report format for boundary variables.
-
-lstr = 0;
-for var = VarList,
-  lstr = max(lstr, length(char(var)));
-end
-frmt = strcat('%',num2str(lstr+6),'s');
-
 %==========================================================================
 %  Process every field in the input variable list.
 %==========================================================================
 
+icount = 0;
+
 for var = VarList,
 
-  Vname = char(var);
+  Vname  = char(var);
+  icount = icount+1;
 
 %  Initialize.
 
@@ -435,8 +431,14 @@ for var = VarList,
   end
   
 %--------------------------------------------------------------------------
-%  Interpolate lateral boundary conditions to receiver grid.
+%  Interpolate lateral boundary conditions to receiver grid: Build
+%  interpolation data structure, I.
 %--------------------------------------------------------------------------
+   
+  I.VarList  = VarList;
+  I.Vname    = Vname;
+  I.nvdims   = nvdims-1;
+  I.boundary = boundary;
 
 %  Determine if processing 2D or 3D ROMS state variables.
 
@@ -453,72 +455,21 @@ for var = VarList,
             '(', num2str(ImD), 'x', num2str(JmD),') ...']);
       disp(' ');
 
-      x = XD(Istr:1:Iend,Jstr:1:Jend);
-      y = YD(Istr:1:Iend,Jstr:1:Jend);
-      v = VD(Istr:1:Iend,Jstr:1:Jend);
+      I.VD    = VD(Istr:1:Iend,Jstr:1:Jend);
+      
+      I.Dmask = Dmask(Istr:1:Iend,Jstr:1:Jend);
+      I.XD    = XD(Istr:1:Iend,Jstr:1:Jend);
+      I.YD    = YD(Istr:1:Iend,Jstr:1:Jend);
+      I.ZD    = [];
 
-      x = x(:);
-      y = y(:);
-      v = v(:);
+      I.Rmask = RM;
+      I.XR    = RX;
+      I.YR    = RY;
+      I.ZR    = [];
 
-      Dind = find(Dmask(Istr:1:Iend,Jstr:1:Jend) < 0.5);    
-      if (~isempty(Dind)),
-        x(Dind) = [];                  % remove land points, if any
-        y(Dind) = [];
-        v(Dind) = [];
-      end
-      Dmin = min(v);
-      Dmax = max(v);
-
-      F = TriScatteredInterp(x,y,v,method);
-
-      for var = {'west','east','south','north'},
-
-        edge = char(var);
-        field = strcat(Vname,'_',edge);
-
-        if (boundary.(edge)),
-          B.(field) = F(RX.(edge), RY.(edge));
-          Rmin = min(B.(field)(:));
-          Rmax = max(B.(field)(:));
-    
-          Rind = find(RM.(edge) < 0.5);
-          if (~isempty(Rind)),
-            B.(field)(Rind) = 0;
-          end
-
-%  If applicable, remove interpolated variable NaNs values with a
-%  nearest neighbor interpolant.
-
-          ind = find(isnan(B.(field)));
-
-          if (~isempty(ind)),
-            if (RemoveNaN),
-              FN = TriScatteredInterp(x,y,v,'nearest');
-
-              B.(field)(ind) = FN(RX.(edge)(ind), RY.(field)(ind));
-              Rmin = min(Rmin, min(B.(field)(ind)));
-              Rmax = max(Rmax, max(B.(field)(ind)));
-
-              ind = find(isnan(B.(field)));
-              if (~isempty(ind)),
-                Ncount = length(ind);
-              end       
-            else
-              Ncount = length(ind);
-            end
-          end
-
-          disp(['   ',sprintf(frmt,field),':  ',                        ...
-                '   Donor Min = ', sprintf('%12.5e',Dmin), '   ',       ...
-                '   Donor Max = ', sprintf('%12.5e',Dmax)]);
-          disp(['   ',sprintf(frmt,field),':  ',                        ...
-                'Receiver Min = ', sprintf('%12.5e',Rmin), '   ',       ...
-                'Receiver Max = ', sprintf('%12.5e',Rmax), '   ',       ...
-                'Nan count = ',  num2str(Ncount)]);
-        end
-      end
- 
+      I.Zsur  = [];
+      I.Zbot  = [];
+      
     case 3
 
       [ImD,JmD,KmD]=size(ZD);
@@ -532,83 +483,39 @@ for var = VarList,
                   num2str(KmD), ') ...']);
       disp(' ');
   
-      x = XD(Istr:1:Iend,Jstr:1:Jend);
-      x = repmat(x,[1,1,KmD]); 
-      y = YD(Istr:1:Iend,Jstr:1:Jend);
-      y = repmat(y,[1,1,KmD]);
-      z = ZD(Istr:1:Iend,Jstr:1:Jend,1:KmD);
-      v = VD(Istr:1:Iend,Jstr:1:Jend,1:KmD);
-  
-      x = x(:);
-      y = y(:);
-      z = z(:);
-      v = v(:);
-  
-      mask = Dmask(Istr:1:Iend,Jstr:1:Jend);
-      Dind = find(repmat(mask,[1,1,KmD]) < 0.5);
-      if (~isempty(Dind)),
-        x(Dind) = [];                  % remove land points, if any
-        y(Dind) = [];
-        z(Dind) = [];
-        v(Dind) = [];
-      end
-      Dmin = min(v);
-      Dmax = max(v);
+      I.VD    = VD(Istr:1:Iend,Jstr:1:Jend,:);
+      
+      I.Dmask = Dmask(Istr:1:Iend,Jstr:1:Jend);
+      I.XD    = XD(Istr:1:Iend,Jstr:1:Jend);
+      I.YD    = YD(Istr:1:Iend,Jstr:1:Jend);
+      I.ZD    = ZD(Istr:1:Iend,Jstr:1:Jend,:);
 
-      F = TriScatteredInterp(x,y,z,v,method);
+      I.Rmask = RM;
+      I.XR    = RX;
+      I.YR    = RY;
+      I.ZR    = RZ;
 
-      for var = {'west','east','south','north'},
-
-        edge = char(var);
-        field = strcat(Vname,'_',edge);
-
-        if (boundary.(edge)),
-          X = repmat(RX.(edge),[1,1,KmR]);
-          Y = repmat(RY.(edge),[1,1,KmR]);
-   
-          B.(field) = F(X, Y, RZ.(edge));
-          Rmin = min(B.(field)(:));
-          Rmax = max(B.(field)(:));
-    
-          Rind = find(repmat(RM.(edge),[1,1,KmR]) < 0.5);
-          if (~isempty(Rind)),
-            B.(field)(Rind) = 0;
-          end
-
-%  If applicable, remove interpolated variable NaNs values with a
-%  nearest neighbor interpolant.
-
-          ind = find(isnan(B.(field)));
-
-          if (~isempty(ind)),
-            if (RemoveNaN),
-              FN = TriScatteredInterp(x,y,z,v,'nearest');
-
-              B.(field)(ind) = FN(X(ind),Y(ind), RZ.(edge)(ind));
-              Rmin = min(Rmin, min(B.(field)(ind)));
-              Rmax = max(Rmax, max(B.(field)(ind)));
-
-              ind = find(isnan(B.(field)));
-              if (~isempty(ind)),
-                Ncount = length(ind);
-              end       
-            else
-              Ncount = length(ind);
-            end
-          end
-
-          disp(['   ',sprintf(frmt,field),':  ',                        ...
-                '   Donor Min = ', sprintf('%12.5e',Dmin), '   ',       ...
-                '   Donor Max = ', sprintf('%12.5e',Dmax)]);
-          disp(['   ',sprintf(frmt,field),':  ',                        ...
-                'Receiver Min = ', sprintf('%12.5e',Rmin), '   ',       ...
-                'Receiver Max = ', sprintf('%12.5e',Rmax), '   ',       ...
-                'Nan count = ',  num2str(Ncount)]);
-        end
-      end
+      I.Zsur  = max(R.z_w(:))+eps;
+      I.Zbot  = min(R.z_w(:))-eps;
   end
 
-%  Process next state variable in the list.
+%  Interpolate lateral boundaries for requested state variable.
+
+  S = interp_boundary(I,Hmethod,Vmethod,RemoveNaN);
+
+%  Concatenate structures.
+
+  if (icount == 1),
+    B = S;
+  else
+    B = cell2struct(cat(1, struct2cell(B), struct2cell(S)),             ...
+                    cat(1, fieldnames(B),  fieldnames(S)), 1);
+  end
+
+%  Process next state variable in the list.  Clear interpolarion
+%  structure from memory.
+
+  clear I
 
 end
 

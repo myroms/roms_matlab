@@ -11,6 +11,14 @@
 %                     Air-Sea Flux Dataset. Notice that the original
 %                     data set is sampled for the Gulf of Mexico (GOM).
 %
+%   otps2roms     - Generates a ROMS tidal forcing from the OTPS dataset.
+%                     The 'base_date' is related to ROMS input parameter
+%                     the TIDE_START. It is used in ROMS to compute the
+%                     correct phase lag with respect initialization time.
+%                     I still not happy how this is done and will revisit
+%                     this function in the future to get the data directly
+%                     without the awkward Fortran interface.
+%
 %  write_tides    - Creates ROMS tidal forcing NetCDF file and writes
 %                     data extracted from either OTPS or ADCIRC and
 %                     processed with the "t_tide" utility.

@@ -120,6 +120,7 @@ for n=1:nvars,
 
   Ctype.Name  = 'none';
   Ctype.Value = 0;
+
   wgrid = 0;
 
   if (nvdims > 0),
@@ -249,7 +250,9 @@ for n=1:nvars,
   
 % Determine C-grid type.
 
-  Ctype = 0;
+  Ctype.Name  = 'none';
+  Ctype.Value = 0;
+  
   wgrid = 0;
 
   if (nvdims > 0),
@@ -386,6 +389,7 @@ for n=1:nvars
 
   Ctype.Name  = 'none';
   Ctype.Value = 0;
+
   wgrid = 0;
 
   if (nvdims > 0),
