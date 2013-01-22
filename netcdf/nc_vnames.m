@@ -42,7 +42,7 @@ function S = nc_vnames(fname)
 
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2012 The ROMS/TOMS Group                            %
+%  Copyright (c) 2002-2013 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.txt                           Hernan G. Arango      %
 %=========================================================================%
@@ -127,23 +127,20 @@ for n=1:nvars,
     for i=1:nvdims,
       dname = Info.Variables(n).Dimensions(i).Name;
       switch (dname)
-        case {'xi_rho', 'lon_rho', 'lon'}
+        case {'xi_rho', 'eta_rho', 'lon_rho', 'lat_rho', 'lon', 'lat'}
           Ctype.Name  = 'density point';
           Ctype.Value = 1;
-        case {'xi_psi', 'lon_psi'}
+        case {'xi_psi', 'eta_psi', 'lon_psi', 'lat_psi'}
           Ctype.Name  = 'streamfunction point';
           Ctype.Value = 2;
-        case {'xi_u', 'lon_u'}
+        case {'xi_u', 'eta_u', 'lon_u', 'lat_u'}
           Ctype.Name  = 'u-velocity point';
           Ctype.Value = 3;
-        case {'xi_v', 'lon_v'}
+        case {'xi_v', 'eta_v', 'lon_v', 'lat_v'}
           Ctype.Name  = 'v-velocity point';
           Ctype.Value = 4;
         case 's_w'
           wgrid = 5;
-        otherwise
-          Ctype.Name  = 'density point';
-          Ctype.Value = 1;
       end
     end  
     if (wgrid == 5),
@@ -261,23 +258,20 @@ for n=1:nvars,
       Unlimited = nc_getdiminfo(fname,dname,'Unlimited');
       S.Variables(n).Dimensions(i).Unlimited = Unlimited;
       switch (dname)
-        case {'xi_rho', 'lon_rho', 'lon'}
+        case {'xi_rho', 'eta_rho', 'lon_rho', 'lat_rho', 'lon', 'lat'}
           Ctype.Name  = 'density point';
           Ctype.Value = 1;
-        case {'xi_psi', 'lon_psi'}
+        case {'xi_psi', 'eta_psi', 'lon_psi', 'lat_psi'}
           Ctype.Name  = 'streamfunction point';
           Ctype.Value = 2;
-        case {'xi_u', 'lon_u'}
+        case {'xi_u', 'eta_u', 'lon_u', 'lat_u'}
           Ctype.Name  = 'u-velocity point';
           Ctype.Value = 3;
-        case {'xi_v', 'lon_v'}
+        case {'xi_v', 'eta_v', 'lon_v', 'lat_v'}
           Ctype.Name  = 'v-velocity point';
           Ctype.Value = 4;
         case 's_w'
           wgrid = 5;
-        otherwise
-          Ctype.Name  = 'density point';
-          Ctype.Value = 1;
       end
     end  
     if (wgrid == 5),
@@ -402,23 +396,20 @@ for n=1:nvars
                'dimension ID: ',num2str(dimids(m))]);
       else
         switch (name)
-          case {'xi_rho', 'lon_rho', 'lon'}
+          case {'xi_rho', 'eta_rho', 'lon_rho', 'lat_rho', 'lon', 'lat'}
             Ctype.Name  = 'density point';
             Ctype.Value = 1;
-          case {'xi_psi', 'lon_psi'}
+          case {'xi_psi', 'eta_psi', 'lon_psi', 'lat_psi'}
             Ctype.Name  = 'streamfunction point';
             Ctype.Value = 2;
-          case {'xi_u', 'lon_u'}
+          case {'xi_u', 'eta_u', 'lon_u', 'lat_u'}
             Ctype.Name  = 'u-velocity point';
             Ctype.Value = 3;
-          case {'xi_v', 'lon_v'}
+          case {'xi_v', 'eta_v', 'lon_v', 'lat_v'}
             Ctype.Name  = 'v-velocity point';
             Ctype.Value = 4;	 
           case 's_w'
             wgrid = 5;
-          otherwise
-            Ctype.Name  = 'density point';
-            Ctype.Value = 1;
 	end
         S.Variables(n).Dimensions(m).Name   = name;
         S.Variables(n).Dimensions(m).Length = size;

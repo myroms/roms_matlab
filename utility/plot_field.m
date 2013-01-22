@@ -25,6 +25,7 @@ function F=plot_field(Gname, Hname, Vname, Tindex, Level)
 %    Vname         ROMS NetCDF variable name to plot (string)
 %
 %    Tindex        Time record index used to process (scalar)
+%                    (Use Inf or inf for last record)
 %
 %    Level         If 3D variable, vertical level to plot (scalar)
 %
@@ -38,7 +39,7 @@ function F=plot_field(Gname, Hname, Vname, Tindex, Level)
 
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2012 The ROMS/TOMS Group                            %
+%  Copyright (c) 2002-2013 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.txt                           Hernan G. Arango      %
 %=========================================================================%
@@ -113,8 +114,10 @@ if (nvdims > 0),
             Xname = 'x_psi';
             Yname = 'y_psi';
           end
+          Zname = 'z_r';
           got.Xname = true;
           got.Yname = true;       
+          got.Zname = true;
         end
       case {'xi_u','lon_u'}
         Mname = 'mask_u';
@@ -150,7 +153,7 @@ if (nvdims > 0),
           got.Zname = true;
         end
         isvec = true;
-      case 'ocean_time, time'
+      case {'ocean_time', 'time'}
         recordless = false;    
         Tsize = I.Dimensions(n).Length;
     end
@@ -276,7 +279,7 @@ end
 
 figure;
 
-pcolor(X,Y,F); shading interp; colorbar
+pcolor(X,Y,nanland(F,G)); shading interp; colorbar
 
 if (is3d),
   if (~isempty(Tname)),

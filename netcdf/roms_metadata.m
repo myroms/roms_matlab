@@ -49,7 +49,7 @@ function V = roms_metadata(Vname,varargin)
 %
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2012 The ROMS/TOMS Group                            %
+%  Copyright (c) 2002-2013 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMVariables.txt                   Hernan G. Arango      %
 %=========================================================================%
@@ -764,12 +764,425 @@ switch Vname
     V.Cgridtype.Value         = 4;
     V.Datatype                = 'double';
     V.ncType                  = nc_constant('nc_double');
-    
+
+%--------------------------------------------------------------------------
+%  Boundary conditions grid variables.
+%--------------------------------------------------------------------------
+
+  case 'lon_rho_west'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['longitude of RHO-points, ',           ...
+                                 'western boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'degree_east';
+    V.Attributes(3).Name      = 'standard_name';
+    V.Attributes(3).Value     = 'longitude';
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'lat_rho_west'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['latitude of RHO-points, ',            ...
+                                 'western boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'degree_north';
+    V.Attributes(3).Name      = 'standard_name';
+    V.Attributes(3).Value     = 'latitude';
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'lon_rho_east'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['longitude of RHO-points, ',           ...
+                                 'eastern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'degree_east';
+    V.Attributes(3).Name      = 'standard_name';
+    V.Attributes(3).Value     = 'longitude';
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'lat_rho_east'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['latitude of RHO-points, ',            ...
+                                 'eastern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'degree_north';
+    V.Attributes(3).Name      = 'standard_name';
+    V.Attributes(3).Value     = 'latitude';
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'lon_rho_south'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['longitude of RHO-points, ',           ...
+                                 'southern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'degree_east';
+    V.Attributes(3).Name      = 'standard_name';
+    V.Attributes(3).Value     = 'longitude';
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'lat_rho_south'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['latitude of RHO-points, ',            ...
+                                 'southern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'degree_north';
+    V.Attributes(3).Name      = 'standard_name';
+    V.Attributes(3).Value     = 'latitude';
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'lon_rho_north'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['longitude of RHO-points, ',           ...
+                                 'northern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'degree_east';
+    V.Attributes(3).Name      = 'standard_name';
+    V.Attributes(3).Value     = 'longitude';
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'lat_rho_north'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['latitude of RHO-points, ',            ...
+                                 'northern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'degree_north';
+    V.Attributes(3).Name      = 'standard_name';
+    V.Attributes(3).Value     = 'latitude';
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'lon_u_west'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_u';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['longitude of U-points, ',             ...
+                                 'western boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'degree_east';
+    V.Attributes(3).Name      = 'standard_name';
+    V.Attributes(3).Value     = 'longitude';
+    V.Cgridtype.Name          = 'u-velocity point';
+    V.Cgridtype.Value         = 3;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'lat_u_west'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_u';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['latitude of U-points, ',              ...
+                                 'western boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'degree_north';
+    V.Attributes(3).Name      = 'standard_name';
+    V.Attributes(3).Value     = 'latitude';
+    V.Cgridtype.Name          = 'u-velocity point';
+    V.Cgridtype.Value         = 3;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'lon_u_east'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_u';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['longitude of U-points, ',             ...
+                                 'eastern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'degree_east';
+    V.Attributes(3).Name      = 'standard_name';
+    V.Attributes(3).Value     = 'longitude';
+    V.Cgridtype.Name          = 'u-velocity point';
+    V.Cgridtype.Value         = 3;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'lat_u_east'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_u';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['latitude of U-points, ',              ...
+                                 'eastern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'degree_north';
+    V.Attributes(3).Name      = 'standard_name';
+    V.Attributes(3).Value     = 'latitude';
+    V.Cgridtype.Name          = 'u-velocity point';
+    V.Cgridtype.Value         = 3;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'lon_u_south'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_u';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['longitude of U-points, ',             ...
+                                 'southern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'degree_east';
+    V.Attributes(3).Name      = 'standard_name';
+    V.Attributes(3).Value     = 'longitude';
+    V.Cgridtype.Name          = 'u-velocity point';
+    V.Cgridtype.Value         = 3;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'lat_u_south'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_u';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['latitude of U-points, ',              ...
+                                 'southern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'degree_north';
+    V.Attributes(3).Name      = 'standard_name';
+    V.Attributes(3).Value     = 'latitude';
+    V.Cgridtype.Name          = 'u-velocity point';
+    V.Cgridtype.Value         = 3;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'lon_u_north'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_u';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['longitude of U-points, ',             ...
+                                 'northern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'degree_east';
+    V.Attributes(3).Name      = 'standard_name';
+    V.Attributes(3).Value     = 'longitude';
+    V.Cgridtype.Name          = 'u-velocity point';
+    V.Cgridtype.Value         = 3;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'lat_u_north'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_u';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['latitude of U-points, ',              ...
+                                 'northern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'degree_north';
+    V.Attributes(3).Name      = 'standard_name';
+    V.Attributes(3).Value     = 'latitude';
+    V.Cgridtype.Name          = 'u-velocity point';
+    V.Cgridtype.Value         = 3;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'lon_v_west'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_v';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['longitude of V-points, ',             ...
+                                 'western boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'degree_east';
+    V.Attributes(3).Name      = 'standard_name';
+    V.Attributes(3).Value     = 'longitude';
+    V.Cgridtype.Name          = 'v-velocity point';
+    V.Cgridtype.Value         = 4;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'lat_v_west'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_v';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['latitude of V-points, ',              ...
+                                 'western boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'degree_north';
+    V.Attributes(3).Name      = 'standard_name';
+    V.Attributes(3).Value     = 'latitude';
+    V.Cgridtype.Name          = 'v-velocity point';
+    V.Cgridtype.Value         = 4;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'lon_v_east'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_v';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['longitude of V-points, ',             ...
+                                 'eastern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'degree_east';
+    V.Attributes(3).Name      = 'standard_name';
+    V.Attributes(3).Value     = 'longitude';
+    V.Cgridtype.Name          = 'v-velocity point';
+    V.Cgridtype.Value         = 4;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'lat_v_east'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_v';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['latitude of V-points, ',              ...
+                                 'eastern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'degree_north';
+    V.Attributes(3).Name      = 'standard_name';
+    V.Attributes(3).Value     = 'latitude';
+    V.Cgridtype.Name          = 'v-velocity point';
+    V.Cgridtype.Value         = 4;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'lon_v_south'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_v';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['longitude of V-points, ',             ...
+                                 'southern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'degree_east';
+    V.Attributes(3).Name      = 'standard_name';
+    V.Attributes(3).Value     = 'longitude';
+    V.Cgridtype.Name          = 'v-velocity point';
+    V.Cgridtype.Value         = 4;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'lat_v_south'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_v';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['latitude of V-points, ',              ...
+                                 'southern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'degree_north';
+    V.Attributes(3).Name      = 'standard_name';
+    V.Attributes(3).Value     = 'latitude';
+    V.Cgridtype.Name          = 'v-velocity point';
+    V.Cgridtype.Value         = 4;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'lon_v_north'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_v';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['longitude of V-points, ',             ...
+                                 'northern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'degree_east';
+    V.Attributes(3).Name      = 'standard_name';
+    V.Attributes(3).Value     = 'longitude';
+    V.Cgridtype.Name          = 'v-velocity point';
+    V.Cgridtype.Value         = 4;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'lat_v_north'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_v';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['latitude of V-points, ',              ...
+                                 'northern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'degree_north';
+    V.Attributes(3).Name      = 'standard_name';
+    V.Attributes(3).Value     = 'latitude';
+    V.Cgridtype.Name          = 'v-velocity point';
+    V.Cgridtype.Value         = 4;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+		    
 %--------------------------------------------------------------------------
 %  Surface atmospheric forcing variables.
 %--------------------------------------------------------------------------
 
- case 'cloud_time'
+  case 'cloud_time'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'cloud_time';
     V.Dimensions(1).Length    = [];
@@ -919,6 +1332,48 @@ switch Vname
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
     V.ncType                  = nc_constant(nctype);
+  case 'lhf_time'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'lhf_time';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'latent heat flux time';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'day';
+    V.Cgridtype.Name          = 'none';
+    V.Cgridtype.Value         = 0;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'latent'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'lon';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'lat';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'lhf_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'net latent heat flux';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'Watt meter-2';
+    V.Attributes(3).Name      = 'positive_value';
+    V.Attributes(3).Value     = 'downward flux, heating';
+    V.Attributes(4).Name      = 'negative_value';
+    V.Attributes(4).Value     = 'upward flux, cooling';
+    V.Attributes(5).Name      = 'time';
+    V.Attributes(5).Value     = 'lrf_time';
+    V.Attributes(6).Name      = 'coordinates';
+    V.Attributes(6).Value     = 'lon lat lhf_time';
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
   case 'lrf_time'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'lrf_time';
@@ -985,6 +1440,48 @@ switch Vname
     V.Attributes(5).Value     = 'lrf_time';
     V.Attributes(6).Name      = 'coordinates';
     V.Attributes(6).Value     = 'lon lat lrf_time';
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'sen_time'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'sen_time';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'sensible heat flux time';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'day';
+    V.Cgridtype.Name          = 'none';
+    V.Cgridtype.Value         = 0;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'sensible'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'lon';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'lat';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'sen_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'net sensible heat flux';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'Watt meter-2';
+    V.Attributes(3).Name      = 'positive_value';
+    V.Attributes(3).Value     = 'downward flux, heating';
+    V.Attributes(4).Name      = 'negative_value';
+    V.Attributes(4).Value     = 'upward flux, cooling';
+    V.Attributes(5).Name      = 'time';
+    V.Attributes(5).Value     = 'lrf_time';
+    V.Attributes(6).Name      = 'coordinates';
+    V.Attributes(6).Value     = 'lon lat sen_time';
     V.Cgridtype.Name          = 'density point';
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
@@ -1892,7 +2389,7 @@ switch Vname
     else
       V.Attributes(4).Value   = 'x_u y_u s_rho ocean_time';
     end
-    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Name          = 'u-velocity point';
     V.Cgridtype.Value         = 3;
     V.Datatype                = Datatype;
     V.ncType                  = nc_constant(nctype); 
@@ -1920,7 +2417,7 @@ switch Vname
     else
       V.Attributes(4).Value   = 'x_u y_u ocean_time';
     end
-    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Name          = 'u-velocity point';
     V.Cgridtype.Value         = 3;
     V.Datatype                = Datatype;
     V.ncType                  = nc_constant(nctype);
@@ -1951,7 +2448,7 @@ switch Vname
     else
       V.Attributes(4).Value   = 'x_v y_v s_rho ocean_time';
     end
-    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Name          = 'v-velocity point';
     V.Cgridtype.Value         = 4;
     V.Datatype                = Datatype;
     V.ncType                  = nc_constant(nctype); 
@@ -1979,7 +2476,7 @@ switch Vname
     else
       V.Attributes(4).Value   = 'x_v y_v ocean_time';
     end
-    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Name          = 'v-velocity point';
     V.Cgridtype.Value         = 4;
     V.Datatype                = Datatype;
     V.ncType                  = nc_constant(nctype);
@@ -2043,6 +2540,756 @@ switch Vname
     V.Datatype                = Datatype;
     V.ncType                  = nc_constant(nctype);
 
+%--------------------------------------------------------------------------
+%  Physical state boundary conditions variables.
+%--------------------------------------------------------------------------
+
+  case 'bry_time'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'bry_time';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'boundary conditions time';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'second';
+    V.Cgridtype.Name          = 'none';
+    V.Cgridtype.Value         = 0;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+
+  case 'temp_west'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 's_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'bry_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['potential temperature, ',             ...
+                                 'western boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'Celsius';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'bry_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho_west lat_rho_west s_rho bry_time';
+    else
+      V.Attributes(4).Value   = 'x_rho_west y_rho_west s_rho bry_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype); 
+  case 'temp_east'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 's_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'bry_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['potential temperature, ',             ...
+                                 'eastern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'Celsius';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'bry_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho_east lat_rho_east s_rho bry_time';
+    else
+      V.Attributes(4).Value   = 'x_rho_east y_rho_east s_rho bry_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype); 
+  case 'temp_south'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 's_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'bry_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['potential temperature, ',             ...
+                                 'southern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'Celsius';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'bry_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho_south lat_rho_south s_rho bry_time';
+    else
+      V.Attributes(4).Value   = 'x_rho_south y_rho_south s_rho bry_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype); 
+  case 'temp_north'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 's_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'bry_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['potential temperature, ',             ...
+                                 'northern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'Celsius';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'bry_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho_north lat_rho_north s_rho bry_time';
+    else
+      V.Attributes(4).Value   = 'x_rho_north y_rho_north s_rho bry_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'salt_west'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 's_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'bry_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'salinity, western boundary condition';
+    V.Attributes(2).Name      = 'time';
+    V.Attributes(2).Value     = 'bry_time';
+    V.Attributes(3).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(3).Value   = 'lon_rho_west lat_rho_west s_rho bry_time';
+    else
+      V.Attributes(3).Value   = 'x_rho_west y_rho_west s_rho bry_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'salt_east'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 's_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'bry_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'salinity, eastern boundary condition';
+    V.Attributes(2).Name      = 'time';
+    V.Attributes(2).Value     = 'bry_time';
+    V.Attributes(3).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(3).Value   = 'lon_rho_east lat_rho_east s_rho bry_time';
+    else
+      V.Attributes(3).Value   = 'x_rho_east y_rho_east s_rho bry_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'salt_south'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 's_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'bry_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'salinity, southern boundary condition';
+    V.Attributes(2).Name      = 'time';
+    V.Attributes(2).Value     = 'bry_time';
+    V.Attributes(3).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(3).Value   = 'lon_rho_south lat_rho_south s_rho bry_time';
+    else
+      V.Attributes(3).Value   = 'x_rho_south y_rho_south s_rho bry_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'salt_north'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 's_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'bry_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'salinity, northern boundary condition';
+    V.Attributes(2).Name      = 'time';
+    V.Attributes(2).Value     = 'bry_time';
+    V.Attributes(3).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(3).Value   = 'lon_rho_north lat_rho_north s_rho bry_time';
+    else
+      V.Attributes(3).Value   = 'x_rho_north y_rho_north s_rho bry_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'u_west'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_u';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 's_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'bry_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['u-momentum component, ',              ...
+                                 'western boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter second-1';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'bry_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_u_west lat_u_west s_rho ocean_time';
+    else
+      V.Attributes(4).Value   = 'x_u_west y_u_west s_rho ocean_time';
+    end
+    V.Cgridtype.Name          = 'u-velocity point';
+    V.Cgridtype.Value         = 3;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'u_east'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_u';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 's_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'bry_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['u-momentum component, ',              ...
+                                 'eastern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter second-1';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'bry_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_u_east lat_u_east s_rho ocean_time';
+    else
+      V.Attributes(4).Value   = 'x_u_east y_u_east s_rho ocean_time';
+    end
+    V.Cgridtype.Name          = 'u-velocity point';
+    V.Cgridtype.Value         = 3;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'u_south'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_u';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 's_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'bry_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['u-momentum component, ',              ...
+                                 'southern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter second-1';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'bry_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_u_south lat_u_south s_rho ocean_time';
+    else
+      V.Attributes(4).Value   = 'x_u_south y_u_south s_rho ocean_time';
+    end
+    V.Cgridtype.Name          = 'u-velocity point';
+    V.Cgridtype.Value         = 3;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'u_north'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_u';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 's_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'bry_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['u-momentum component, ',              ...
+                                 'northern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter second-1';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'bry_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_u_north lat_u_north s_rho ocean_time';
+    else
+      V.Attributes(4).Value   = 'x_u_north y_u_north s_rho ocean_time';
+    end
+    V.Cgridtype.Name          = 'u-velocity point';
+    V.Cgridtype.Value         = 3;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'ubar_west'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_u';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'bry_time';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['vertically integrated u-momentum ',   ...
+                                 'component, western boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter second-1';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'bry_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_u_west lat_u_west bry_time';
+    else
+      V.Attributes(4).Value   = 'x_u_west y_u_west bry_time';
+    end
+    V.Cgridtype.Name          = 'u-velocity point';
+    V.Cgridtype.Value         = 3;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'ubar_east'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_u';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'bry_time';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['vertically integrated u-momentum ',   ...
+                                 'component, eastern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter second-1';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'bry_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_u_east lat_u_east bry_time';
+    else
+      V.Attributes(4).Value   = 'x_u_east y_u_east bry_time';
+    end
+    V.Cgridtype.Name          = 'u-velocity point';
+    V.Cgridtype.Value         = 3;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'ubar_south'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_u';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'bry_time';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['vertically integrated u-momentum ',   ...
+                                 'component, southern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter second-1';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'bry_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_u_south lat_u_south bry_time';
+    else
+      V.Attributes(4).Value   = 'x_u_south y_u_south bry_time';
+    end
+    V.Cgridtype.Name          = 'u-velocity point';
+    V.Cgridtype.Value         = 3;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'ubar_north'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_u';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'bry_time';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['vertically integrated u-momentum ',   ...
+                                 'component, northern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter second-1';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'bry_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_u_north lat_u_north bry_time';
+    else
+      V.Attributes(4).Value   = 'x_u_north y_u_north bry_time';
+    end
+    V.Cgridtype.Name          = 'u-velocity point';
+    V.Cgridtype.Value         = 3;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'v_west'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_v';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 's_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'bry_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['v-momentum component, ',              ...
+                                 'western boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter second-1';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'bry_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_v_west lat_v_west s_rho bry_time';
+    else
+      V.Attributes(4).Value   = 'x_v_west y_v_west s_rho bry_time';
+    end
+    V.Cgridtype.Name          = 'v-velocity point';
+    V.Cgridtype.Value         = 4;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'v_east'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_v';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 's_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'bry_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['v-momentum component, ',              ...
+                                 'eastern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter second-1';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'bry_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_v_east lat_v_east s_rho bry_time';
+    else
+      V.Attributes(4).Value   = 'x_v_east y_v_east s_rho bry_time';
+    end
+    V.Cgridtype.Name          = 'v-velocity point';
+    V.Cgridtype.Value         = 4;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'v_south'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_v';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 's_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'bry_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['v-momentum component, ',              ...
+                                 'southern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter second-1';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'bry_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_v_south lat_v_south s_rho bry_time';
+    else
+      V.Attributes(4).Value   = 'x_v_south y_v_south s_rho bry_time';
+    end
+    V.Cgridtype.Name          = 'v-velocity point';
+    V.Cgridtype.Value         = 4;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'vbar_west'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_v';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'bry_time';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['vertically integrated v-momentum ',   ...
+                                 'component, western boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter second-1';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'bry_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_v_west lat_v_west bry_time';
+    else
+      V.Attributes(4).Value   = 'x_v_west y_v_west bry_time';
+    end
+    V.Cgridtype.Name          = 'v-velocity point';
+    V.Cgridtype.Value         = 4;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'vbar_east'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_v';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'bry_time';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['vertically integrated v-momentum ',   ...
+                                 'component, eastern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter second-1';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'bry_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_v_east lat_v_east bry_time';
+    else
+      V.Attributes(4).Value   = 'x_v_east y_v_east bry_time';
+    end
+    V.Cgridtype.Name          = 'v-velocity point';
+    V.Cgridtype.Value         = 4;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'vbar_south'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_v';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'bry_time';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['vertically integrated v-momentum ',   ...
+                                 'component, southern boundary condition'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter second-1';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'bry_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_v_south lat_v_south bry_time';
+    else
+      V.Attributes(4).Value   = 'x_v_south y_v_south bry_time';
+    end
+    V.Cgridtype.Name          = 'v-velocity point';
+    V.Cgridtype.Value         = 4;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'zeta_west'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'bry_time';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'free-surface, eastern boundary condition';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'bry_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho_west lat_rho_west bry_time';
+    else
+      V.Attributes(4).Value   = 'x_rho_west y_rho_west ocean_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'zeta_west'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'bry_time';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'free-surface, western boundary condition';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'bry_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho_west lat_rho_west bry_time';
+    else
+      V.Attributes(4).Value   = 'x_rho_west y_rho_west bry_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'zeta_east'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'eta_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'bry_time';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'free-surface, eastern boundary condition';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'bry_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho_east lat_rho_east bry_time';
+    else
+      V.Attributes(4).Value   = 'x_rho_east y_rho_east bry_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'zeta_south'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'bry_time';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'free-surface, southern boundary condition';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'bry_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho_south lat_rho_south bry_time';
+    else
+      V.Attributes(4).Value   = 'x_rho_south y_rho_south bry_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'zeta_north'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'bry_time';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'free-surface, northern boundary condition';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'bry_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho_north lat_rho_north bry_time';
+    else
+      V.Attributes(4).Value   = 'x_rho_north y_rho_north bry_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+    
 %--------------------------------------------------------------------------
 %  Biology state variables.
 %--------------------------------------------------------------------------
@@ -2791,6 +4038,9 @@ switch Vname
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
     V.ncType                  = nc_constant(nctype);
+
+%--------------------------------------------------------------------------
+%--------------------------------------------------------------------------
     
 %--------------------------------------------------------------------------
 %  Requested variable not found.

@@ -26,7 +26,7 @@ function plot_boundary(Gname, Bname, Vname, Tindex)
 
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2012 The ROMS/TOMS Group                            %
+%  Copyright (c) 2002-2013 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.txt                           Hernan G. Arango      %
 %=========================================================================%
@@ -256,8 +256,8 @@ for n = 1:Nvars,
   end
 
   if (is3d),
-    mask = repmat(mask, [1,Km]);   
-    XorY = repmat(XorY, [1,Km]);   
+    mask = repmat(mask(:), [1,Km]);   
+    XorY = repmat(XorY(:), [1,Km]);   
   end
 
   ind = find(mask < 0.5);

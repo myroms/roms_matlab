@@ -58,12 +58,13 @@ function B = obc_roms2roms(ncfile,D,R,VarList,Tindex,boundary,varargin)
 %
 % On Output:
 %
-%    V             Interpolated requested 2D/3D variable
+%    B             Interpolated requested 2D/3D variable boundary
+%                    conditions (struct array)
 %
  
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2012 The ROMS/TOMS Group                            %
+%  Copyright (c) 2002-2013 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.txt                           Hernan G. Arango      %
 %=========================================================================%
@@ -103,15 +104,15 @@ if (~isfield(D,'vector_rotation'))
   end
 end
 
-if (~isfield(D,'vector_rotation'))
-  if (isfield(D,'angle')),
-    if (min(D.angle(:)) == 0 && max(D.angle(:)) == 0),
-      D.vector_rotation = false;
+if (~isfield(R,'vector_rotation'))
+  if (isfield(R,'angle')),
+    if (min(R.angle(:)) == 0 && max(R.angle(:)) == 0),
+      R.vector_rotation = false;
     else
-      D.vector_rotation = true;
+      R.vector_rotation = true;
     end
   else
-    D.vector_rotation = false;
+    R.vector_rotation = false;
   end
 end
 
@@ -423,10 +424,10 @@ for var = VarList,
     RM.north = Rmask(:,end);
 
     if (is3d),
-      RZ.west  = ZR(1,:,:);
-      RZ.east  = ZR(end,:,:);
-      RZ.south = ZR(:,1,:);
-      RZ.north = ZR(:,end,:);
+      RZ.west  = squeeze(ZR(1,:,:));
+      RZ.east  = squeeze(ZR(end,:,:));
+      RZ.south = squeeze(ZR(:,1,:));
+      RZ.north = squeeze(ZR(:,end,:));
     end
   end
   

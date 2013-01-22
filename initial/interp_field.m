@@ -76,7 +76,7 @@ function V = interp_field(I,varargin)
 
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2012 The ROMS/TOMS Group                            %
+%  Copyright (c) 2002-2013 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license           Hernan G. Arango      %
 %    See License_ROMS.txt                           John Wilkin           %
 %=========================================================================%  
@@ -144,6 +144,14 @@ switch (I.nvdims),
      y(Dind) = [];
      v(Dind) = [];
    end
+
+   Dind = isnan(v);                    % remove NaN's
+   if (any(Dind)),
+     x(Dind) = [];
+     y(Dind) = [];
+     v(Dind) = [];
+   end
+
    Dmin = min(v);
    Dmax = max(v);
 

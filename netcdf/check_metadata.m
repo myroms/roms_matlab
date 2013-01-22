@@ -27,7 +27,7 @@ function S = check_metadata(Sinp)
 
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2012 The ROMS/TOMS Group                            %
+%  Copyright (c) 2002-2013 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMVariables.txt                   Hernan G. Arango      %
 %=========================================================================%
@@ -74,18 +74,18 @@ for n=1:nvars,
     if (RenameDim),
       foundit = false;
       if (strcmp(dname, 'ocean_time'))
-	dindex = strfind({S.Dimensions.Name}, 'time');
+	    dindex = strfind({S.Dimensions.Name}, 'time');
         dindex = ~cellfun(@isempty, dindex);
-	if (any(dindex)),
+        if (any(dindex)),
           dname = S.Dimensions(dindex).Name;
           dsize = S.Dimensions(dindex).Length;
-	  S.Variables(n).Dimensions(i).Name = dname;
+          S.Variables(n).Dimensions(i).Name = dname;
           foundit = true;
-	end
+        end
       end
       if (~foundit),
-	error(['CHECK_METADATA: dimension '',dname,'' is not ',         ...
-               'available for variable ', char(S.Variables(n).Name)]);
+        error(['CHECK_METADATA: dimension "',dname,'" is not ',         ...
+               'available for variable "', char(S.Variables(n).Name),'"']);
       end
     end     
     

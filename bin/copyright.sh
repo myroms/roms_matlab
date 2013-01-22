@@ -2,7 +2,7 @@
 #
 # svn $Id$
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-# Copyright (c) 2002-2012 The ROMS/TOMS Group                           :::
+# Copyright (c) 2002-2013 The ROMS/TOMS Group                           :::
 #   Licensed under a MIT/X style license                                :::
 #   See License_ROMS.txt                                                :::
 #:::::::::::::::::::::::::::::::::::::::::::::::::::::: David Robertson :::
@@ -27,12 +27,22 @@
 #                                                                       :::
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-set search = "2002-2011 The ROMS/TOMS"
-set replace = "2002-2012 The ROMS/TOMS"
+set search = "2002-2012 The ROMS/TOMS"
+set replace = "2002-2013 The ROMS/TOMS"
 
 # Directories to search for replacements.
 
-set c_dirs = "4dvar bathymetry bin boundary coastlines grid initial landmask utility"
+set c_dirs = "4dvar"
+set c_dirs = "$c_dirs bathymetry"
+set c_dirs = "$c_dirs bin"
+set c_dirs = "$c_dirs boundary"
+set c_dirs = "$c_dirs coastlines"
+set c_dirs = "$c_dirs forcing"
+set c_dirs = "$c_dirs grid"
+set c_dirs = "$c_dirs initial"
+set c_dirs = "$c_dirs landmask"
+set c_dirs = "$c_dirs netcdf"
+set c_dirs = "$c_dirs utility"
 
 set setsvn = 1
 
@@ -100,30 +110,33 @@ echo "Done."
 echo ""
 
 if ( $setsvn == 1 ) then
-  svn propset -R copyright '(c) 2002-2012 The ROMS/TOMS Group' 4dvar
-  svn propset -R copyright '(c) 2002-2012 The ROMS/TOMS Group' bathymetry
-  svn propset -R copyright '(c) 2002-2012 The ROMS/TOMS Group' bin
-  svn propset -R copyright '(c) 2002-2012 The ROMS/TOMS Group' boundary
-  svn propset -R copyright '(c) 2002-2012 The ROMS/TOMS Group' coastlines
-  svn propset -R copyright '(c) 2002-2012 The ROMS/TOMS Group' grid
-  svn propset -R copyright '(c) 2002-2012 The ROMS/TOMS Group' initial
-  svn propset -R copyright '(c) 2002-2012 The ROMS/TOMS Group' landmask
-  svn propset -R copyright '(c) 2002-2012 The ROMS/TOMS Group' utility
+  svn propset -R copyright '(c) 2002-2013 The ROMS/TOMS Group' 4dvar
+  svn propset -R copyright '(c) 2002-2013 The ROMS/TOMS Group' bathymetry
+  svn propset -R copyright '(c) 2002-2013 The ROMS/TOMS Group' bin
+  svn propset -R copyright '(c) 2002-2013 The ROMS/TOMS Group' boundary
+  svn propset -R copyright '(c) 2002-2013 The ROMS/TOMS Group' coastlines
+  svn propset -R copyright '(c) 2002-2013 The ROMS/TOMS Group' forcing
+  svn propset -R copyright '(c) 2002-2013 The ROMS/TOMS Group' grid
+  svn propset -R copyright '(c) 2002-2013 The ROMS/TOMS Group' initial
+  svn propset -R copyright '(c) 2002-2013 The ROMS/TOMS Group' landmask
+  svn propset -R copyright '(c) 2002-2013 The ROMS/TOMS Group' netcdf
+  svn propset -R copyright '(c) 2002-2013 The ROMS/TOMS Group' utility
 
-  svn propset copyright '(c) 2002-2012 The ROMS/TOMS Group' mex
-  svn propset copyright '(c) 2002-2012 The ROMS/TOMS Group' mex/Contents.m
-  svn propset copyright '(c) 2002-2012 The ROMS/TOMS Group' mex/mexinside
-  svn propset copyright '(c) 2002-2012 The ROMS/TOMS Group' mex/mexrect
-  svn propset copyright '(c) 2002-2012 The ROMS/TOMS Group' mex/mexsepeli
-  svn propset copyright '(c) 2002-2012 The ROMS/TOMS Group' seagrid
-  svn propset copyright '(c) 2002-2012 The ROMS/TOMS Group' seagrid/presto
-  svn propset copyright '(c) 2002-2012 The ROMS/TOMS Group' seagrid/presto/@presto
-  svn propset copyright '(c) 2002-2012 The ROMS/TOMS Group' seagrid/presto/@ps
-  svn propset copyright '(c) 2002-2012 The ROMS/TOMS Group' seagrid/presto/@pst
-  svn propset copyright '(c) 2002-2012 The ROMS/TOMS Group' seagrid/@seagrid
-  svn propset copyright '(c) 2002-2012 The ROMS/TOMS Group' seagrid/test_data
-  svn propset copyright '(c) 2002-2012 The ROMS/TOMS Group' seawater
-  svn propset copyright '(c) 2002-2012 The ROMS/TOMS Group' . startup.m
+  svn propset copyright '(c) 2002-2013 The ROMS/TOMS Group' mex
+  svn propset copyright '(c) 2002-2013 The ROMS/TOMS Group' mex/Contents.m
+  svn propset copyright '(c) 2002-2013 The ROMS/TOMS Group' mex/mexinside
+  svn propset copyright '(c) 2002-2013 The ROMS/TOMS Group' mex/mexrect
+  svn propset copyright '(c) 2002-2013 The ROMS/TOMS Group' mex/mexsepeli
+  svn propset copyright '(c) 2002-2013 The ROMS/TOMS Group' seagrid
+  svn propset copyright '(c) 2002-2013 The ROMS/TOMS Group' seagrid/presto
+  svn propset copyright '(c) 2002-2013 The ROMS/TOMS Group' seagrid/presto/@presto
+  svn propset copyright '(c) 2002-2013 The ROMS/TOMS Group' seagrid/presto/@ps
+  svn propset copyright '(c) 2002-2013 The ROMS/TOMS Group' seagrid/presto/@pst
+  svn propset copyright '(c) 2002-2013 The ROMS/TOMS Group' seagrid/@seagrid
+  svn propset copyright '(c) 2002-2013 The ROMS/TOMS Group' seagrid/test_data
+  svn propset copyright '(c) 2002-2013 The ROMS/TOMS Group' seawater
+  svn propset copyright '(c) 2002-2013 The ROMS/TOMS Group' t_tide
+  svn propset copyright '(c) 2002-2013 The ROMS/TOMS Group' . startup.m
 else
   echo ""
   echo "Not updating svn properties."

@@ -14,7 +14,7 @@
 
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2012 The ROMS/TOMS Group                            %
+%  Copyright (c) 2002-2013 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.txt                           Hernan G. Arango      %
 %=========================================================================%
@@ -27,7 +27,7 @@ GrdFile =  fullfile(Dir, 'gom_grid_a.nc');
 
 % Set input OA file names.
 
-AnnFile =  fullfile(Dir, 'OA', 'HDAT', 'oa_lev98_jan.nc');
+AnnFile =  fullfile(Dir, 'OA', 'HDAT', 'oa_lev98_ann.nc');
 
 MonFile = {fullfile(Dir, 'OA', 'HDAT', 'oa_lev98_jan.nc'),              ...
            fullfile(Dir, 'OA', 'HDAT', 'oa_lev98_feb.nc'),              ...
@@ -68,7 +68,7 @@ MonCLM  =  fullfile(Dir, 'gom_lev98_clm.nc');
 %  Set intepolation parameters and switches.
 
 method       = 'linear';       % vetical interpolation method
-Concatenate  = false;          % concatenate monthly and annual OA files
+Concatenate  = true;           % concatenate monthly and annual OA files
 nctype       = 'nc_float';     % Input data is in single precision
 Unlimited    = true;           % time dimension is umlimited in
                                % output files
@@ -271,16 +271,16 @@ end
 
 % Monthly climatology fields.
 
-for Rec=1:Nfiles,
+for n=1:Nfiles,
   M.temp = oa2roms(G, char(OutFile(n)), 'temp', Tindex, method);
   M.salt = oa2roms(G, char(OutFile(n)), 'salt', Tindex, method);
   M.rho  = roms_eos(M.temp, M.salt, G.z_r);
 
   for var = VarCLM,
     field = char(var);
-    status = nc_write(MonCLM, field, M.(field), Rec);
+    status = nc_write(MonCLM, field, M.(field), n);
     if (status ~= 0),
       error(['D_OA2ROMS: error while monthly field: ', field]);
     end
   end
-end  
+end
