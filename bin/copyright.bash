@@ -90,9 +90,9 @@ do
 
   if [ `echo $FILE | grep -vc '.svn/'` -gt 0 ]; then
     if [ $verbose -eq 1 ]; then
-      grep -l "${search}" $FILE && sed -i "s|${search}|${replace}|g" $FILE
+      grep -l "${search}" $FILE && sed -i -e "s|${search}|${replace}|g" $FILE
     else
-      grep -l "${search}" $FILE > /dev/null && sed -i "s|${search}|${replace}|g" $FILE
+      grep -l "${search}" $FILE > /dev/null && sed -i -e "s|${search}|${replace}|g" $FILE
     fi
   else
     echo "There is a .svn in the path: $FILE skipped"
