@@ -1,9 +1,9 @@
-function [S, G] = read_contact(ncname)
+function [S] = read_contact(ncname)
 
 %
 % READ_CONTACT:  Reads ROMS Nested Grids Contact Points NetCDF file
 %
-% read_contact(ncname)
+% S = read_contact(ncname)
 %
 % This function reads in the Nested Grids Contact Point NetCDF file
 % and loads data into a structure.
@@ -45,7 +45,7 @@ filenames = I.Attributes(strcmp({I.Attributes.Name},'grid_files')).Value;
 
 % Remove newline control characters, sprintf('\n').
 
-files = filenames(isstrprop(grid_files, 'graphic'));  
+files = filenames(isstrprop(filenames, 'graphic'));  
 
 ind = strfind(files, '.nc')+3;
 
@@ -60,11 +60,20 @@ for ng=1:Ngrids
   gotfile(ng) = exist(char(Gnames(ng)), 'file');
 end
 
-% Get nested grids structures.
+% Get nested grids structures. If the grid structure have the parent
+% fields, remove them to have an array of similar structures.
 
 if (all(gotfile)),
+  parent = {'parent_grid',                                              ...
+            'parent_Imin', 'parent_Imax',                               ...
+            'parent_Jmin', 'parent_Jmax'};
   for ng=1:Ngrids,
-    G(ng) = get_roms_grid(char(Gnames(ng)));
+    g = get_roms_grid(char(Gnames(ng)));
+    if (isfield(g, 'parent_grid')),
+      G(ng) = rmfield(g, parent);
+    else
+      G(ng) = g;
+    end
   end
 end
 

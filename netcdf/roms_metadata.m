@@ -1792,6 +1792,275 @@ switch Vname
     V.ncType                  = nc_constant(nctype);
 
 %--------------------------------------------------------------------------
+%  Wind-induced waves forcing variables.
+%--------------------------------------------------------------------------
+
+  case 'Dwave'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'wave_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'wind-induced wave direction';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'degrees';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'wave_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho lat_rho wave_time';
+    else
+      V.Attributes(4).Value   = 'x_rho y_rho wave_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'Hwave'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'wave_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'wind-induced significant wave height';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'wave_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho lat_rho wave_time';
+    else
+      V.Attributes(4).Value   = 'x_rho y_rho wave_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'Lwave'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'wave_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'wind-induced mean wavelength';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'wave_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho lat_rho wave_time';
+    else
+      V.Attributes(4).Value   = 'x_rho y_rho wave_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'Pwave_top'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'wave_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'wind-induced surface wave period';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'second';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'wave_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho lat_rho wave_time';
+    else
+      V.Attributes(4).Value   = 'x_rho y_rho wave_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'Pwave_bot'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'wave_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'wind-induced bottom wave period';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'second';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'wave_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho lat_rho wave_time';
+    else
+      V.Attributes(4).Value   = 'x_rho y_rho wave_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'Ub_swan'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'wave_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'SWAN, wind-induced bottom orbital velocity';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter second-1';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'wave_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho lat_rho wave_time';
+    else
+      V.Attributes(4).Value   = 'x_rho y_rho wave_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'Ub_wave'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'wave_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'wave model, wind-induced bottom orbital velocity';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter second-1';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'wave_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho lat_rho wave_time';
+    else
+      V.Attributes(4).Value   = 'x_rho y_rho wave_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'Wave_dissip'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'wave_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'wave dissipation';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'Watts meter-2';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'wave_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho lat_rho wave_time';
+    else
+      V.Attributes(4).Value   = 'x_rho y_rho wave_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'Wave_break'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'wave_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'percent wave breaking';
+    V.Attributes(2).Name      = 'time';
+    V.Attributes(2).Value     = 'wave_time';
+    V.Attributes(3).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(3).Value   = 'lon_rho lat_rho wave_time';
+    else
+      V.Attributes(3).Value   = 'x_rho y_rho wave_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'wave_time'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'wave_time';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'wind-induce wave time';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'day';
+    V.Cgridtype.Name          = 'none';
+    V.Cgridtype.Value         = 0;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+    
+%--------------------------------------------------------------------------
 %  Tidal forcing variables.
 %--------------------------------------------------------------------------
 
@@ -4040,7 +4309,520 @@ switch Vname
     V.ncType                  = nc_constant(nctype);
 
 %--------------------------------------------------------------------------
+%  Sediment state variables.
 %--------------------------------------------------------------------------
+
+  case 'bed_age'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'Nbed';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = false;
+    V.Dimensions(4).Name      = 'ocean_time';
+    V.Dimensions(4).Length    = [];
+    V.Dimensions(4).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'sediment bed layer age';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'second';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'ocean_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho lat_rho Nbed ocean_time';
+    else
+      V.Attributes(4).Value   = 'x_rho y_rho Nbed ocean_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+
+  case 'bed_biodiff'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'Nbed';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = false;
+    V.Dimensions(4).Name      = 'ocean_time';
+    V.Dimensions(4).Length    = [];
+    V.Dimensions(4).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'biodiffusivity at bottom of each layer';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter2 second-1';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'ocean_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho lat_rho Nbed ocean_time';
+    else
+      V.Attributes(4).Value   = 'x_rho y_rho Nbed ocean_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+
+  case 'bed_porosity'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'Nbed';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = false;
+    V.Dimensions(4).Name      = 'ocean_time';
+    V.Dimensions(4).Length    = [];
+    V.Dimensions(4).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'sediment bed layer porosity';
+    V.Attributes(2).Name      = 'time';
+    V.Attributes(2).Value     = 'ocean_time';
+    V.Attributes(3).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(3).Value   = 'lon_rho lat_rho Nbed ocean_time';
+    else
+      V.Attributes(3).Value   = 'x_rho y_rho Nbed ocean_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+
+  case 'bed_thickness'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'Nbed';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = false;
+    V.Dimensions(4).Name      = 'ocean_time';
+    V.Dimensions(4).Length    = [];
+    V.Dimensions(4).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'sediment bed layer thickness';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'ocean_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho lat_rho Nbed ocean_time';
+    else
+      V.Attributes(4).Value   = 'x_rho y_rho Nbed ocean_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+ 
+  case 'erosion_stress'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'ocean_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'sediment median critical erosion stress';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'Newton meter-2';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'ocean_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho lat_rho ocean_time';
+    else
+      V.Attributes(4).Value   = 'x_rho y_rho ocean_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+
+  case 'grain_density'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'ocean_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'sediment median grain density';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'kilogram meter-3';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'ocean_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho lat_rho ocean_time';
+    else
+      V.Attributes(4).Value   = 'x_rho y_rho ocean_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+
+  case 'grain_diameter'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'ocean_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'sediment median grain diameter size';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'ocean_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho lat_rho ocean_time';
+    else
+      V.Attributes(4).Value   = 'x_rho y_rho ocean_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+   
+  case {'mud_01', 'mud_02', 'mud_03', 'mud_04',                         ...
+        'mud_05', 'mud_06', 'mud_07', 'mud_08'}
+    class = textscan(Vname, 'mud_ %d');
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 's_rho';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = false;
+    V.Dimensions(4).Name      = 'ocean_time';
+    V.Dimensions(4).Length    = [];
+    V.Dimensions(4).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['suspended cohesive sediment, ',       ...
+                                 'size class ',                         ...
+                                 num2str(class{:}, '%2.2i')];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'kilogram meter-3';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'ocean_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho lat_rho s_rho ocean_time';
+    else
+      V.Attributes(4).Value   = 'x_rho y_rho s_rho ocean_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+
+  case {'mudfrac_01', 'mudfrac_02', 'mudfrac_03', 'mudfrac_04',         ...
+        'mudfrac_05', 'mudfrac_06', 'mudfrac_07', 'mudfrac_08'}
+    class = textscan(Vname, 'mudfrac_ %d');
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'Nbed';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = false;
+    V.Dimensions(4).Name      = 'ocean_time';
+    V.Dimensions(4).Length    = [];
+    V.Dimensions(4).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['cohesive sediment fraction, ',        ...
+                                 'size class ',                         ...
+                                 num2str(class{:}, '%2.2i')];
+    V.Attributes(2).Name      = 'time';
+    V.Attributes(2).Value     = 'ocean_time';
+    V.Attributes(3).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(3).Value   = 'lon_rho lat_rho Nbed ocean_time';
+    else
+      V.Attributes(3).Value   = 'x_rho y_rho Nbed ocean_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+
+  case {'mudmass_01', 'mudmass_02', 'mudmass_03', 'mudmass_04',         ...
+        'mudmass_05', 'mudmass_06', 'mudmass_07', 'mudmass_08'}
+    class = textscan(Vname, 'mudmass_ %d');
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'Nbed';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = false;
+    V.Dimensions(4).Name      = 'ocean_time';
+    V.Dimensions(4).Length    = [];
+    V.Dimensions(4).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['cohesive sediment mass, ',            ...
+                                 'size class ',                         ...
+                                 num2str(class{:}, '%2.2i')];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'kilogram meter-2';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'ocean_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho lat_rho Nbed ocean_time';
+    else
+      V.Attributes(4).Value   = 'x_rho y_rho Nbed ocean_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+
+  case 'ripple_height'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'ocean_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'bottom ripple height';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'ocean_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho lat_rho ocean_time';
+    else
+      V.Attributes(4).Value   = 'x_rho y_rho ocean_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+
+  case 'ripple_length'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'ocean_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'bottom ripple length';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'ocean_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho lat_rho ocean_time';
+    else
+      V.Attributes(4).Value   = 'x_rho y_rho ocean_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+    
+  case {'sand_01', 'sand_02', 'sand_03', 'sand_04',                     ...
+        'sand_05', 'sand_06', 'sand_07', 'sand_08'}
+    class = textscan(Vname, 'sand_ %d');
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 's_rho';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = false;
+    V.Dimensions(4).Name      = 'ocean_time';
+    V.Dimensions(4).Length    = [];
+    V.Dimensions(4).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['suspended noncohesive sediment, ',    ...
+                                 'size class ',                         ...
+                                 num2str(class{:}, '%2.2i')];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'kilogram meter-3';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'ocean_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho lat_rho s_rho ocean_time';
+    else
+      V.Attributes(4).Value   = 'x_rho y_rho s_rho ocean_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+
+  case {'sandfrac_01', 'sandfrac_02', 'sandfrac_03', 'sandfrac_04',     ...
+        'sandfrac_05', 'sandfrac_06', 'sandfrac_07', 'sandfrac_08'}
+    class = textscan(Vname, 'sandfrac_ %d');
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'Nbed';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = false;
+    V.Dimensions(4).Name      = 'ocean_time';
+    V.Dimensions(4).Length    = [];
+    V.Dimensions(4).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['noncohesive sediment fraction, ',     ...
+                                 'size class ',                         ...
+                                 num2str(class{:}, '%2.2i')];
+    V.Attributes(2).Name      = 'time';
+    V.Attributes(2).Value     = 'ocean_time';
+    V.Attributes(3).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(3).Value   = 'lon_rho lat_rho Nbed ocean_time';
+    else
+      V.Attributes(3).Value   = 'x_rho y_rho Nbed ocean_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+
+  case {'sandmass_01', 'sandmass_02', 'sandmass_03', 'sandmass_04',     ...
+        'sandmass_05', 'sandmass_06', 'sandmass_07', 'sandmass_08'}       
+    class = textscan(Vname, 'sandmass_ %d');
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'Nbed';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = false;
+    V.Dimensions(4).Name      = 'ocean_time';
+    V.Dimensions(4).Length    = [];
+    V.Dimensions(4).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['noncohesive sediment mass, ',         ...
+                                 'size class ',                         ...
+                                 num2str(class{:}, '%2.2i')];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'kilogram meter-2';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'ocean_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho lat_rho Nbed ocean_time';
+    else
+      V.Attributes(4).Value   = 'x_rho y_rho Nbed ocean_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+
+  case 'settling_vel'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'ocean_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'sediment median grain settling velocity';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter second-1';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'ocean_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho lat_rho ocean_time';
+    else
+      V.Attributes(4).Value   = 'x_rho y_rho ocean_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
     
 %--------------------------------------------------------------------------
 %  Requested variable not found.

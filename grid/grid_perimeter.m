@@ -70,7 +70,8 @@ function S = grid_perimeter(G)
 %    S.grid(ng).boundary(ib).index(:) - Boundary linear IJ-index
 %    S.grid(ng).boundary(ib).X(:)     - Boundary X-coordinates (PSI)
 %    S.grid(ng).boundary(ib).Y(:)     - Boundary Y-coordinates (PSI)
-%                                       (without corner points)
+%    S.grid(ng).boundary(ib).Xuv(:)   - Boundary X-coordinates (U,V)
+%    S.grid(ng).boundary(ib).Yuv(:)   - Boundary Y-coordinates (U,V)
 %
 
 % svn $Id$
@@ -234,6 +235,30 @@ if (S.spherical),
       S.grid(ng).boundary(ib).X     = G(ng).lon_psi(B(ib).index);
       S.grid(ng).boundary(ib).Y     = G(ng).lat_psi(B(ib).index);
     end
+  
+% Boundary edges at U-points and V-points: Momentum physical boundary. 
+
+    Iwest  = false([Im Jm+1]);  Iwest (1 ,2:Jm) = true;
+    Ieast  = false([Im Jm+1]);  Ieast (Im,2:Jm) = true;
+
+    Isouth = false([Im+1 Jm]);  Isouth(2:Im, 1) = true;
+    Inorth = false([Im+1 Jm]);  Inorth(2:Im,Jm) = true;
+
+    B(1).index = find(Iwest (:) == true);
+    B(2).index = find(Isouth(:) == true);
+    B(3).index = find(Ieast (:) == true);
+    B(4).index = find(Inorth(:) == true);
+
+    S.grid(ng).boundary(1).Xuv = G(ng).lon_u(B(1).index);
+    S.grid(ng).boundary(2).Xuv = G(ng).lon_v(B(2).index);
+    S.grid(ng).boundary(3).Xuv = G(ng).lon_u(B(3).index);
+    S.grid(ng).boundary(4).Xuv = G(ng).lon_v(B(4).index);
+
+    S.grid(ng).boundary(1).Yuv = G(ng).lat_u(B(1).index);
+    S.grid(ng).boundary(2).Yuv = G(ng).lat_v(B(2).index);
+    S.grid(ng).boundary(3).Yuv = G(ng).lat_u(B(3).index);
+    S.grid(ng).boundary(4).Yuv = G(ng).lat_v(B(4).index);
+  
   end
 end
 
@@ -357,6 +382,29 @@ if (~S.spherical),
       S.grid(ng).boundary(ib).Y     = G(ng).y_psi(B(ib).index);
     end
 
+% Boundary edges at U-points and V-points: Momentum physical boundary. 
+
+    Iwest  = false([Im Jm+1]);  Iwest (1 ,2:Jm) = true;
+    Ieast  = false([Im Jm+1]);  Ieast (Im,2:Jm) = true;
+
+    Isouth = false([Im+1 Jm]);  Isouth(2:Im, 1) = true;
+    Inorth = false([Im+1 Jm]);  Inorth(2:Im,Jm) = true;
+
+    B(1).index = find(Iwest (:) == true);
+    B(2).index = find(Isouth(:) == true);
+    B(3).index = find(Ieast (:) == true);
+    B(4).index = find(Inorth(:) == true);
+
+    S.grid(ng).boundary(1).Xuv = G(ng).x_u(B(1).index);
+    S.grid(ng).boundary(2).Xuv = G(ng).x_v(B(2).index);
+    S.grid(ng).boundary(3).Xuv = G(ng).x_u(B(3).index);
+    S.grid(ng).boundary(4).Xuv = G(ng).x_v(B(4).index);
+
+    S.grid(ng).boundary(1).Yuv = G(ng).y_u(B(1).index);
+    S.grid(ng).boundary(2).Yuv = G(ng).y_v(B(2).index);
+    S.grid(ng).boundary(3).Yuv = G(ng).y_u(B(3).index);
+    S.grid(ng).boundary(4).Yuv = G(ng).y_v(B(4).index);
+  
   end
 end
 

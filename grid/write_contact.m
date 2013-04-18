@@ -152,18 +152,6 @@ end
 
 ncwrite(ncname, 'contact_region', int32(contact_region));
 
-% Contact points on receiver grid boundaries.
-
-boundary = false([1 Ndatum]);
-
-for cr=1:Ncontact,
-  boundary(NstrR(cr):NendR(cr)) = S.contact(cr).point.boundary_rho;
-  boundary(NstrU(cr):NendU(cr)) = S.contact(cr).point.boundary_u;
-  boundary(NstrV(cr):NendV(cr)) = S.contact(cr).point.boundary_v;
-end
-
-ncwrite(ncname, 'on_boundary', int32(boundary));
-
 % Donor grid cell indices.
 
 Idg = NaN([1 Ndatum]);
@@ -269,5 +257,40 @@ for cr=1:Ncontact,
 end
 
 ncwrite(ncname, 'mask', mask);
+
+%--------------------------------------------------------------------------
+%  Determine which contact points are on receiver grid boundaries.
+%--------------------------------------------------------------------------
+%
+% Contact points on receiver grid boundaries. The physical boundary
+% is either at U-points (west and east edges) or V-points (south
+% and north edges).
+
+boundary = false([1 Ndatum]);
+
+for cr=1:Ncontact,
+  boundary(NstrU(cr):NendU(cr)) = S.contact(cr).point.boundary_u;
+  boundary(NstrV(cr):NendV(cr)) = S.contact(cr).point.boundary_v;
+end
+
+on_boundary = zeros([1 Ndatum]);
+
+for i=1:Ndatum,
+  if (boundary(i)),
+    cr=contact_region(i);
+    rg=S.contact(cr).receiver_grid;
+    for ib=1:4,
+      xb = S.grid(rg).boundary(ib).Xuv;
+      yb = S.grid(rg).boundary(ib).Yuv;
+      ind = (xb == X(i) & yb == Y(i));
+      if (any(ind)),
+        on_boundary(i) = ib;
+        break;
+      end
+    end
+  end
+end
+
+ncwrite(ncname, 'on_boundary', int32([on_boundary]));
 
 return

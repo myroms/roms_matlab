@@ -1764,7 +1764,9 @@ S = Sinp;
 for cr=1:S.Ncontact,
 
   rg = S.contact(cr).receiver_grid;
-
+  Lm = S.grid(rg).L-1;
+  Mm = S.grid(rg).M-1;
+  
 % Contact points on RHO-boundary.
 
   [~,ON] = inpolygon(S.contact(cr).point.Xrg_rho,                       ...
@@ -1783,6 +1785,12 @@ for cr=1:S.Ncontact,
 
   S.contact(cr).point.boundary_u = ON;
 
+  ind_u = (S.contact(cr).point.Jrg_u < 1  |                             ...
+           S.contact(cr).point.Jrg_u > Mm);
+  if (any(ind_u)),                                  % eliminate points
+    S.contact(cr).point.boundary_u(ind_u) = false;  % outside the physical
+  end                                               % perimeter (PSI edges)
+  
 % Contact points on V-boundary.
 
   [~,ON] = inpolygon(S.contact(cr).point.Xrg_v,                         ...
@@ -1792,6 +1800,12 @@ for cr=1:S.Ncontact,
 
   S.contact(cr).point.boundary_v = ON;
 
+  ind_v = (S.contact(cr).point.Irg_v < 1  |                             ...
+           S.contact(cr).point.Irg_v > Lm);
+  if (any(ind_v)),                                  % eliminate points
+    S.contact(cr).point.boundary_v(ind_v) = false;  % outside the physical
+  end                                               % perimeter (PSI edges)
+  
 end
 
 return
