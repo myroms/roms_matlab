@@ -56,6 +56,7 @@ CMAP=[.5 1 0;1 1 0;0 0 .7;0 0 1];
 
 LineColor='k';
 LineWidth=1;
+got_coast=false;
 
 % Check input arguments.
 
@@ -64,7 +65,10 @@ if (nargin < 1 || isempty(grid_file)),
 end
 if (nargin < 2 || isempty(coast_file)),
   coast_file='*.mat';
-  got_coast=1;
+  got_coast=true;
+end
+if (nargin == 2),
+  got_coast=true;
 end
 
 FIGURE_NAME='Land/Sea Mask Editor';
