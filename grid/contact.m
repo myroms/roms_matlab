@@ -789,17 +789,48 @@ JstrR = 1;      JstrP = 1;     JstrU = 1;      JstrV = 1;
 JendR = Mp;     JendP = M;     JendU = Mp;     JendV = M;
 
 if (spherical),
-  R.lon_rho(IstrR+3:IendR+3,JstrR+3)=G(rg).lon_rho(IstrR:IendR,JstrR);
-  R.lon_rho(IstrR+3:IendR+3,JendR+3)=G(rg).x_rho(IstrR:IendR,JendR);
-  R.lon_rho(IstrR+3,JstrR+4:JendR+2)=G(rg).lon_rho(IstrR,JstrR+1:JendR-1);
-  R.lon_rho(IendR+3,JstrR+4:JendR+2)=G(rg).x_rho(IendR,JstrR+1:JendR-1);
+  R.lon_psi(IstrP+3:IendP+3,JstrP+3)=G(rg).lon_psi(IstrP:IendP,JstrP);
+  R.lon_psi(IstrP+3:IendP+3,JendP+3)=G(rg).lon_psi(IstrP:IendP,JendP);
+  R.lon_psi(IstrP+3,JstrP+4:JendP+2)=G(rg).lon_psi(IstrP,JstrP+1:JendP-1);
+  R.lon_psi(IendP+3,JstrP+4:JendP+2)=G(rg).lon_psi(IendP,JstrP+1:JendP-1);
 
-  R.lat_rho(IstrR+3:IendR+3,JstrR+3)=G(rg).y_rho(IstrR:IendR,JstrR);
-  R.lat_rho(IstrR+3:IendR+3,JendR+3)=G(rg).y_rho(IstrR:IendR,JendR);
-  R.lat_rho(IstrR+3,JstrR+4:JendR+2)=G(rg).lon_rho(IstrR,JstrR+1:JendR-1);
-  R.lat_rho(IendR+3,JstrR+4:JendR+2)=G(rg).y_rho(IendR,JstrR+1:JendR-1);
+  R.lat_psi(IstrP+3:IendP+3,JstrP+3)=G(rg).lat_psi(IstrP:IendP,JstrP);
+  R.lat_psi(IstrP+3:IendP+3,JendP+3)=G(rg).lat_psi(IstrP:IendP,JendP);
+  R.lat_psi(IstrP+3,JstrP+4:JendP+2)=G(rg).lat_psi(IstrP,JstrP+1:JendP-1);
+  R.lat_psi(IendP+3,JstrP+4:JendP+2)=G(rg).lat_psi(IendP,JstrP+1:JendP-1);
+
+  R.lon_rho(IstrR+3:IendR+3,JstrR+3)=G(rg).lon_rho(IstrR:IendR,JstrR);
+  R.lon_rho(IstrR+3:IendR+3,JendR+3)=G(rg).lon_rho(IstrR:IendR,JendR);
+  R.lon_rho(IstrR+3,JstrR+4:JendR+2)=G(rg).lon_rho(IstrR,JstrR+1:JendR-1);
+  R.lon_rho(IendR+3,JstrR+4:JendR+2)=G(rg).lon_rho(IendR,JstrR+1:JendR-1);
+
+  R.lat_rho(IstrR+3:IendR+3,JstrR+3)=G(rg).lat_rho(IstrR:IendR,JstrR);
+  R.lat_rho(IstrR+3:IendR+3,JendR+3)=G(rg).lat_rho(IstrR:IendR,JendR);
+  R.lat_rho(IstrR+3,JstrR+4:JendR+2)=G(rg).lat_rho(IstrR,JstrR+1:JendR-1);
+  R.lat_rho(IendR+3,JstrR+4:JendR+2)=G(rg).lat_rho(IendR,JstrR+1:JendR-1);
+
+  R.lon_u(IstrU+3:IendU+3,JstrU+3)=G(rg).lon_u(IstrU:IendU,JstrU);
+  R.lon_u(IstrU+3:IendU+3,JendU+3)=G(rg).lon_u(IstrU:IendU,JendU);
+  R.lon_u(IstrU+3,JstrU+4:JendU+2)=G(rg).lon_u(IstrU,JstrU+1:JendU-1);
+  R.lon_u(IendU+3,JstrU+4:JendU+2)=G(rg).lon_u(IendU,JstrU+1:JendU-1);
+ 
+  R.lat_u(IstrU+3:IendU+3,JstrU+3)=G(rg).lat_u(IstrU:IendU,JstrU);
+  R.lat_u(IstrU+3:IendU+3,JendU+3)=G(rg).lat_u(IstrU:IendU,JendU);
+  R.lat_u(IstrU+3,JstrU+4:JendU+2)=G(rg).lat_u(IstrU,JstrU+1:JendU-1);
+  R.lat_u(IendU+3,JstrU+4:JendU+2)=G(rg).lat_u(IendU,JstrU+1:JendU-1);
+
+  R.lon_v(IstrV+3:IendV+3,JstrV+3)=G(rg).lon_v(IstrV:IendV,JstrV);
+  R.lon_v(IstrV+3:IendV+3,JendV+3)=G(rg).lon_v(IstrV:IendV,JendV);
+  R.lon_v(IstrV+3,JstrV+4:JendV+2)=G(rg).lon_v(IstrV,JstrV+1:JendV-1);
+  R.lon_v(IendV+3,JstrV+4:JendV+2)=G(rg).lon_v(IendV,JstrV+1:JendV-1);
+
+  R.lat_v(IstrV+3:IendV+3,JstrV+3)=G(rg).lat_v(IstrV:IendV,JstrV);
+  R.lat_v(IstrV+3:IendV+3,JendV+3)=G(rg).lat_v(IstrV:IendV,JendV);
+  R.lat_v(IstrV+3,JstrV+4:JendV+2)=G(rg).lat_v(IstrV,JstrV+1:JendV-1);
+  R.lat_v(IendV+3,JstrV+4:JendV+2)=G(rg).lat_v(IendV,JstrV+1:JendV-1);
 
 else
+
   R.x_psi(IstrP+3:IendP+3,JstrP+3)=G(rg).x_psi(IstrP:IendP,JstrP);
   R.x_psi(IstrP+3:IendP+3,JendP+3)=G(rg).x_psi(IstrP:IendP,JendP);
   R.x_psi(IstrP+3,JstrP+4:JendP+2)=G(rg).x_psi(IstrP,JstrP+1:JendP-1);
@@ -1605,7 +1636,7 @@ if (dg > rg || S.grid(dg).refine_factor > 0),
       C.Idg_v    = offset+(C.Irg_v-Io)*delta;
       C.Jdg_v    = offset+(C.Jrg_v-Jo)*delta;
 
-      C.mask_v   = G(rg).mask_u(IN);
+      C.mask_v   = G(rg).mask_v(IN);
     end
 
   else
