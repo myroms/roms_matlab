@@ -1692,7 +1692,7 @@ if (dg > rg || S.grid(dg).refine_factor > 0),
       C.Idg_v    = offset+(C.Irg_v-Io).*delta;
       C.Jdg_v    = offset+(C.Jrg_v-Jo).*delta;
 
-      C.mask_v   = G(rg).mask_u(IN);
+      C.mask_v   = G(rg).mask_v(IN);
     end
   
   end
