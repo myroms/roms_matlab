@@ -11,6 +11,12 @@
 %                     Air-Sea Flux Dataset. Notice that the original
 %                     data set is sampled for the Gulf of Mexico (GOM).
 %
+%   d_ecmwf2roms  - Driver template script showing how to create ROMS
+%                     forcing NetCDF file(s) using ROMS metadata
+%                     structure. The data source is the ECMWF ERA-Interim
+%                     (Jan 1979 - present).  The example is provided
+%                     for the Gulf of Mexico (GOM).
+%
 %   otps2roms     - Generates a ROMS tidal forcing from the OTPS dataset.
 %                     The 'base_date' is related to ROMS input parameter
 %                     the TIDE_START. It is used in ROMS to compute the
