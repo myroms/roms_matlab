@@ -58,7 +58,7 @@
 % @  strd    W m-2 s        surface thermal radiation downwards
 % @  ewss    N m-2 s        east-west surface stress
 % @  nsss    N m-2 s        north-south surface stress
-% @  e       m              evaporation
+% @  e       m              evaporation (downward flux is positive)
 % @  ro      m              runoff
 % @  tcc     nondimensional total cloud cover [0:1]
 % @  tp      m              total precipitation
@@ -83,7 +83,7 @@
 %   sensible    (W m-2)         sshf / (3*3600):   3-hour step
 %   rain        (kg m-2 s-1)    tp * Rho_w / (3*3600)
 %   evaporation (kg m-2 s-1)    e  * Rho_w / (3*3600)
-%   swflux      (cm day-1)      (e - tp) * 100 / (3/24);  0.125 day step
+%   swflux      (cm day-1)      (-e - tp) * 100 / (3/24);  0.125 day step
 %   cloud       (nondimesional) tcc
 %   Pair        (mb)            msl / 100;   (1 mb = 100 Pa)
 %   Tair        (Celsius)       t2m - 273.15;   (1 C = 273.15 K)
@@ -465,7 +465,7 @@ for n = doFields,
         case 'swflux'     
           evap  = nc_read(InpFile, 'e' , Rec);      % evaporation
           prec  = nc_read(InpFile, 'tp', Rec);      % precipitation
-          field = (evap - prec) .* scale;          
+          field = (-evap - prec) .* scale;          
         case 'shflux'   
           sensbl = nc_read(InpFile, 'sshf' , Rec);  % sensible
           latent = nc_read(InpFile, 'slhf', Rec);   % latent
