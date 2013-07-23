@@ -54,7 +54,7 @@ index = strcmp({I.Variables.Name}, 'spherical');
 if (any(index) && strcmpi(I.Variables(index).Datatype, 'char')),
 
   I.Variables(index).Datatype   = 'int32';
-  I.Variables(index).ncType     = nc_int;
+  I.Variables(index).ncType     = nc_constant('nc_int');
 
   A(1).Name  = 'long_name';
   A(1).Value = 'grid type logical switch';
