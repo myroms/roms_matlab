@@ -44,18 +44,54 @@ function [vname,nvars]=nc_vname(fname)
 %    See License_ROMS.txt                           Hernan G. Arango      %
 %=========================================================================%
 
-%  Check if input file is URL from an OpenDAP server and process with the
-%  appropriate interface.
+% Choose NetCDF file interface.
 
-url=nc_url(fname);
+[method,~,~] = nc_interface(fname);
 
-if (url),
-  [vname,nvars]=nc_vname_java(fname);  
-else
-  [vname,nvars]=nc_vname_mexnc(fname);  
+switch(method),
+  case {'native'}
+    [vname, nvars] = nc_vname_matlab(fname);   % Matlab native interface
+  case {'java'}
+    [vname, nvars] = nc_vname_java  (fname);   % SNCTOOLS JAVA interface
+  case {'mexnc'}
+    [vname, nvars] = nc_vname_mexnc (fname);   % MEXNC inteface
+  otherwise
+    error('NC_VNAME: unable to determine NetCDF processing interface');
 end
 
 return
+
+%--------------------------------------------------------------------------
+
+function [vname,nvars]=nc_vname_matlab(fname)
+
+%
+% NC_VNAME_MATLAB:  Get the names of all variables in a NetCDF file
+%
+% [vname,nvars]=nc_vname_matlab(fname)
+%
+% This function gets information about all the variable available in
+% a regular or OpenDAP URL NetCDF file. It uses the native matlab
+% function "ncinfo" that it is available in version 2012a or higher.
+%
+
+% Inquire information about requested variable.
+
+Info = ncinfo(fname); 
+
+% Extract variables information.
+
+nvars = length(Info.Variables);
+
+for n=1:nvars,
+  name=Info.Variables(n).Name;
+  lstr=length(name);
+  vname(n,1:lstr)=name(1:lstr);
+end
+
+return
+
+%--------------------------------------------------------------------------
 
 function [vname,nvars]=nc_vname_java(fname)
 
@@ -70,7 +106,7 @@ function [vname,nvars]=nc_vname_java(fname)
 
 %  Inquire information from URL NetCDF file.
 
-Info=nc_info(fname); 
+Info=nc_info(fname);
 
 %  Extract requested variable information.
 
@@ -83,6 +119,8 @@ for n=1:nvars,
 end
 
 return
+
+%--------------------------------------------------------------------------
 
 function [vname,nvars]=nc_vname_mexnc(fname)
 

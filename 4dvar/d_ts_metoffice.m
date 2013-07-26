@@ -469,7 +469,7 @@ obs.ncfile       = OBSfile;
 %  Meld inital observation error with the values computed when binning
 %  the data into super observations. Take the larger value.
 
-OBS.error = max(OBS.error, OBS.std);
+OBS.error = sqrt(OBS.error.^2 + OBS.std.^2);
 
 %  Write new structure to a new NetCDF.
 

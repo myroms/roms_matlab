@@ -1,25 +1,18 @@
-function [data]=load_sst_pfeg(GRDfile, StartDay, EndDay)
+function [data]=load_sst_pfeg(GRDfile, StartDay, EndDay, varargin)
 
 %
 % LOAD_SST_PFEG:  Loads SST data for the region and time period
 %
-% [DATA]=load_sst_pfeg(GRDfile, StartDay, EndDay)
+% [DATA]=load_sst_pfeg(GRDfile, StartDay, EndDay, sst_URL)
 % 
 %  Given a ROMS grid NetCDF, this function loads the SST data from the
-%  extensive OpenDAP catalog maintained by NOAA PFEG OceanWatch. The
-%  SST are 0.1 degree global 5-day average composite. The data are a
-%  combination of microwave AMSR-E (which has only coverage > 25 km
-%  from the coast) with infrared observations from AVHRR and MODIS
-%  (polar orbiting) and GOES (geostationary) via GHRSST.  The entire
-%  OceanWatch catalog can be found at:  
+%  extensive OpenDAP catalog maintained by NOAA PFEG OceanWatch. There
+%  are several SST near real-time or composite blended products at
+%  various spatial and temporal scales. The entire OceanWatch catalog
+%  can be found at:  
 %  
 %  http://oceanwatch.pfeg.noaa.gov/thredds/catalog.html
 %
-%  This script process the SST, Blended, Global, EXPERIMENTAL/5-day
-%  dataset which starts on 2002-07-06 12:00:00Z
-%
-%  http://oceanwatch.pfeg.noaa.gov/thredds/Satellite/aggregsatBA/ssta/catalog.html
-%   
 % On Input:
 %
 %    GRDname       NetCDF grid file name (string)
@@ -35,6 +28,8 @@ function [data]=load_sst_pfeg(GRDfile, StartDay, EndDay)
 %                    See Matlab intrinsic datenum(Y,Mo,D,H,Mi,S)
 %                    for details.
 %
+%    sst_URL       SST dataset OpenDAP URL (OPTIONAL)
+%
 % On Output:
 %
 %    data          Composite SST data (structure array):
@@ -44,44 +39,113 @@ function [data]=load_sst_pfeg(GRDfile, StartDay, EndDay)
 %                    Data.lat      latitude  of extracted data
 %                    Data.sst      sea surface temperatures
 %
+% You can use any of the following URL for sst_URL:
+%
+% http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/AA/ssta/1day
+% http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/AA/ssta/3day
+% http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/AA/ssta/5day
+% http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/AA/ssta/8day
+% http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/AA/ssta/14day
+% http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/AA/ssta/mday
+%
+% http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day
+% http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/8day
+% http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/mday
+%
 % Warning: This function uses 'nc_varget' from SNCTOOLS with OpenDAP
 %          to read NetCDF data.
 %
 
 % svn $Id$
-%===========================================================================%
-%  Copyright (c) 2002-2013 The ROMS/TOMS Group                              %
-%    Licensed under a MIT/X style license                                   %
-%    See License_ROMS.txt                           John Wilkin             %
-%===========================================================================%
+%=========================================================================%
+%  Copyright (c) 2002-2013 The ROMS/TOMS Group                            %
+%    Licensed under a MIT/X style license                                 %
+%    See License_ROMS.txt                           John Wilkin           %
+%=========================================================================%
+
+%  Set optional arguments: Use the 5-day composite experimental product
+%  as default.
+
+sst_URL = 'http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/5day';
+
+switch numel(varargin),
+ case 1
+   sst_URL = varargin{1};
+end
 
 %  Check arguments.
 
 if (nargin < 3),
-  error([' LOAD_SST_PFEG: You must specify a grid file along with', ...
+  error([' LOAD_SST_PFEG: You must specify a grid file along with',     ...
          ' starting and ending times']);
-end,
+end
 
 if (StartDay > EndDay),
-  error([' LOAD_SST_PFEG: Your starting time must be greater than', ...
+  error([' LOAD_SST_PFEG: Your starting time must be greater than',     ...
          ' the ending time']);
-end,
+end
 
 data=[];
 
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Extract SST data for the period of interest.
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
-%  Source of SST data.
+%  Choose NetCDF file interface (native or java from SNCTOOLS)
 
-url = ['http://thredds1.pfeg.noaa.gov:8080/thredds/dodsC/' ...
-       'satellite/BA/ssta/5day'];
+[method,~,~] = nc_interface(sst_URL);
+
+%  Determine SST variables name;
+
+Info = nc_vnames(sst_URL);
+
+index = strfind({Info.Variables.Name}, 'sst');
+index = ~cellfun(@isempty, index);
+
+if (any(index)),
+  sst_vname = Info.Variables(index).Name;
+else
+  error([' LOAD_SST_PFEG: unable to determine input SST variable name.']);
+end
+
+index = strfind({Info.Variables.Name}, 'lon');
+index = ~cellfun(@isempty, index);
+
+if (any(index)),
+  lon_vname = Info.Variables(index).Name;
+else
+  error([' LOAD_SST_PFEG: unable to determine input LON variable name.']);
+end
+
+index = strfind({Info.Variables.Name}, 'lat');
+index = ~cellfun(@isempty, index);
+
+if (any(index)),
+  lat_vname = Info.Variables(index).Name;
+else
+  error([' LOAD_SST_PFEG: unable to determine input LAT variable name.']);
+end
+
+index = strfind({Info.Variables.Name}, 'time');
+index = ~cellfun(@isempty, index);
+
+if (any(index)),
+  time_vname = Info.Variables(index).Name;
+else
+  error([' LOAD_SST_PFEG: unable to determine input TIME variable name.']);
+end
 
 %  Find the time period of interest.
 
 epoch = datenum([1970 1 1 0 0 0]);
-sst_time = epoch + nc_varget(url,'time')/86400;
+
+switch(method),
+  case {'native'}
+    sst_time = epoch + ncread(sst_URL, time_vname)/86400;
+  case {'java'}
+    sst_time = epoch + nc_varget(sst_URL, time_vname)/86400;
+end
+
 T = find(sst_time >= StartDay & sst_time <= EndDay);
 
 if (isempty(T)),
@@ -89,17 +153,32 @@ if (isempty(T)),
   return;
 end
 
-T = T - 1;            %  substract 1 because SNCTOOLS is 0-based.
+switch(method),
+  case {'java'}
+    T = T - 1;            %  substract 1 because SNCTOOLS is 0-based.
+end
 
 %  Read SST longitudes and latitudes.
 
-sst_lon = nc_varget(url,'lon');
-sst_lat = nc_varget(url,'lat');
+switch(method),
+  case {'native'}
+    sst_lon = ncread(sst_URL, lon_vname);
+    sst_lat = ncread(sst_URL, lat_vname);
+  case {'java'}
+    sst_lon = nc_varget(sst_URL, lon_vname);
+    sst_lat = nc_varget(sst_URL, lat_vname);
+end
 
 %  Read in application grid longitude and latitude.
 
-rlon = nc_varget(GRDfile,'lon_rho');
-rlat = nc_varget(GRDfile,'lat_rho');
+switch(method),
+  case {'native'}
+    rlon = ncread(GRDfile, 'lon_rho');
+    rlat = ncread(GRDfile, 'lat_rho');
+  case {'java'}
+    rlon = nc_varget(GRDfile, 'lon_rho');
+    rlat = nc_varget(GRDfile, 'lat_rho');
+end
 
 MinLon = min(rlon(:))-0.5;
 MaxLon = max(rlon(:))+0.5;
@@ -123,20 +202,30 @@ end,
 I = find(sst_lon >= MinLon & sst_lon <= MaxLon);
 J = find(sst_lat >= MinLat & sst_lat <= MaxLat);
 
-if (isempty(I) | isempty(J))
+if (isempty(I) || isempty(J))
   disp([' LOAD_SST_PFEG: no data found for application grid.']);
   return;
 end,
 
-I = I - 1;            %  substract 1 because SNCTOOLS is 0-based.
-J = J - 1;            %  substract 1 because SNCTOOLS is 0-based.
+switch(method),
+  case {'java'}
+    I = I - 1;        %  substract 1 because SNCTOOLS is 0-based.
+    J = J - 1;        %  substract 1 because SNCTOOLS is 0-based.
+end
 
 %  Read again coordinates for the selected region and time period to
 %  be safe.
 
-data.time = nc_varget(url,'time',T(1), length(T));
-data.lon  = nc_varget(url,'lon' ,I(1), length(I));
-data.lat  = nc_varget(url,'lat' ,J(1), length(J));
+switch(method),
+  case {'native'}
+    data.time = ncread(sst_URL, time_vname, T(1), length(T));
+    data.lon  = ncread(sst_URL, lon_vname,  I(1), length(I));
+    data.lat  = ncread(sst_URL, lat_vname,  J(1), length(J));
+  case {'java'}
+    data.time = nc_varget(sst_URL, time_vname, T(1), length(T));
+    data.lon  = nc_varget(sst_URL, lon_vname,  I(1), length(I));
+    data.lat  = nc_varget(sst_URL, lat_vname,  J(1), length(J));
+end
 
 data.time = epoch + data.time./86400;
 
@@ -150,10 +239,17 @@ if (~isempty(ind)),
   data.lon(ind) = data.lon(ind) + 360;
 end,
 
-%  Get the SST data. The data are actually 4D with second coordinate
-%  being altitude.
+%  Get the SST data (time,lat,lon). The data are actually 4D with second
+%  coordinate being altitude.
 
-data.sst = nc_varget(url, 'BAssta', [T(1) 0 J(1) I(1)], ...
-                                    [length(T) 1 length(J) length(I)]);   
+switch(method),
+  case {'native'}
+    sst = ncread(sst_URL, sst_vname, [I(1) J(1) 1 T(1)],                ...
+                [length(I) length(J) 1 length(T)]);
+    data.sst = permute(squeeze(sst), [3 2 1]);
+  case {'java'}
+    data.sst = nc_varget(sst_URL, sst_vname, [T(1) 0 J(1) I(1)],        ...
+                         [length(T) 1 length(J) length(I)]);   
+end
 
 return
