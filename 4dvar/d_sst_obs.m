@@ -38,6 +38,12 @@ CoastWatch = 'http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite';
  OBSfile = 'wc13_sst_obs.nc';
  SUPfile = 'wc13_sst_super_obs.nc';
 
+% Base date for ROMS observation files: "days since 1968-05-23 00:00:00".
+% (The WC13 application has a modified Julian day number as reference
+%  time: May-23-1968).
+
+mybasedate = datenum(1968,05,23,0,0,0);
+
 %  Set ROMS state variable type classification.
 
 Nstate=7;            % number of ROMS state variables
@@ -118,12 +124,17 @@ Joffset(2)=0;     % J-grid offset on the edge where Jend=Lm
 
 obs.spherical = 1;
 
-% The 'load_sst_pfeg' stores SST data as:   D.sst, D.time, D.lon, D.lat.
+%  The 'load_sst_pfeg' stores SST data as:   D.sst, D.time, D.lon, D.lat.
 
 StartDay = datenum(2004,1, 1);
 EndDay   = datenum(2004,1,15);
 
 D = load_sst_pfeg(GRDfile, StartDay, EndDay, sst_URL);
+
+%  Convert time to specified base date. The SST data from 'load_sst_pfeg'
+%  has a time in day numbers. 
+
+D.time = D.time - mybasedate;
 
 %  Convert data to one-dimenension array and replicate the data to
 %  the same dimension of D.sst. Notice that we get the following
@@ -365,7 +376,7 @@ S.global_sources=[newline,                                              ...
 %  Update 'units' attribute for time variables. Notice that the time
 %  of the observations in the NetCDF file is in DAYS.
 
-avalue='days since 1968-05-23 00:00:00 GMT';
+avalue=['days since ' datestr(mybasedate,31)];
 
 [status]=nc_attadd(OBSfile,'units',avalue,'survey_time');
 [status]=nc_attadd(OBSfile,'calendar','gregorian','survey_time');
@@ -407,7 +418,7 @@ OBS.error = sqrt(OBS.error.^2 + OBS.std.^2);
 
 [status]=c_observations(OBS,SUPfile);
 
-avalue='days since 1968-05-23 00:00:00 GMT';
+avalue=['days since ' datestr(mybasedate,31)];
 
 [status]=nc_attadd(SUPfile,'units',avalue,'survey_time');
 [status]=nc_attadd(SUPfile,'calendar','gregorian','survey_time');
