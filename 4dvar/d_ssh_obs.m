@@ -23,7 +23,6 @@
 %  the USERNAME and PASSWORD in the link below:
 
 % Dir = 'http://USERNAME:PASSWORD@opendap.aviso.oceanobs.com/thredds/dodsC';
-  Dir = 'http://aviso-users:grid2010@opendap.aviso.oceanobs.com/thredds/dodsC';
 
 % ssh_URL = strcat(Dir, '/dataset-duacs-nrt-over30d-global-merged-msla-h');
   ssh_URL = strcat(Dir, '/dataset-duacs-dt-ref-global-merged-msla-h-daily');
