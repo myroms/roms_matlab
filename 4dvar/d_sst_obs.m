@@ -19,22 +19,22 @@
 
 CoastWatch = 'http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite';
 
-%  sst_URL = fullfile(CoastWatch, 'AA/ssta/1day');   % SST, Aqua AMSR-E,
-%  sst_URL = fullfile(CoastWatch, 'AA/ssta/3day');   % Global
-%  sst_URL = fullfile(CoastWatch, 'AA/ssta/5day');
-%  sst_URL = fullfile(CoastWatch, 'AA/ssta/8day');
-%  sst_URL = fullfile(CoastWatch, 'AA/ssta/14day');
-%  sst_URL = fullfile(CoastWatch, 'AA/ssta/mday');
+%  sst_URL = strcat(CoastWatch, '/AA/ssta/1day');    % SST, Aqua AMSR-E,
+%  sst_URL = strcat(CoastWatch, '/AA/ssta/3day');    % Global
+%  sst_URL = strcat(CoastWatch, '/AA/ssta/5day');
+%  sst_URL = strcat(CoastWatch, '/AA/ssta/8day');
+%  sst_URL = strcat(CoastWatch, '/AA/ssta/14day');
+%  sst_URL = strcat(CoastWatch, '/AA/ssta/mday');
 
-   sst_URL = fullfile(CoastWatch, 'BA/ssta/5day');   % SST, Blended, Global
-%  sst_URL = fullfile(CoastWatch, 'BA/ssta/8day');   % Experimental
-%  sst_URL = fullfile(CoastWatch, 'BA/ssta/mday');   % Product
+   sst_URL = strcat(CoastWatch, '/BA/ssta/5day');    % SST, Blended, Global
+%  sst_URL = strcat(CoastWatch, '/BA/ssta/8day');    % Experimental
+%  sst_URL = strcat(CoastWatch, '/BA/ssta/mday');    % Product
    
 %  Set input/output NetCDF files.
 
  my_root = '~/ocean/repository/test';
 
- GRDfile = fullfile(my_root, 'WC13/Data', 'wc13_grd.nc');
+ GRDfile = strcat(my_root, '/WC13/Data/wc13_grd.nc');
  OBSfile = 'wc13_sst_obs.nc';
  SUPfile = 'wc13_sst_super_obs.nc';
 
@@ -120,6 +120,10 @@ Joffset(2)=0;     % J-grid offset on the edge where Jend=Lm
 %  Extract SST observations and store them into structure array D.
 %--------------------------------------------------------------------------
 
+%  Initialize "obs" structure.
+
+obs = [];
+
 %  Set spherical switch.
 
 obs.spherical = 1;
@@ -147,7 +151,7 @@ D.time = D.time - mybasedate;
 
 if (length(D.time) == 1),
   D.sst = reshape(D.sst, [1, size(D.sst)]);  % add singleton dimension
-end,                                         % for time
+end                                          % for time
 
 [it,Jm,Im] = size(D.sst);
 
@@ -166,13 +170,13 @@ if (~isempty(ind));                % remove NaN's from data, if any
   obs.lon  (ind) = [];
   obs.lat  (ind) = [];
   obs.value(ind) = [];
-end,
+end
 
 %  Compute observation fractional grid coordinates in term
 %  of ROMS grid.
 
-[obs.Xgrid, obs.Ygrid] = obs_ijpos(GRDfile, obs.lon, obs.lat, ...
-                                   Correction, obc_edge, ...
+[obs.Xgrid, obs.Ygrid] = obs_ijpos(GRDfile, obs.lon, obs.lat,           ...
+                                   Correction, obc_edge,                ...
                                    Ioffset, Joffset);
 
 ind = find(isnan(obs.Xgrid) & isnan(obs.Ygrid));
@@ -183,7 +187,7 @@ if (~isempty(ind));                % remove NaN's from data
   obs.Xgrid(ind) = [];
   obs.Ygrid(ind) = [];
   obs.value(ind) = [];
-end,
+end
 
 %  Assign ROMS associated state variable and provenance.
 
@@ -202,7 +206,7 @@ obs.Ndatum      = length(obs.value);
 for n=1:obs.Nsurvey,
   ind = find(obs.time == obs.survey_time(n));
   obs.Nobs(n) = length(ind);
-end,
+end
 
 %  Set depths and fractional z-grid coordinates for the observations.
 %  The SST data is a the surface.  Therefore, we need to assign
@@ -311,20 +315,20 @@ S.state_flag_meanings=['zeta', blanks(1),                               ...
 %        underscores.
 
 
-S.origin_flag_values=(1:1:12);
+S.origin_flag_values = 1:1:12;
 
-S.origin_flag_meanings=['gridded_AVISO_SLA', blanks(1),                 ...
-                        'blended_SST', blanks(1),                       ...
-                        'XBT_Met_Office', blanks(1),                    ...
-                        'CTD_temperature_Met_Office', blanks(1),        ...
-                        'CTD_salinity_Met_Office', blanks(1),           ...
-                        'ARGO_temperature_Met_Office', blanks(1),       ...
-                        'ARGO_salinity_Met_Office', blanks(1),          ...
-                        'CTD_temperature_CalCOFI', blanks(1),           ...
-                        'CTD_salinity_CalCOFI', blanks(1),              ...
-                        'CTD_temperature_GLOBEC', blanks(1),            ...
-                        'CTD_salinity_GLOBEC', blanks(1),               ...
-                        'buoy_temperature_Met_Office'];
+S.origin_flag_meanings = ['gridded_AVISO_SLA', blanks(1),               ...
+                          'blended_SST', blanks(1),                     ...
+                          'XBT_Met_Office', blanks(1),                  ...
+                          'CTD_temperature_Met_Office', blanks(1),      ...
+                          'CTD_salinity_Met_Office', blanks(1),         ...
+                          'ARGO_temperature_Met_Office', blanks(1),     ...
+                          'ARGO_salinity_Met_Office', blanks(1),        ...
+                          'CTD_temperature_CalCOFI', blanks(1),         ...
+                          'CTD_salinity_CalCOFI', blanks(1),            ...
+                          'CTD_temperature_GLOBEC', blanks(1),          ...
+                          'CTD_salinity_GLOBEC', blanks(1),             ...
+                          'buoy_temperature_Met_Office'];
 
 %  The attribute association between 'flag_values' and 'flag_meanings'
 %  is difficult to read when a moderate number of flags are use. To
@@ -336,8 +340,8 @@ S.origin_flag_meanings=['gridded_AVISO_SLA', blanks(1),                 ...
 
 newline=sprintf('\n');
 
-S.global_variables=[newline, ...
-       '1: free-surface (m) ', newline, ...
+S.global_variables=[newline,                                            ...
+       '1: free-surface (m) ', newline,                                 ...
        '2: vertically integrated u-momentum component (m/s) ', newline, ...
        '3: vertically integrated v-momentum component (m/s) ', newline, ...
        '4: u-momentum component (m/s) ', newline,                       ...
@@ -345,7 +349,7 @@ S.global_variables=[newline, ...
        '6: potential temperature (Celsius) ', newline,                  ...
        '7: salinity (nondimensional)'];
 
-S.global_provenance=[newline, ...
+S.global_provenance=[newline,                                           ...
        ' 1: gridded AVISO sea level anomaly ', newline,                 ...
        ' 2: blended satellite SST ', newline,                           ...
        ' 3: XBT temperature from Met Office ', newline,                 ...

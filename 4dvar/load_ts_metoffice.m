@@ -100,7 +100,7 @@ end,
 if (nargin > 2),
   got_period = true;
   if (StartDay > EndDay),
-    error([' LOAD_TS_METOFFICE: Your starting time must be greater', ...
+    error([' LOAD_TS_METOFFICE: Your starting time must be greater',    ...
            ' than the ending time']);
   end,
 end,
@@ -122,14 +122,14 @@ if (got_grid),
 
   [Im,Jm]=size(rlon);
 
-  Xbox=[squeeze(rlon(:,1)); ...
-        squeeze(rlon(Im,2:Jm))'; ...
-        squeeze(flipud(rlon(1:Im-1,Jm))); ...
+  Xbox=[squeeze(rlon(:,1));                                             ...
+        squeeze(rlon(Im,2:Jm))';                                        ...
+        squeeze(flipud(rlon(1:Im-1,Jm)));                               ...
         squeeze(fliplr(rlon(1,1:Jm-1)))'];
 
-  Ybox=[squeeze(rlat(:,1)); ...
-        squeeze(rlat(Im,2:Jm))'; ...
-        squeeze(flipud(rlat(1:Im-1,Jm))); ...
+  Ybox=[squeeze(rlat(:,1));                                             ...
+        squeeze(rlat(Im,2:Jm))';                                        ...
+        squeeze(flipud(rlat(1:Im-1,Jm)));                               ...
         squeeze(fliplr(rlat(1,1:Jm-1)))'];
 end
 
@@ -211,19 +211,20 @@ while (N <= Nfiles),
 %  of each level of each profile (1:Nlev, 1:Nprof).  Replace fill values
 %  with NaNs.
 
-  temp  = nc_read(ncname, 'POTM_CORRECTED', [], FillValue);   
-  salt  = nc_read(ncname, 'PSAL_CORRECTED', [], FillValue);
+  temp  = nc_read(ncname, 'POTM_CORRECTED', tindex, FillValue);   
+  salt  = nc_read(ncname, 'PSAL_CORRECTED', tindex, FillValue);
 
 %  Read in quality control character (0 to 9) for potential temperature and
 %  salinity (1:Nlev, 1:Nprof). The fill value is '0'. Values greater than 4
 %  should be rejected. We are only processing data with a quality control
 %  flag of 1.
 
-  temp_qc = nc_read(ncname, 'POTM_CORRECTED_QC', [], '0');
-  salt_qc = nc_read(ncname, 'PSAL_CORRECTED_QC', [], '0');
+  temp_qc = nc_read(ncname, 'POTM_CORRECTED_QC', tindex, '0');
+  salt_qc = nc_read(ncname, 'PSAL_CORRECTED_QC', tindex, '0');
 
-%  Convert data to a vector to facilitate screening. Need the transpose here
-%  to allow expansion of the structure with more data from other files.
+%  Convert data to a vector to facilitate screening. Need the transpose
+%  here to allow expansion of the structure with more data from other
+%  files.
 
   Temp.time  = time(:);       Salt.time  = time(:);
   Temp.lon   = lon(:);        Salt.lon   = lon(:);
@@ -240,12 +241,12 @@ while (N <= Nfiles),
 
 %  Screen and remove data for quality control and missing values.
 
-  ind_T = find((Temp.QC ~= '1')  | isnan(Temp.value) | ...
-               isnan(Temp.lon)   | isnan(Temp.lat)   | ...
+  ind_T = find((Temp.QC ~= '1')  | isnan(Temp.value) |                  ...
+               isnan(Temp.lon)   | isnan(Temp.lat)   |                  ...
                isnan(Temp.depth) | isnan(Temp.time));
 
-  ind_S = find((Salt.QC ~= '1')  | isnan(Salt.value) | ...
-               isnan(Salt.lon)   | isnan(Salt.lat)   | ...
+  ind_S = find((Salt.QC ~= '1')  | isnan(Salt.value) |                  ...
+               isnan(Salt.lon)   | isnan(Salt.lat)   |                  ...
                isnan(Salt.depth) | isnan(Salt.time));
 
   if (~isempty(ind_T)),
@@ -269,10 +270,10 @@ while (N <= Nfiles),
 
 %  Extract only requested WMO code data.
 
-  ind_T = find((Temp.WMO ~= 401) & (Temp.WMO ~= 741) & ...
+  ind_T = find((Temp.WMO ~= 401) & (Temp.WMO ~= 741) &                  ...
                (Temp.WMO ~= 820) & (Temp.WMO ~= 831));
 
-  ind_S = find((Salt.WMO ~= 401) & (Salt.WMO ~= 741) & ...
+  ind_S = find((Salt.WMO ~= 401) & (Salt.WMO ~= 741) &                  ...
                (Salt.WMO ~= 820) & (Salt.WMO ~= 831));
   
   if (~isempty(ind_T)),
@@ -299,7 +300,7 @@ while (N <= Nfiles),
 
   if (got_grid),
     bounded = false(size(Temp.lon));
-    [IN ON] = inpolygon(Temp.lon, Temp.lat, Xbox, Ybox);
+    [IN,ON] = inpolygon(Temp.lon, Temp.lat, Xbox, Ybox);
     bounded(IN) = true;
     bounded(ON) = true;
    
@@ -313,7 +314,7 @@ while (N <= Nfiles),
     end
 
     bounded = false(size(Salt.lon));
-    [IN ON] = inpolygon(Salt.lon, Salt.lat, Xbox, Ybox);
+    [IN,ON] = inpolygon(Salt.lon, Salt.lat, Xbox, Ybox);
     bounded(IN) = true;
     bounded(ON) = true;
    
@@ -363,44 +364,48 @@ while (N <= Nfiles),
 
   if (debugging),
     disp(' ');
-    disp(['                            Observations file = ',   ...
+    disp(['                            Observations file = ',           ...
           ncname]);
-    disp(['                  Number of observations read = ',   ...
+    disp(['                  Number of observations read = ',           ...
           num2str(NobsT(1),'%8.8i'), '  ', num2str(NobsS(1),'%8.8i')]);
-    disp([' Number after QC screening and missing values = ',   ...
+    disp([' Number after QC screening and missing values = ',           ...
           num2str(NobsT(2),'%8.8i'), '  ', num2str(NobsS(2),'%8.8i')]);
-    disp(['         Number after WMO intrument screening = ',   ...
+    disp(['         Number after WMO intrument screening = ',           ...
           num2str(NobsT(3),'%8.8i'), '  ', num2str(NobsS(3),'%8.8i')]);
     if (got_grid),
       disp(['                Number inside aplication grid = ', ...
             num2str(NobsT(4),'%8.8i'), '  ', num2str(NobsS(4),'%8.8i')]);
     end,
     if (got_period),
-      disp(['                  Number after time screening = ', ...
+      disp(['                  Number after time screening = ',         ...
             num2str(NobsT(5),'%8.8i'), '  ', num2str(NobsS(5),'%8.8i')]);
     end
   end
   
   if (isempty(Temp.time) && isempty(Salt.time)),
+
     disp([' LOAD_TS_METOFFICE: no data extracted from file: ', ncname]);
-    return
+  
+  else   % found observations in this period
+    
+    [~,I] = sort(Temp.time, 'ascend');       % sort in time ascending order
+  
+    for value = field_list,
+      field = char(value);
+      T.(field) = [T.(field), transpose(Temp.(field)(I))];
+    end
+
+    [~,I] = sort(Salt.time, 'ascend');       % sort in time ascending order
+  
+    for value = field_list,
+      field = char(value);
+      S.(field) = [S.(field), transpose(Salt.(field)(I))];
+    end
+  
+    clear I Temp Salt Y
+    
   end
 
-  [~,I] = sort(Temp.time, 'ascend');           % sort in time ascending order
-  
-  for value = field_list,
-    field = char(value);
-    T.(field) = [T.(field), transpose(Temp.(field)(I))];
-  end
-
-  [~,I] = sort(Salt.time, 'ascend');           % sort in time ascending order
-  
-  for value = field_list,
-    field = char(value);
-    S.(field) = [S.(field), transpose(Salt.(field)(I))];
-  end
-  
-  clear I Temp Salt Y
 
 %  Increase file name counter. If applicable, compress back the input
 %  file.

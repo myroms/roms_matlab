@@ -26,9 +26,9 @@
 
  my_root = '/home/arango/ocean/toms/repository/Projects/WC13';
 
- A.Gname = fullfile(my_root, 'Data',    'wc13_grd.nc');
- A.Hname = fullfile(my_root, 'Forward', 'wc13_his.nc');
- A.Aname = fullfile(my_root, 'Forward', 'wc13_avg.nc');
+ A.Gname = strcat(my_root, '/Data/wc13_grd.nc');
+ A.Hname = strcat(my_root, '/Forward/wc13_his.nc');
+ A.Aname = strcat(my_root, '/Forward/wc13_avg.nc');
 
 % Set output error covariance standard deviation file.
 

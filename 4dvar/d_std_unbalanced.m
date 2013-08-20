@@ -16,15 +16,15 @@
 %
 
 % svn $Id$
-%===========================================================================%
-%  Copyright (c) 2002-2013 The ROMS/TOMS Group                              %
-%    Licensed under a MIT/X style license                                   %
-%    See License_ROMS.txt                           Hernan G. Arango        %
-%===========================================================================%
+%=========================================================================%
+%  Copyright (c) 2002-2013 The ROMS/TOMS Group                            %
+%    Licensed under a MIT/X style license                                 %
+%    See License_ROMS.txt                           Hernan G. Arango      %
+%=========================================================================%
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  User tunable parameters.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 %  Set standard deviation NetCDF file. The file name is edited and the
 %  month will be appended as *iu_jan.nc:
@@ -38,13 +38,13 @@ mstr = {'jan', 'feb', 'mar', 'apr', 'may', 'jun', ...
 
 my_root = '/home/arango/ocean/toms/repository/test';
 
-GRDfile = fullfile(my_root, 'WC13/Data', 'wc13_grd.nc');
+GRDfile = strcat(my_root, '/WC13/Data/wc13_grd.nc');
 
 %  Set input history files (string cell structure).
 
 my_root = '/home/arango/ocean/toms/repository/test';
 
-HISdir  = fullfile(my_root, 'WC13/STD/Data');
+HISdir  = strcat(my_root, '/WC13/STD/Data');
 
 HISfile = dir(fullfile(HISdir, 'wc*.nc'));
 
@@ -79,12 +79,12 @@ B.Gname = GRDfile;      % application's grid
 
   if (B.elliptic),
 %   B.Niter = 300;      % Number of elliptical solver iterations
-  end,                  % (default 200)
+  end                   % (default 200)
   
   if (~B.elliptic),
     B.LNM_depth = 0;    % integrate from bottom to surface
 %   B.LNM_depth = 500;  % integrate from z=-500 to surface
-  end,   
+  end    
     
 %  Internal parameters for the computation of the balanced salinity
 %  in terms of the temperature. These parameters are set in
@@ -96,9 +96,9 @@ B.Gname = GRDfile;      % application's grid
 % B.dTdz-min=0.0001;    % minimum dT/dz allowed (Celsius/m)
 %                       % (default 0.001)
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Compute monthly averages and standard deviations.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 %  Set state variables dynamical fields (cell array) to process.
 
@@ -131,12 +131,12 @@ for n=1:nvars,
     case 'spherical'
       S.spherical = nc_read(HisFile1, 'spherical');
       if (ischar(S.spherical)),
-        if (S.spherical == 'T' | S.spherical == 't');
+        if (S.spherical == 'T' || S.spherical == 't');
           S.spherical = 1;
-        else,
+        else
           S.spherical = 0;
-        end,
-      end,
+        end
+      end
     case 'Vtransform'
       S.Vtransform  = nc_read(HisFile1, 'Vtransform');
     case 'Vstretching'
@@ -149,16 +149,16 @@ for n=1:nvars,
       S.umask = nc_read(HisFile1, 'mask_u');
       S.vmask = nc_read(HisFile1, 'mask_v');
       S.masking = true;
-  end,
-end,
+  end
+end
 
 if (S.curvilinear),
   grid_list = [grid_list, 'angle'];
-end,
+end
   
 if (S.masking),
   grid_list = [grid_list, 'mask_rho', 'mask_u', 'mask_v'];
-end,
+end
 
 %  Get grid size.
 
@@ -199,15 +199,15 @@ for m=1:12,
     field     = char(fval);
     field_avg = [field, '_avg'];
 
-    try,
+    try
       S.(field_avg) = zeros(size(nc_read(HisFile1, field, rec))); 
-    catch,
+    catch
       disp([' D_STD: error while processing, rec = ', num2str(rec)]);
       disp(['        for variable : ', field]);
       disp(['        in file: ', HisFile1]);
       return
-    end,
-  end,
+    end
+  end
  
   disp(' ');
   disp([ 'Computing mean fields, month = ', num2str(m), ' ...']);
@@ -237,10 +237,10 @@ for m=1:12,
           field     = char(fval);           % convert cell to string
           field_avg = [field, '_avg'];      % average field 
 
-          try,
+          try
             F = nc_read(ncfile, field, rec);
 
-          catch,
+          catch
             disp([' D_STD: error while processing, rec = ', num2str(rec)]);
             disp(['        for variable : ', field]);
             disp(['        in file: ', HisFile1]);
@@ -248,13 +248,13 @@ for m=1:12,
           end,
 
           S.(field_avg) = S.(field_avg) + F;
-        end,
+        end
     
-      end,
+      end
     
-    end,
+    end
   
-  end,
+  end
 
 %  Compute monthly mean fields.
 
@@ -263,14 +263,14 @@ for m=1:12,
     field_avg = [field, '_avg'];            % average field 
 
     S.(field_avg) = S.(field_avg) ./ Rcount;
-  end,
+  end
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Compute monthly unbalanced error covariance standard deviations.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
   disp(' ');
-  disp(['   Computing unbalanced standard deviation, month = ', ...
+  disp(['   Computing unbalanced standard deviation, month = ',         ...
         num2str(m), ' ...']);
   disp(' ');
 
@@ -279,9 +279,9 @@ for m=1:12,
 %  parameters are set in 'ini_balance.m', the user can overwrite such
 %  values here.
 
-  if (exist('A')),
+  if (exist('A', 'var')),
     clear('A');         % clear structure A
-  end,
+  end
 
 %  Load balance operator parameters (stored in structure B).
 
@@ -322,17 +322,17 @@ for m=1:12,
         for fval = field_list,
           field = char(fval);           % convert cell to string
 
-          try,
+          try
             A.(field) = nc_read(A.Hname, field, A.HisTimeRec);
-          catch,
-            disp([' D_STD_UNBALANCED: error while processing, rec = ', ...
+          catch
+            disp([' D_STD_UNBALANCED: error while processing, rec = ',  ...
                   num2str(rec)]);
             disp(['        for variable : ', field]);
             disp(['        in file: ', HisFile1]);
             return
-          end,
+          end
         
-	end,
+        end
 
 %  Compute state anomalies from computed time mean.  Only temperature
 %  and salinity anomalies (A.temp_ano, A.salt_ano) are used in 
@@ -344,8 +344,8 @@ for m=1:12,
           field_ano = [field, '_ano'];         % anomaly field
           field_avg = [field, '_avg'];         % average field
 
-	  A.(field_ano) = A.(field) - S.(field_avg);
-        end,
+          A.(field_ano) = A.(field) - S.(field_avg);
+        end
  
 %  Set first guess free-surface for elliptic equation.  It is only used
 %  when A.elliptic = 1. Use basic state values.
@@ -373,7 +373,7 @@ for m=1:12,
           field_unb = [field, '_unb'];         % unbalanced field
 
           A.(field_unb) = A.(field_ano) - K.(field_bal);
-        end,
+        end
 
 %  Accumulate unbalanced error covariance matrix standard deviation.
 
@@ -383,8 +383,8 @@ for m=1:12,
             field_std = [field, '_std'];       % standard deviation field
 
             A.(field_std) = zeros(size(A.(field)));
-          end,
-	end,
+          end
+        end
 
         Nvar = Nvar + 1;
 
@@ -394,13 +394,13 @@ for m=1:12,
           field_unb = [field, '_unb'];         % unbalanced field
 
           A.(field_std) = A.(field_std) + A.(field_unb) .^ 2;
-	end,
+        end
 
-      end,
+      end
 
-    end,
+    end
 
-  end,
+  end
 
 %  Compute unbalanced error covariance matrix standard deviations.
 %  Notice that we are computing a unbiased estimate of the variance
@@ -413,11 +413,11 @@ for m=1:12,
     field_std = [field, '_std'];               % standard deviation field
 
     A.(field_std) = sqrt(fac * A.(field_std));
-  end,
+  end
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Write out standard deviation fields.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
   disp(' ');
   disp(['Writting out unbalanced standard deviation, file = ', S.ncname]);
@@ -437,7 +437,7 @@ for m=1:12,
     field = char(fval);                     % convert cell to string
 
     f = nc_read(HisFile1, field);  s = nc_write(S.ncname, field, f);
-  end,
+  end
 
 % Write out standard deviation data.
 
@@ -450,11 +450,11 @@ for m=1:12,
     field_std = [field, '_std'];            % standard deviation field
 
     s = nc_write(S.ncname, field, A.(field_std), rec);
-  end,
+  end
 
 % Process next month.
 
-end,
+end
 
 disp(' ');
 disp('Done.');

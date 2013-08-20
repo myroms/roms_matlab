@@ -17,15 +17,15 @@
 %
 
 % svn $Id$
-%===========================================================================%
-%  Copyright (c) 2002-2013 The ROMS/TOMS Group                              %
-%    Licensed under a MIT/X style license                                   %
-%    See License_ROMS.txt                           Hernan G. Arango        %
-%===========================================================================%
+%=========================================================================%
+%  Copyright (c) 2002-2013 The ROMS/TOMS Group                            %
+%    Licensed under a MIT/X style license                                 %
+%    See License_ROMS.txt                           Hernan G. Arango      %
+%=========================================================================%
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  User tunable parameters.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 %  Set standard deviation NetCDF file. The file name is edited and the
 %  month will be appended as *i_jan.nc:
@@ -39,13 +39,13 @@ mstr = {'jan', 'feb', 'mar', 'apr', 'may', 'jun', ...
 
 my_root = '/home/arango/ocean/toms/repository/test';
 
-GRDfile = fullfile(my_root, 'WC13/Data', 'wc13_grd.nc');
+GRDfile = strcat(my_root, '/WC13/Data/wc13_grd.nc');
 
 %  Set input history files (string cell structure).
 
 my_root = '/home/arango/ocean/toms/repository/test';
 
-HISdir  = fullfile(my_root, 'WC13/STD/Data');
+HISdir  = strcat(my_root, '/WC13/STD/Data');
 
 HISfile = dir(fullfile(HISdir, 'wc*.nc'));
 
@@ -74,9 +74,9 @@ S.do_svstr  = true;                 % surface v-momentum stress
 S.do_shflux = true;                 % surface net heat flux
 S.do_ssflux = true;                 % surface salt flux (E-P)*SALT
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Compute monthly averages and standard deviations.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 %  Extract first history file name.
 
@@ -98,12 +98,12 @@ for n=1:nvars,
     case 'spherical'
       S.spherical = nc_read(HisFile1, 'spherical');
       if (ischar(S.spherical)),
-        if (S.spherical == 'T' | S.spherical == 't');
+        if (S.spherical == 'T' || S.spherical == 't');
           S.spherical = 1;
-        else,
+        else
           S.spherical = 0;
-        end,
-      end,
+        end
+      end
     case 'Vtransform'
       S.Vtransform  = nc_read(HisFile1, 'Vtransform');
     case 'Vstretching'
@@ -116,8 +116,8 @@ for n=1:nvars,
       S.umask = nc_read(HisFile1, 'mask_u');
       S.vmask = nc_read(HisFile1, 'mask_v');
       S.masking = true;
-  end,
-end,
+  end
+end
 
 if (S.curvilinear),
   grid_list = [grid_list, 'angle'];
@@ -125,7 +125,7 @@ end,
   
 if (S.masking),
   grid_list = [grid_list, 'mask_rho', 'mask_u', 'mask_v'];
-end,
+end
 
 %  Get grid size.
 
@@ -167,10 +167,10 @@ for m=1:12,
     field_avg = [field, '_avg'];
     field_std = [field, '_std'];
   
-    try,
+    try
       S.(field_avg) = zeros(size(nc_read(HisFile1, field, rec))); 
       S.(field_std) = S.(field_avg);
-    catch,
+    catch
       disp([' D_STD_FRC: error while processing, rec = ', num2str(rec)]);
       disp(['            for variable : ', field]);
       didp(['            in file: ', HisFile1]);
@@ -179,7 +179,7 @@ for m=1:12,
   end,
 
   disp(' ');
-  disp([ 'Computing mean and standard deviation fields, month = ', ...
+  disp([ 'Computing mean and standard deviation fields, month = ',      ...
         num2str(m), ' ...']);
   disp(' ');
 
@@ -208,25 +208,26 @@ for m=1:12,
           field_avg = [field, '_avg'];      % average field 
           field_std = [field, '_std'];      % standard deviation field
 
-          try,
+          try
             F = nc_read(ncfile, field, rec);
 
-          catch,
-            disp([' D_STD_FRC: error while processing, rec = ', num2str(rec)]);
+          catch
+            disp([' D_STD_FRC: error while processing, rec = ',         ...
+                  num2str(rec)]);
             disp(['            for variable : ', field]);
             didp(['            in file: ', HisFile1]);
             return
-          end,
+          end
 
           S.(field_avg) = S.(field_avg) + F;
           S.(field_std) = S.(field_std) + F.^2;
-        end,
+        end
       
-      end,
+      end
     
-    end,
+    end
   
-  end,
+  end
 
 %  Compute monthly mean and standard deviation fields. Use an
 %  unbiased estimate for variance:
@@ -243,11 +244,11 @@ for m=1:12,
 
     S.(field_avg) = S.(field_avg) ./ Rcount;
     S.(field_std) = sqrt(fac1 * S.(field_std) - fac2 * S.(field_avg) .^ 2);
-  end,
+  end
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Write out surface forcing standard deviation fields.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
   disp(' ');
   disp([ 'Writting out standard deviation, file = ', S.ncname]);

@@ -106,7 +106,7 @@ if (nargin < 2),
   if (isfield(S,'ncfile')),
     ncfile=S.ncfile;
   else
-    error(['C_OBSERVATIONS - Cannot find file name field: ncname, ',    ...
+    error(['C_OBSERVATIONS - Cannot find file name field: ncfile, ',    ...
           'in structure array S']);
   end
 else
@@ -158,7 +158,8 @@ disp(['*** Creating observations file:  ', ncfile]);
 if (status ~= 0),
   disp('  ');
   disp(mexnc('strerror',status));
-  error([ 'C_OBSERVATIONS: CREATE - unable to create file: ', ncname]);
+  error(['C_OBSERVATIONS: CREATE - unable to create file: ', ncfile,    ...
+	 sprintf('\n'), blanks(16), 'In current directory: ', pwd]);
 end
 
 %--------------------------------------------------------------------------

@@ -39,7 +39,7 @@ function [data]=load_sst_pfeg(GRDfile, StartDay, EndDay, varargin)
 %                    Data.lat      latitude  of extracted data
 %                    Data.sst      sea surface temperatures
 %
-% You can use any of the following URL for sst_URL:
+% You can use any of the following URL for "sst_URL":
 %
 % http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/AA/ssta/1day
 % http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/AA/ssta/3day
@@ -52,14 +52,15 @@ function [data]=load_sst_pfeg(GRDfile, StartDay, EndDay, varargin)
 % http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/8day
 % http://oceanwatch.pfeg.noaa.gov/thredds/dodsC/satellite/BA/ssta/mday
 %
-% Warning: This function uses 'nc_varget' from SNCTOOLS with OpenDAP
-%          to read NetCDF data.
+% Warning: This function either uses native Matlab NetCDF interface with
+%          OpenDAP support (version 2012a or higher) or 'nc_varget' from
+%          SNCTOOLS with OpenDAP to read data.
 %
 
 % svn $Id$
 %=========================================================================%
 %  Copyright (c) 2002-2013 The ROMS/TOMS Group                            %
-%    Licensed under a MIT/X style license                                 %
+%    Licensed under a MIT/X style license           Hernan G. Arango      %
 %    See License_ROMS.txt                           John Wilkin           %
 %=========================================================================%
 
@@ -105,7 +106,7 @@ index = ~cellfun(@isempty, index);
 if (any(index)),
   sst_vname = Info.Variables(index).Name;
 else
-  error([' LOAD_SST_PFEG: unable to determine input SST variable name.']);
+  error(' LOAD_SST_PFEG: unable to determine input SST variable name.');
 end
 
 index = strfind({Info.Variables.Name}, 'lon');
@@ -114,7 +115,7 @@ index = ~cellfun(@isempty, index);
 if (any(index)),
   lon_vname = Info.Variables(index).Name;
 else
-  error([' LOAD_SST_PFEG: unable to determine input LON variable name.']);
+  error(' LOAD_SST_PFEG: unable to determine input LON variable name.');
 end
 
 index = strfind({Info.Variables.Name}, 'lat');
@@ -123,7 +124,7 @@ index = ~cellfun(@isempty, index);
 if (any(index)),
   lat_vname = Info.Variables(index).Name;
 else
-  error([' LOAD_SST_PFEG: unable to determine input LAT variable name.']);
+  error(' LOAD_SST_PFEG: unable to determine input LAT variable name.');
 end
 
 index = strfind({Info.Variables.Name}, 'time');
@@ -132,7 +133,7 @@ index = ~cellfun(@isempty, index);
 if (any(index)),
   time_vname = Info.Variables(index).Name;
 else
-  error([' LOAD_SST_PFEG: unable to determine input TIME variable name.']);
+  error(' LOAD_SST_PFEG: unable to determine input TIME variable name.');
 end
 
 %  Find the time period of interest.
@@ -149,7 +150,7 @@ end
 T = find(sst_time >= StartDay & sst_time <= EndDay);
 
 if (isempty(T)),
-  disp([' LOAD_SST_PFEG: no data found for period of interest.']);
+  disp(' LOAD_SST_PFEG: no data found for period of interest.');
   return;
 end
 
@@ -190,12 +191,12 @@ MaxLat = max(rlat(:))+0.5;
 ind = find(sst_lon > MaxLon);
 if (~isempty(ind)),
   sst_lon(ind) = sst_lon(ind) - 360;
-end,
+end
 
 ind = find(sst_lon < MinLon);
 if (~isempty(ind)),
   sst_lon(ind) = sst_lon(ind) + 360;
-end,
+end
 
 %  Grab the indices for the application grid.
 
@@ -203,9 +204,9 @@ I = find(sst_lon >= MinLon & sst_lon <= MaxLon);
 J = find(sst_lat >= MinLat & sst_lat <= MaxLat);
 
 if (isempty(I) || isempty(J))
-  disp([' LOAD_SST_PFEG: no data found for application grid.']);
+  disp(' LOAD_SST_PFEG: no data found for application grid.');
   return;
-end,
+end
 
 switch(method),
   case {'java'}
@@ -232,12 +233,12 @@ data.time = epoch + data.time./86400;
 ind = find(data.lon > MaxLon);
 if (~isempty(ind)),
   data.lon(ind) = data.lon(ind) - 360;
-end,
+end
 
 ind = find(data.lon < MinLon);
 if (~isempty(ind)),
   data.lon(ind) = data.lon(ind) + 360;
-end,
+end
 
 %  Get the SST data (time,lat,lon). The data are actually 4D with second
 %  coordinate being altitude.
@@ -248,8 +249,9 @@ switch(method),
                 [length(I) length(J) 1 length(T)]);
     data.sst = permute(squeeze(sst), [3 2 1]);
   case {'java'}
-    data.sst = nc_varget(sst_URL, sst_vname, [T(1) 0 J(1) I(1)],        ...
-                         [length(T) 1 length(J) length(I)]);   
+    sst = nc_varget(sst_URL, sst_vname, [I(1) J(1) 0 T(1)],             ...
+                    [length(I) length(J) 1 length(T)]);   
+    data.sst = permute(squeeze(sst), [3 2 1]);
 end
 
 return

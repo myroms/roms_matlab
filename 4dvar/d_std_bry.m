@@ -17,15 +17,15 @@
 %
 
 % svn $Id$
-%===========================================================================%
-%  Copyright (c) 2002-2013 The ROMS/TOMS Group                              %
-%    Licensed under a MIT/X style license                                   %
-%    See License_ROMS.txt                           Hernan G. Arango        %
-%===========================================================================%
+%=========================================================================%
+%  Copyright (c) 2002-2013 The ROMS/TOMS Group                            %
+%    Licensed under a MIT/X style license                                 %
+%    See License_ROMS.txt                           Hernan G. Arango      %
+%=========================================================================%
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  User tunable parameters.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 %  Set output standard deviation NetCDF file.
 
@@ -35,13 +35,13 @@ STDfile = 'wc13_std_b.nc';
 
 my_root = '/home/arango/ocean/toms/repository/test';
 
-GRDfile = fullfile(my_root, 'WC13/Data', 'wc13_grd.nc');
+GRDfile = strcat(my_root, '/WC13/Data/wc13_grd.nc');
 
 %  Set input initial conditions standard deviation.
 
 my_root = '/home/arango/ocean/toms/repository/test';
 
-INIfile = fullfile(my_root, 'WC13/Data', 'wc13_std_i.nc');
+INIfile = strcat(my_root, '/WC13/Data/wc13_std_i.nc');
 
 %  Set state variables dynamical fields (cell array) to process.
 
@@ -50,8 +50,8 @@ field_list = {'zeta', 'ubar', 'vbar', 'u', 'v', 'temp', 'salt'};
 %  Set grid variables dynamical fields (cell array) to write in
 %  output file(s).
 
-grid_list  = {'theta_s', 'theta_b', 'Tcline' , 'hc'     , 's_rho'  , ...
-              's_w'    , 'Cs_r'   , 'Cs_w'   , 'h'      , 'lon_rho', ...
+grid_list  = {'theta_s', 'theta_b', 'Tcline' , 'hc'     , 's_rho'  ,    ...
+              's_w'    , 'Cs_r'   , 'Cs_w'   , 'h'      , 'lon_rho',    ...
               'lat_rho', 'lon_u'  , 'lat_u'  , 'lon_v'  , 'lat_v'};
 
 %  Initialize working structure.
@@ -70,10 +70,10 @@ S.do_v    = true;                   % v-momentum
 S.do_temp = true;                   % temperature
 S.do_salt = true;                   % salinity
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Extract open boundary conditions standard deviations from initial
 %  conditions standard deviation file.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 %  Set boundary edges indices.
 
@@ -98,12 +98,12 @@ for n=1:nvars,
     case 'spherical'
       S.spherical = nc_read(INIfile, 'spherical');
       if (ischar(S.spherical)),
-        if (S.spherical == 'T' | S.spherical == 't');
+        if (S.spherical == 'T' || S.spherical == 't');
           S.spherical = 1;
-        else,
+        else
           S.spherical = 0;
-        end,
-      end,
+        end
+      end
     case 'Vtransform'
       S.Vtransform  = nc_read(INIfile, 'Vtransform');
     case 'Vstretching'
@@ -116,16 +116,16 @@ for n=1:nvars,
       S.umask = nc_read(INIfile, 'mask_u');
       S.vmask = nc_read(INIfile, 'mask_v');
       S.masking = true;
-  end,
-end,
+  end
+end
 
 if (S.curvilinear),
   grid_list = [grid_list, 'angle'];
-end,
+end
   
 if (S.masking),
   grid_list = [grid_list, 'mask_rho', 'mask_u', 'mask_v'];
-end,
+end
 
 %  Get grid size.
 
@@ -180,11 +180,11 @@ for fval = field_list,
   field_std = [field, '_std'];            % standard deviation field
 
   S.(field_std) = extract_bry(INIfile, field, rec, compact);
-end,
+end
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Write out standard deviation fields.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 disp(' ');
 disp([ 'Writting out standard deviation, file = ', S.ncname]);
@@ -204,7 +204,7 @@ for fval = grid_list,
   field = char(fval);                     % convert cell to string
 
   f = nc_read(INIfile, field);  s = nc_write(S.ncname, field, f);
-end,
+end
 
 % Write out standard deviation data.
 
@@ -218,7 +218,7 @@ for fval = field_list,
   field_std = [field, '_std'];            % standard deviation field
 
   s = nc_write(S.ncname, field_obc, S.(field_std), rec);
-end,
+end
 
 disp(' ');
 disp('Done.');
