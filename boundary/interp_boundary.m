@@ -112,7 +112,7 @@ end
 %  Check interpolatiom data structure.  
 
 hvar_list = {'Vname', 'nvdims', 'boundary',                             ...
-	     'VD', 'Dmask', 'XD', 'YD',                                 ...
+             'VD', 'Dmask', 'XD', 'YD',                                 ...
                    'Rmask', 'XR', 'YR'};
 
 zvar_list = {'ZD', 'ZR', 'Zsur', 'Zbot'};
@@ -198,7 +198,7 @@ switch (I.nvdims),
 
         if (~isempty(ind)),
           if (RemoveNaN),
-            B.(field)(ind) = FN(I.XR.(edge)(ind), I.YR.(field)(ind));
+            B.(field)(ind) = FN(I.XR.(edge)(ind), I.YR.(edge)(ind));
             Rmin = min(Rmin, min(B.(field)(ind)));
             Rmax = max(Rmax, max(B.(field)(ind)));
 
