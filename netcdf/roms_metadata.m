@@ -1790,7 +1790,69 @@ switch Vname
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
     V.ncType                  = nc_constant(nctype);
-
+  case 'sst_time'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'sst_time';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'sea surface temperature time';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'day';
+    V.Cgridtype.Name          = 'none';
+    V.Cgridtype.Value         = 0;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'SST'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'lon';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'lat';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'sst_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'sea surface temperature';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'Celsius';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'sst_time';
+    V.Attributes(4).Name      = 'coordinates';
+    V.Attributes(4).Value     = 'lon lat sst_time';
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+  case 'dQdSST'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'lon';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'lat';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'sst_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'surface net heat flux sensitivity to SST';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'Watt meter-2 Celsius-1';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'sst_time';
+    V.Attributes(4).Name      = 'coordinates';
+    V.Attributes(4).Value     = 'lon lat sst_time';
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+    
 %--------------------------------------------------------------------------
 %  Wind-induced waves forcing variables.
 %--------------------------------------------------------------------------

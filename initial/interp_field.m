@@ -31,7 +31,7 @@ function V = interp_field(I,varargin)
 %    I             Interpolation data (struct array):
 %
 %                    I.Vname     field variable name
-%                    I.nnvdims    number of variable dimensions
+%                    I.nvdims    number of variable dimensions
 %
 %                    I.VD        Donor Grid variable data (2D/3D array)
 %

@@ -279,7 +279,7 @@ for dg=1:S.Ngrids,
       end
 
 % Otherwise, determine if any of the donor grid boundary edges lay on the
-% receiver grid perimenter.
+% receiver grid perimeter.
 
       if (S.grid(rg).refine_factor == 0),
         for ib=1:4,

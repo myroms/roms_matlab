@@ -42,6 +42,15 @@ function S = grid_perimeter(G)
 %
 %    S.grid(ng).refine_factor         - Refinement factor (0,3,5,7)
 %
+%    S.grid(ng).XI_psi (:,:)          - ROMS XI-coordinates  (PSI)
+%    S.grid(ng).ETA_psi(:,:)          - ROMS ETA-coordinates (PSI)
+%    S.grid(ng).XI_rho (:,:)          - ROMS XI-coordinates  (RHO)
+%    S.grid(ng).ETA_rho(:,:)          - ROMS ETA-coordinates (RHO)
+%    S.grid(ng).XI_u   (:,:)          - ROMS XI-coordinates  (U)
+%    S.grid(ng).ETA_u  (:,:)          - ROMS ETA-coordinates (U)
+%    S.grid(ng).XI_v   (:,:)          - ROMS XI-coordinates  (V)
+%    S.grid(ng).ETA_v  (:,:)          - ROMS ETA-coordinates (V)
+%
 %    S.grid(ng).I_psi(:,:)            - ROMS I-indices at PSI-points
 %    S.grid(ng).J_psi(:,:)            - ROMS J-indices at PSI-points
 %    S.grid(ng).I_rho(:,:)            - ROMS I-indices at RHO-points
@@ -59,6 +68,8 @@ function S = grid_perimeter(G)
 %    S.grid(ng).perimeter.Y_u(:)      - Perimeter Y-coordinates (U)
 %    S.grid(ng).perimeter.X_v(:)      - Perimeter X-coordinates (V)
 %    S.grid(ng).perimeter.Y_v(:)      - Perimeter Y-coordinates (V)
+%    S.grid(ng).perimeter.X_uv(:)     - Perimeter X-coordinates (U-V)
+%    S.grid(ng).perimeter.Y_uv(:)     - Perimeter Y-coordinates (U-V)
 %                                       (counterclockwise)
 %
 %    S.grid(ng).corners.index(:)      - Corners linear IJ-index
@@ -117,13 +128,38 @@ for ng=1:S.Ngrids,
 end
 
 %--------------------------------------------------------------------------
+% Set (XI,ETA) fractional coordinates.
+%--------------------------------------------------------------------------
+
+for ng=1:S.Ngrids,
+  Lp = S.grid(ng).Lp;   Mp = S.grid(ng).Mp;
+  L  = S.grid(ng).L;    M  = S.grid(ng).M;
+
+  [Yp, Xp] = meshgrid(1.0:1:M     , 1.0:1:L     );      % PSI-points
+  S.grid(ng).XI_psi  = Xp;
+  S.grid(ng).ETA_rho = Yp;
+
+  [Yr, Xr] = meshgrid(0.5:1:Mp-0.5, 0.5:1:Lp-0.5);      % RHO-points
+  S.grid(ng).XI_rho  = Xr;
+  S.grid(ng).ETA_rho = Yr;
+  
+  [Yu, Xu] = meshgrid(0.5:1:Mp-0.5, 1.0:1:L     );      % U-points
+  S.grid(ng).XI_u    = Xu;
+  S.grid(ng).ETA_u   = Yu;
+
+  [Yv, Xv] = meshgrid(1.0:1:M     , 0.5:1:Lp-0.5);      % V-points
+  S.grid(ng).XI_v    = Xv;
+  S.grid(ng).ETA_v   = Yv;
+end
+
+%--------------------------------------------------------------------------
 % Spherical grids: set grid indices, perimeters, corners, and boundary
 %                  edges.
 %--------------------------------------------------------------------------
 
 if (S.spherical),
 
-  for ng=1:S.Ngrids,   
+  for ng=1:S.Ngrids,
     Im = S.grid(ng).L;
     Jm = S.grid(ng).M;
     
@@ -202,6 +238,23 @@ if (S.spherical),
 
     S.grid(ng).perimeter.X_v = Xbox;
     S.grid(ng).perimeter.Y_v = Ybox;
+    
+% Grid perimeter at UV-points (counterclockwise from south). Needed for
+% lateral boundary condition switch at U- and V-points. It is more
+% accurate to use this perimeter with inpolygon.
+
+    Xbox = [squeeze(G(ng).lon_v(IstrV+1:IendV-1,JstrV));                ...
+            squeeze(G(ng).lon_u(IendU,JstrU+1:JendU-1))';               ...
+            squeeze(flipud(G(ng).lon_v(IstrV+1:IendV-1,JendV)));        ...
+            squeeze(fliplr(G(ng).lon_u(IstrU,JstrU+1:JendU-1)))'];
+    
+    Ybox = [squeeze(G(ng).lat_v(IstrV+1:IendV-1,JstrV));                ...
+            squeeze(G(ng).lat_u(IendU,JstrU+1:JendU-1))';               ...
+            squeeze(flipud(G(ng).lat_v(IstrV+1:IendV-1,JendV)));        ...
+            squeeze(fliplr(G(ng).lat_u(IstrU,JstrU+1:JendU-1)))'];
+
+    S.grid(ng).perimeter.X_uv = Xbox;
+    S.grid(ng).perimeter.Y_uv = Ybox;
     
 % Grid domain corners (PSI-points).
 
@@ -349,6 +402,23 @@ if (~S.spherical),
     S.grid(ng).perimeter.X_v = Xbox;
     S.grid(ng).perimeter.Y_v = Ybox;
 
+% Grid perimeter at UV-points (counterclockwise from south). Needed for
+% lateral boundary condition switch at U- and V-points. It is more
+% accurate to use this perimeter with inpolygon.
+
+    Xbox = [squeeze(G(ng).x_v(IstrV+1:IendV-1,JstrV));                  ...
+            squeeze(G(ng).x_u(IendU,JstrU+1:JendU-1))';                 ...
+            squeeze(flipud(G(ng).x_v(IstrV+1:IendV-1,JendV)));          ...
+            squeeze(fliplr(G(ng).x_u(IstrU,JstrU+1:JendU-1)))'];
+    
+    Ybox = [squeeze(G(ng).y_v(IstrV+1:IendV-1,JstrV));                  ...
+            squeeze(G(ng).y_u(IendU,JstrU+1:JendU-1))';                 ...
+            squeeze(flipud(G(ng).y_v(IstrV+1:IendV-1,JendV)));          ...
+            squeeze(fliplr(G(ng).y_u(IstrU,JstrU+1:JendU-1)))'];
+
+    S.grid(ng).perimeter.X_uv = Xbox;
+    S.grid(ng).perimeter.Y_uv = Ybox;
+
 % Grid domain corners (PSI-points).
 
     Icorners = false([Im Jm]);
@@ -407,5 +477,6 @@ if (~S.spherical),
   
   end
 end
+
 
 return

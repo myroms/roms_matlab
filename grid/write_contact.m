@@ -282,7 +282,7 @@ for i=1:Ndatum,
     for ib=1:4,
       xb = S.grid(rg).boundary(ib).Xuv;
       yb = S.grid(rg).boundary(ib).Yuv;
-      ind = (xb == X(i) & yb == Y(i));
+      ind = (abs(xb-X(i)) < 4*eps & abs(yb-Y(i)) < 4*eps);
       if (any(ind)),
         on_boundary(i) = ib;
         break;

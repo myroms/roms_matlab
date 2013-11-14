@@ -3,7 +3,7 @@ function [S,G] = contact(Gnames, Cname, varargin)
 %
 % CONTACT:  Sets Contact Points between ROMS nested Grids.
 %
-% [S,G,h] = contact(Gnames, Cname, Lmask, MaskInterp, Lplot)
+% [S,G] = contact(Gnames, Cname, Lmask, MaskInterp, Lplot)
 %
 % This function sets contact points in the overlaping contact
 % regions between nested grids. The order of nested grid file
@@ -1364,7 +1364,9 @@ function [C, R] = refinement(cr, dg, rg, Lmask, G, S, MaskInterp)
 
 % Initialize.
 
-spherical = S.spherical;
+method      = 'natural';
+spherical   = S.spherical;
+InterpDonor = true;                 % Interpolate Donor indices method
 
 C = struct('Xrg_rho'     , [], 'Yrg_rho'     , [],                      ...
            'Irg_rho'     , [], 'Jrg_rho'     , [],                      ...
@@ -1401,120 +1403,193 @@ if (S.grid(rg).refine_factor > 0),
   Jo    = min(S.contact(cr).corners.Jdg);
 
 % Set receiver grid contact points: perimeter and outside contact region
-% on donor grid. Notice that we need to substract half a coarse grid 
-% (refine_factor/2) when computing the donor grid indices to insure
-% the left-bottom corner of the cell containing the receiver grid
-% contact point.
+% on donor grid.  Currently, an interpolation to is carried out to compute
+% the donor coarse grid indices containing the receiver fine grid contact
+% point.  There is some roundoff in the interpolation so the appropriate
+% roundoff is required to get the correct (Idg, Jdg) indices.
 
   if (spherical),
-    [IN,~] = inpolygon(R.lon_rho(:), R.lat_rho(:),                      ...
-                       S.grid(rg).perimeter.X_psi,                      ...
-                       S.grid(rg).perimeter.Y_psi);
+    [IN,ON] = inpolygon(R.lon_rho(:), R.lat_rho(:),                     ...
+                        S.grid(rg).perimeter.X_psi,                     ...
+                        S.grid(rg).perimeter.Y_psi);
+
+    FCr = TriScatteredInterp (G(dg).lon_rho(:), G(dg).lat_rho(:),       ...
+                              S.grid(dg).I_rho(:), method);
+
+    Idg_rho = FCr(R.lon_rho(:), R.lat_rho(:));
+    FCr.V   = S.grid(dg).J_rho(:);                       % edit interpolant
+    Jdg_rho = FCr(R.lon_rho(:), R.lat_rho(:));
 
     if (any(~IN)),
-      C.Xrg_rho  = R.lon_rho(~IN);
-      C.Yrg_rho  = R.lat_rho(~IN);
-      C.Irg_rho  = R.Irg_rho(~IN);
-      C.Jrg_rho  = R.Jrg_rho(~IN);
-      C.Idg_rho  = floor(Io+(C.Irg_rho-half).*delta);
-      C.Jdg_rho  = floor(Jo+(C.Jrg_rho-half).*delta);
-    
-      C.angle    = R.angle(~IN);
-      C.f        = R.f(~IN);
-      C.h        = R.h(~IN);
-      C.pm       = R.pm(~IN);
-      C.pn       = R.pn(~IN);
-      C.dndx     = R.dndx(~IN);
-      C.dmde     = R.dmde(~IN);
-      C.mask_rho = R.mask_rho(~IN);
+      C.Xrg_rho   = R.lon_rho(~IN);
+      C.Yrg_rho   = R.lat_rho(~IN);
+      C.Irg_rho   = R.Irg_rho(~IN);
+      C.Jrg_rho   = R.Jrg_rho(~IN);
+      if (InterpDonor),
+        C.Idg_rho = floor(Idg_rho(~IN)+0.5*delta);
+        C.Jdg_rho = floor(Jdg_rho(~IN)+0.5*delta);
+      else
+        C.Idg_rho = floor(Io+(C.Irg_rho-half).*delta);
+        C.Jdg_rho = floor(Jo+(C.Jrg_rho-half).*delta);
+      end
+      C.angle     = R.angle(~IN);
+      C.f         = R.f(~IN);
+      C.h         = R.h(~IN);
+      C.pm        = R.pm(~IN);
+      C.pn        = R.pn(~IN);
+      C.dndx      = R.dndx(~IN);
+      C.dmde      = R.dmde(~IN);
+      C.mask_rho  = R.mask_rho(~IN);
     end
 
     [IN,ON] = inpolygon(R.lon_u(:), R.lat_u(:),                         ...
-                        S.grid(rg).perimeter.X_psi,                     ...
-                        S.grid(rg).perimeter.Y_psi);
+                        S.grid(rg).perimeter.X_uv,                      ...
+                        S.grid(rg).perimeter.Y_uv);
 
-    IN(ON) = false;                       % remove U-points on perimeter
-    if (any(~IN)),                        % so they are included in (~IN)
-      C.Xrg_u    = R.lon_u(~IN);
-      C.Yrg_u    = R.lat_u(~IN);
-      C.Irg_u    = R.Irg_u(~IN);
-      C.Jrg_u    = R.Jrg_u(~IN);
-      C.Idg_u    = floor(Io+(C.Irg_u-half).*delta);
-      C.Jdg_u    = floor(Jo+(C.Jrg_u-half).*delta);
+    FCu = TriScatteredInterp (G(dg).lon_u(:), G(dg).lat_u(:),           ...
+                              S.grid(dg).I_u(:), method);
 
-      C.mask_u   = R.mask_u(~IN);
+    Idg_u = FCu(R.lon_u(:), R.lat_u(:));
+    FCu.V = S.grid(dg).J_u(:);                           % edit interpolant
+    Jdg_u = FCu(R.lon_u(:), R.lat_u(:));
+
+    IN(ON) = false;                             % add U-points on perimeter
+
+    if (any(~IN)),
+      C.Xrg_u   = R.lon_u(~IN);
+      C.Yrg_u   = R.lat_u(~IN);
+      C.Irg_u   = R.Irg_u(~IN);
+      C.Jrg_u   = R.Jrg_u(~IN);
+      if (InterpDonor),
+        C.Idg_u = floor(Idg_u(~IN)+0.5*delta);
+        C.Jdg_u = floor(Jdg_u(~IN)+0.5*delta);
+      else
+        C.Idg_u = floor(Io+(C.Irg_u-half).*delta);
+        C.Jdg_u = floor(Jo+(C.Jrg_u-half).*delta);
+      end
+      C.mask_u  = R.mask_u(~IN);
     end
 
     [IN,ON] = inpolygon(R.lon_v(:), R.lat_v(:),                         ...
-                        S.grid(rg).perimeter.X_psi,                     ...
-                        S.grid(rg).perimeter.Y_psi);
+                        S.grid(rg).perimeter.X_uv,                      ...
+                        S.grid(rg).perimeter.Y_uv);
 
-    IN(ON) = false;                       % remove V-points on perimeter
-    if (any(~IN)),                        % so they are included in (~IN)
-      C.Xrg_v    = R.lon_v(~IN);
-      C.Yrg_v    = R.lat_v(~IN);
-      C.Irg_v    = R.Irg_v(~IN);
-      C.Jrg_v    = R.Jrg_v(~IN);
-      C.Idg_v    = floor(Io+(C.Irg_v-half).*delta);
-      C.Jdg_v    = floor(Jo+(C.Jrg_v-half).*delta);
+    FCv = TriScatteredInterp (G(dg).lon_v(:), G(dg).lat_v(:),           ...
+                              S.grid(dg).I_v(:), method);
+
+    Idg_v = FCv(R.lon_v(:), R.lat_v(:));
+    FCv.V = S.grid(dg).J_v(:);                           % edit interpolant
+    Jdg_v = FCv(R.lon_v(:), R.lat_v(:));
+
+    IN(ON) = false;                             % add V-points on perimeter
     
-      C.mask_v   = R.mask_v(~IN);
+    if (any(~IN)),
+      C.Xrg_v   = R.lon_v(~IN);
+      C.Yrg_v   = R.lat_v(~IN);
+      C.Irg_v   = R.Irg_v(~IN);
+      C.Jrg_v   = R.Jrg_v(~IN);
+      if (InterpDonor),
+        C.Idg_v = floor(Idg_v(~IN)+0.5*delta);
+        C.Jdg_v = floor(Jdg_v(~IN)+0.5*delta);
+      else
+        C.Idg_v = floor(Io+(C.Irg_v-half).*delta);
+        C.Jdg_v = floor(Jo+(C.Jrg_v-half).*delta);
+      end
+      C.mask_v  = R.mask_v(~IN);
     end
   
   else
 
-    [IN,~] = inpolygon(R.x_rho(:), R.y_rho(:),                          ...
-                       S.grid(rg).perimeter.X_psi,                      ...
-                       S.grid(rg).perimeter.Y_psi);
+    [IN,ON] = inpolygon(R.x_rho(:), R.y_rho(:),                         ...
+                        S.grid(rg).perimeter.X_psi,                     ...
+                        S.grid(rg).perimeter.Y_psi);
 
+    FCr = TriScatteredInterp (G(dg).x_rho(:), G(dg).y_rho(:),           ...
+                              S.grid(dg).I_rho(:), method);
+
+    Idg_rho = FCr(R.x_rho(:), R.y_rho(:));
+    FCr.V = S.grid(dg).J_rho(:);                    % edit interpolant
+    Jdg_rho = FCr(R.x_rho(:), R.y_rho(:));
+    
     if (any(~IN)),
-      C.Xrg_rho  = R.x_rho(~IN);
-      C.Yrg_rho  = R.y_rho(~IN);
-      C.Irg_rho  = R.Irg_rho(~IN);
-      C.Jrg_rho  = R.Jrg_rho(~IN);
-      C.Idg_rho  = floor(Io+(C.Irg_rho-half).*delta);
-      C.Jdg_rho  = floor(Jo+(C.Jrg_rho-half).*delta);
+      C.Xrg_rho   = R.x_rho(~IN);
+      C.Yrg_rho   = R.y_rho(~IN);
+      C.Irg_rho   = R.Irg_rho(~IN);
+      C.Jrg_rho   = R.Jrg_rho(~IN);
+      if (InterpDonor),
+        C.Idg_rho = floor(Idg_rho(~IN)+0.5*delta);
+        C.Jdg_rho = floor(Jdg_rho(~IN)+0.5*delta);
+      else
+        C.Idg_rho = floor(Io+(C.Irg_rho-half).*delta);
+        C.Jdg_rho = floor(Jo+(C.Jrg_rho-half).*delta);
+      end
 
-      C.angle    = R.angle(~IN);
-      C.f        = R.f(~IN);
-      C.h        = R.h(~IN);
-      C.pm       = R.pm(~IN);
-      C.pn       = R.pn(~IN);
-      C.dndx     = R.dndx(~IN);
-      C.dmde     = R.dmde(~IN);
-      C.mask_rho = R.mask_rho(~IN);
+      C.angle     = R.angle(~IN);
+      C.f         = R.f(~IN);
+      C.h         = R.h(~IN);
+      C.pm        = R.pm(~IN);
+      C.pn        = R.pn(~IN);
+      C.dndx      = R.dndx(~IN);
+      C.dmde      = R.dmde(~IN);
+      C.mask_rho  = R.mask_rho(~IN);
     end
 
     [IN,ON] = inpolygon(R.x_u(:), R.y_u(:),                             ...
-                        S.grid(rg).perimeter.X_psi,                     ...
-                        S.grid(rg).perimeter.Y_psi);
+                        S.grid(rg).perimeter.X_uv,                      ...
+                        S.grid(rg).perimeter.Y_uv);
 
-    IN(ON) = false;                       % remove U-points on perimeter
-    if (any(~IN)),                        % so they are included in (~IN)
-      C.Xrg_u    = R.x_u(~IN);
-      C.Yrg_u    = R.y_u(~IN);
-      C.Irg_u    = R.Irg_u(~IN);
-      C.Jrg_u    = R.Jrg_u(~IN);
-      C.Idg_u    = floor(Io+(C.Irg_u-half).*delta);
-      C.Jdg_u    = floor(Jo+(C.Jrg_u-half).*delta);
+    FCu = TriScatteredInterp (G(dg).x_u(:), G(dg).y_u(:),               ...
+                              S.grid(dg).I_u(:), method);
 
-      C.mask_u   = R.mask_u(~IN);
+    Idg_u = FCu(R.x_u(:), R.y_u(:));
+    FCu.V = S.grid(dg).J_u(:);                           % edit interpolant
+    Jdg_u = FCu(R.x_u(:), R.y_u(:));
+
+    IN(ON) = false;                             % add U-points on perimeter
+   
+    if (any(~IN)),
+      C.Xrg_u   = R.x_u(~IN);
+      C.Yrg_u   = R.y_u(~IN);
+      C.Irg_u   = R.Irg_u(~IN);
+      C.Jrg_u   = R.Jrg_u(~IN);
+      if (InterpDonor),
+        C.Idg_u = floor(Idg_u(~IN)+0.5*delta);
+        C.Jdg_u = floor(Jdg_u(~IN)+0.5*delta);
+      else
+        C.Idg_u = floor(Io+(C.Irg_u-half).*delta);
+        C.Jdg_u = floor(Jo+(C.Jrg_u-half).*delta);
+      end
+
+      C.mask_u  = R.mask_u(~IN);
     end
 
     [IN,ON] = inpolygon(R.x_v(:), R.y_v(:),                             ...
-                        S.grid(rg).perimeter.X_psi,                     ...
-                        S.grid(rg).perimeter.Y_psi);
+                        S.grid(rg).perimeter.X_uv,                      ...
+                        S.grid(rg).perimeter.Y_uv);
 
-    IN(ON) = false;                       % remove V-points on perimeter
-    if (any(~IN)),                        % so they are included in (~IN)
-      C.Xrg_v    = R.x_v(~IN);
-      C.Yrg_v    = R.y_v(~IN);
-      C.Irg_v    = R.Irg_v(~IN);
-      C.Jrg_v    = R.Jrg_v(~IN);
-      C.Idg_v    = floor(Io+(C.Irg_v-half).*delta);
-      C.Jdg_v    = floor(Jo+(C.Jrg_v-half).*delta);
+    FCv = TriScatteredInterp (G(dg).x_v(:), G(dg).y_v(:),               ...
+                              S.grid(dg).I_v(:), method);
 
-      C.mask_v   = R.mask_v(~IN);
+    Idg_v = FCv(R.x_v(:), R.y_v(:));
+    FCv.V = S.grid(dg).J_v(:);                           % edit interpolant
+    Jdg_v = FCv(R.x_v(:), R.y_v(:));
+
+    IN(ON) = false;                             % add V-points on perimeter
+
+    if (any(~IN)),
+      C.Xrg_v   = R.x_v(~IN);
+      C.Yrg_v   = R.y_v(~IN);
+      C.Irg_v   = R.Irg_v(~IN);
+      C.Jrg_v   = R.Jrg_v(~IN);
+      if (InterpDonor),
+        C.Idg_v = floor(Idg_v(~IN)+0.5*delta);
+        C.Jdg_v = floor(Jdg_v(~IN)+0.5*delta);
+      else
+        C.Idg_v = floor(Io+(C.Irg_v-half).*delta);
+        C.Jdg_v = floor(Jo+(C.Jrg_v-half).*delta);
+      end
+
+      C.mask_v  = R.mask_v(~IN);
     end
 
   end
@@ -1585,114 +1660,190 @@ if (dg > rg || S.grid(dg).refine_factor > 0),
 % (fine) grid. This will be used in the fine two coarse two-way nesting.
 
   if (spherical),
-    [IN,~] = inpolygon(G(rg).lon_rho(:), G(rg).lat_rho(:),              ...
-                       S.grid(dg).perimeter.X_psi,                      ...
-                       S.grid(dg).perimeter.Y_psi);
+    [IN,ON] = inpolygon(G(rg).lon_rho(:), G(rg).lat_rho(:),             ...
+                        S.grid(dg).perimeter.X_psi,                     ...
+                        S.grid(dg).perimeter.Y_psi);
+
+    FFr = TriScatteredInterp (G(dg).lon_rho(:), G(dg).lat_rho(:),       ...
+                              S.grid(dg).I_rho(:), method);
+
+    Idg_rho = FFr(G(rg).lon_rho(IN), G(rg).lat_rho(IN));
+    FFr.V   = S.grid(dg).J_rho(:);                       % edit interpolant
+    Jdg_rho = FFr(G(rg).lon_rho(IN), G(rg).lat_rho(IN));
 
     if (any(IN)),
-      C.Xrg_rho  = G(rg).lon_rho(IN);
-      C.Yrg_rho  = G(rg).lat_rho(IN);
-      C.Irg_rho  = S.grid(rg).I_rho(IN);
-      C.Jrg_rho  = S.grid(rg).J_rho(IN);
-      C.Idg_rho  = offset+(C.Irg_rho-Io)*delta;
-      C.Jdg_rho  = offset+(C.Jrg_rho-Jo)*delta;
-    
-      C.angle    = G(rg).angle(IN);
-      C.f        = G(rg).f(IN);
-      C.h        = G(rg).h(IN);
-      C.pm       = G(rg).pm(IN);
-      C.pn       = G(rg).pn(IN);
-      C.dndx     = G(rg).dndx(IN);
-      C.dmde     = G(rg).dmde(IN);
-      C.mask_rho = G(rg).mask_rho(IN);
+      C.Xrg_rho   = G(rg).lon_rho(IN);
+      C.Yrg_rho   = G(rg).lat_rho(IN);
+      C.Irg_rho   = S.grid(rg).I_rho(IN);
+      C.Jrg_rho   = S.grid(rg).J_rho(IN);
+      if (InterpDonor),
+        C.Idg_rho = floor(Idg_rho+0.5/delta);
+        C.Jdg_rho = floor(Jdg_rho+0.5/delta);
+      else
+        C.Idg_rho = offset+(C.Irg_rho-Io)*delta;
+        C.Jdg_rho = offset+(C.Jrg_rho-Jo)*delta;
+      end
+
+      C.angle     = G(rg).angle(IN);
+      C.f         = G(rg).f(IN);
+      C.h         = G(rg).h(IN);
+      C.pm        = G(rg).pm(IN);
+      C.pn        = G(rg).pn(IN);
+      C.dndx      = G(rg).dndx(IN);
+      C.dmde      = G(rg).dmde(IN);
+      C.mask_rho  = G(rg).mask_rho(IN);
     end
 
     [IN,ON] = inpolygon(G(rg).lon_u(:), G(rg).lat_u(:),                 ...
-                        S.grid(dg).perimeter.X_psi,                     ...
-                        S.grid(dg).perimeter.Y_psi);
+                        S.grid(dg).perimeter.X_uv,                      ...
+                        S.grid(dg).perimeter.Y_uv);
 
-    IN(ON) = false;                       % remove U-points on perimeter
+    IN(ON) = false;                  % remove U-points on perimeter, if any
+
+    FFu = TriScatteredInterp (G(dg).lon_u(:), G(dg).lat_u(:),           ...
+                              S.grid(dg).I_u(:), method);
+
+    Idg_u = FFu(G(rg).lon_u(IN), G(rg).lat_u(IN));
+    FFu.V = S.grid(dg).J_u(:);                           % edit interpolant
+    Jdg_u = FFu(G(rg).lon_u(IN), G(rg).lat_u(IN));
+
     if (any(IN)),
-      C.Xrg_u    = G(rg).lon_u(IN);
-      C.Yrg_u    = G(rg).lat_u(IN);
-      C.Irg_u    = S.grid(rg).I_u(IN);
-      C.Jrg_u    = S.grid(rg).J_u(IN);
-      C.Idg_u    = offset+(C.Irg_u-Io)*delta;
-      C.Jdg_u    = offset+(C.Jrg_u-Jo)*delta;
+      C.Xrg_u   = G(rg).lon_u(IN);
+      C.Yrg_u   = G(rg).lat_u(IN);
+      C.Irg_u   = S.grid(rg).I_u(IN);
+      C.Jrg_u   = S.grid(rg).J_u(IN);
+      if (InterpDonor),
+        C.Idg_u = floor(Idg_u+0.5/delta);
+        C.Jdg_u = floor(Jdg_u+0.5/delta);
+      else
+        C.Idg_u = offset+(C.Irg_u-Io)*delta;
+        C.Jdg_u = offset+(C.Jrg_u-Jo)*delta;
+      end
 
-      C.mask_u   = G(rg).mask_u(IN);
+      C.mask_u  = G(rg).mask_u(IN);
     end
 
     [IN,ON] = inpolygon(G(rg).lon_v(:), G(rg).lat_v,                    ...
-                        S.grid(dg).perimeter.X_psi,                     ...
-                        S.grid(dg).perimeter.Y_psi);
+                        S.grid(dg).perimeter.X_uv,                      ...
+                        S.grid(dg).perimeter.Y_uv);
 
-    IN(ON) = false;                       % remove V-points on perimeter
+    IN(ON) = false;                  % remove V-points on perimeter, if any
+
+    FFv = TriScatteredInterp (G(dg).lon_v(:), G(dg).lat_v(:),           ...
+                              S.grid(dg).I_v(:), method);
+
+    Idg_v = FFv(G(rg).lon_v(IN), G(rg).lat_v(IN));
+    FFu.V = S.grid(dg).J_v(:);                           % edit interpolant
+    Jdg_v = FFv(G(rg).lon_v(IN), G(rg).lat_v(IN));
+
     if (any(IN)),
       C.Xrg_v    = G(rg).lon_v(IN);
       C.Yrg_v    = G(rg).lat_v(IN);
       C.Irg_v    = S.grid(rg).I_v(IN);
       C.Jrg_v    = S.grid(rg).J_v(IN);
-      C.Idg_v    = offset+(C.Irg_v-Io)*delta;
-      C.Jdg_v    = offset+(C.Jrg_v-Jo)*delta;
-
-      C.mask_v   = G(rg).mask_v(IN);
+      if (InterpDonor),
+        C.Idg_v = floor(Idg_v+0.5/delta);
+        C.Jdg_v = floor(Jdg_v+0.5/delta);
+      else
+        C.Idg_v = offset+(C.Irg_v-Io).*delta;
+        C.Jdg_v = offset+(C.Jrg_v-Jo).*delta;
+      end
+      
+      C.mask_v  = G(rg).mask_v(IN);
     end
 
   else
     
-    [IN,~] = inpolygon(G(rg).x_rho(:), G(rg).y_rho(:),                  ...
-                       S.grid(dg).perimeter.X_psi,                      ...
-                       S.grid(dg).perimeter.Y_psi);
+    [IN,ON] = inpolygon(G(rg).x_rho(:), G(rg).y_rho(:),                 ...
+                        S.grid(dg).perimeter.X_psi,                     ...
+                        S.grid(dg).perimeter.Y_psi);
+
+    FFr = TriScatteredInterp (G(dg).x_rho(:), G(dg).y_rho(:),           ...
+                              S.grid(dg).I_rho(:), method);
+
+    Idg_rho = FFr(G(rg).x_rho(IN), G(rg).y_rho(IN));
+    FFr.V   = S.grid(dg).J_rho(:);                       % edit interpolant
+    Jdg_rho = FFr(G(rg).x_rho(IN), G(rg).y_rho(IN));
 
     if (any(~IN)),
-      C.Xrg_rho  = G(rg).x_rho(IN);
-      C.Yrg_rho  = G(rg).y_rho(IN);
-      C.Irg_rho  = S.grid(rg).I_rho(IN);
-      C.Jrg_rho  = S.grid(rg).J_rho(IN);
-      C.Idg_rho  = offset+(C.Irg_rho-Io)*delta;
-      C.Jdg_rho  = offset+(C.Jrg_rho-Jo)*delta;
+      C.Xrg_rho   = G(rg).x_rho(IN);
+      C.Yrg_rho   = G(rg).y_rho(IN);
+      C.Irg_rho   = S.grid(rg).I_rho(IN);
+      C.Jrg_rho   = S.grid(rg).J_rho(IN);
+      if (InterpDonor),
+        C.Idg_rho = floor(Idg_rho+0.5/delta);
+        C.Jdg_rho = floor(Jdg_rho+0.5/delta);
+      else
+        C.Idg_rho = offset+(C.Irg_rho-Io)*delta;
+        C.Jdg_rho = offset+(C.Jrg_rho-Jo)*delta;
+      end
     
-      C.angle    = G(rg).angle(IN);
-      C.f        = G(rg).f(IN);
-      C.h        = G(rg).h(IN);
-      C.pm       = G(rg).pm(IN);
-      C.pn       = G(rg).pn(IN);
-      C.dndx     = G(rg).dndx(IN);
-      C.dmde     = G(rg).dmde(IN);
-      C.mask_rho = G(rg).mask_rho(IN);
+      C.angle     = G(rg).angle(IN);
+      C.f         = G(rg).f(IN);
+      C.h         = G(rg).h(IN);
+      C.pm        = G(rg).pm(IN);
+      C.pn        = G(rg).pn(IN);
+      C.dndx      = G(rg).dndx(IN);
+      C.dmde      = G(rg).dmde(IN);
+      C.mask_rho  = G(rg).mask_rho(IN);
     end
 
     [IN,ON] = inpolygon(G(rg).x_u(:), G(rg).y_u(:),                     ...
-                        S.grid(dg).perimeter.X_psi,                     ...
-                        S.grid(dg).perimeter.Y_psi);
+                        S.grid(dg).perimeter.X_uv,                      ...
+                        S.grid(dg).perimeter.Y_uv);
 
-    IN(ON) = false;
+    IN(ON) = false;                  % remove U-points on perimeter, if any
+
+    FFu = TriScatteredInterp (G(dg).x_u(:), G(dg).y_u(:),               ...
+                              S.grid(dg).I_u(:), method);
+
+    Idg_u = FFu(G(rg).x_u(IN), G(rg).y_u(IN));
+    FFu.V = S.grid(dg).J_u(:);                           % edit interpolant
+    Jdg_u = FFu(G(rg).x_u(IN), G(rg).y_u(IN));
+
     if (any(IN)),
-      C.Xrg_u    = G(rg).x_u(IN);
-      C.Yrg_u    = G(rg).y_u(IN);
-      C.Irg_u    = S.grid(rg).I_u(IN);
-      C.Jrg_u    = S.grid(rg).J_u(IN);
-      C.Idg_u    = offset+(C.Irg_u-Io).*delta;
-      C.Jdg_u    = offset+(C.Jrg_u-Jo).*delta;
-    
-      C.mask_u   = G(rg).mask_u(IN);
+      C.Xrg_u   = G(rg).x_u(IN);
+      C.Yrg_u   = G(rg).y_u(IN);
+      C.Irg_u   = S.grid(rg).I_u(IN);
+      C.Jrg_u   = S.grid(rg).J_u(IN);
+      if (InterpDonor),
+	C.Idg_u = floor(Idg_u+0.5/delta);
+        C.Jdg_u = floor(Jdg_u+0.5/delta);
+      else
+        C.Idg_u = offset+(C.Irg_u-Io)*delta;
+        C.Jdg_u = offset+(C.Jrg_u-Jo)*delta;
+      end
+
+      C.mask_u  = G(rg).mask_u(IN);
     end
 
     [IN,ON] = inpolygon(G(rg).x_v(:), G(rg).y_v(:),                     ...
-                        S.grid(dg).perimeter.X_psi,                     ...
-                        S.grid(dg).perimeter.Y_psi);
+                        S.grid(dg).perimeter.X_uv,                      ...
+                        S.grid(dg).perimeter.Y_uv);
 
-    IN(ON) = false;
+    IN(ON) = false;                  % remove V-points on perimeter, if any
+
+    FFv = TriScatteredInterp (G(dg).x_v(:), G(dg).y_v(:),               ...
+                              S.grid(dg).I_v(:), method);
+
+    Idg_v = FFv(G(rg).x_v(IN), G(rg).y_v(IN));
+    FFv.V = S.grid(dg).J_v(:);                           % edit interpolant
+    Jdg_v = FFv(G(rg).x_v(IN), G(rg).y_v(IN));
+
     if (any(IN)),
-      C.Xrg_v    = G(rg).x_v(IN);
-      C.Yrg_v    = G(rg).y_v(IN);
-      C.Irg_v    = S.grid(rg).I_v(IN);
-      C.Jrg_v    = S.grid(rg).J_v(IN);
-      C.Idg_v    = offset+(C.Irg_v-Io).*delta;
-      C.Jdg_v    = offset+(C.Jrg_v-Jo).*delta;
+      C.Xrg_v   = G(rg).x_v(IN);
+      C.Yrg_v   = G(rg).y_v(IN);
+      C.Irg_v   = S.grid(rg).I_v(IN);
+      C.Jrg_v   = S.grid(rg).J_v(IN);
+      if (InterpDonor),
+        C.Idg_v = floor(Idg_v+0.5/delta);
+        C.Jdg_v = floor(Jdg_v+0.5/delta);
+      else
+        C.Idg_v = offset+(C.Irg_v-Io).*delta;
+        C.Jdg_v = offset+(C.Jrg_v-Jo).*delta;
+      end
 
-      C.mask_v   = G(rg).mask_v(IN);
+      C.mask_v  = G(rg).mask_v(IN);
     end
   
   end
@@ -1788,6 +1939,8 @@ function S = boundary_contact(Sinp)
   
 S = Sinp;
 
+UsePolygon = true;                   %  Use "inpolygon" fiunction
+
 %--------------------------------------------------------------------------
 % Determine which contact point lay on receiver grid boundary.
 %--------------------------------------------------------------------------
@@ -1800,43 +1953,91 @@ for cr=1:S.Ncontact,
   
 % Contact points on RHO-boundary.
 
-  [~,ON] = inpolygon(S.contact(cr).point.Xrg_rho,                       ...
-                     S.contact(cr).point.Yrg_rho,                       ...
-                     S.grid(rg).perimeter.X_rho,                        ...
-                     S.grid(rg).perimeter.Y_rho);
+  if (UsePolygon)
+    [IN,ON] = inpolygon(S.contact(cr).point.Xrg_rho,                    ...
+                        S.contact(cr).point.Yrg_rho,                    ...
+                        S.grid(rg).perimeter.X_psi,                     ...
+                        S.grid(rg).perimeter.Y_psi);
+  else
+    NC = length(S.contact(cr).point.Xrg_rho);
 
+    ON = false(size(S.contact(cr).point.Xrg_rho));
+
+    Xper = S.grid(rg).perimeter.X_psi;
+    Yper = S.grid(rg).perimeter.Y_psi;
+  
+    for nc=1:NC,
+      Xrg_rho = S.contact(cr).point.Xrg_rho(nc);
+      Yrg_rho = S.contact(cr).point.Yrg_rho(nc);
+    
+      ind = find(abs(Xper-Xrg_rho) < 4*eps &                            ...
+                 abs(Yper-Yrg_rho) < 4*eps);
+      if (~isempty(ind)),
+        ON(nc) = true;
+      end
+    end
+  end
+    
   S.contact(cr).point.boundary_rho = ON;
 
 % Contact points on U-boundary.  
 
-  [~,ON] = inpolygon(S.contact(cr).point.Xrg_u,                         ...
-                     S.contact(cr).point.Yrg_u,                         ...
-                     S.grid(rg).perimeter.X_u,                          ...
-                     S.grid(rg).perimeter.Y_u);
+  if (UsePolygon)
+    [IN,ON] = inpolygon(S.contact(cr).point.Xrg_u,                      ...
+                        S.contact(cr).point.Yrg_u,                      ...
+                        S.grid(rg).perimeter.X_uv,                      ...
+                        S.grid(rg).perimeter.Y_uv);
+  else
+    NC = length(S.contact(cr).point.Xrg_u);
+
+    ON = false(size(S.contact(cr).point.Xrg_u));
+
+    Xper = S.grid(rg).perimeter.X_uv;
+    Yper = S.grid(rg).perimeter.Y_uv;
+  
+    for nc=1:NC,
+      Xrg_u = S.contact(cr).point.Xrg_u(nc);
+      Yrg_u = S.contact(cr).point.Yrg_u(nc);
+    
+      ind = find(abs(Xper-Xrg_u) < 4*eps &                              ...
+                 abs(Yper-Yrg_u) < 4*eps);
+      if (~isempty(ind)),
+        ON(nc) = true;
+      end
+    end
+  end
 
   S.contact(cr).point.boundary_u = ON;
 
-  ind_u = (S.contact(cr).point.Jrg_u < 1  |                             ...
-           S.contact(cr).point.Jrg_u > Mm);
-  if (any(ind_u)),                                  % eliminate points
-    S.contact(cr).point.boundary_u(ind_u) = false;  % outside the physical
-  end                                               % perimeter (PSI edges)
-  
 % Contact points on V-boundary.
 
-  [~,ON] = inpolygon(S.contact(cr).point.Xrg_v,                         ...
-                     S.contact(cr).point.Yrg_v,                         ...
-                     S.grid(rg).perimeter.X_v,                          ...
-                     S.grid(rg).perimeter.Y_v);
+  if (UsePolygon)
+    [IN,ON] = inpolygon(S.contact(cr).point.Xrg_v,                      ...
+                        S.contact(cr).point.Yrg_v,                      ...
+                        S.grid(rg).perimeter.X_uv,                      ...
+                        S.grid(rg).perimeter.Y_uv);
+  else
+    NC = length(S.contact(cr).point.Xrg_v);
+
+    ON = false(size(S.contact(cr).point.Xrg_v));
+
+    Xper = S.grid(rg).perimeter.X_uv;
+    Yper = S.grid(rg).perimeter.Y_uv;
+  
+    for nc=1:NC,
+      Xrg_v = S.contact(cr).point.Xrg_v(nc);
+      Yrg_v = S.contact(cr).point.Yrg_v(nc);
+    
+      ind = find(abs(Xper-Xrg_v) < 4*eps &                              ...
+                 abs(Yper-Yrg_v) < 4*eps);
+      if (~isempty(ind)),
+        ON(nc) = true;
+      end
+    end
+  end
 
   S.contact(cr).point.boundary_v = ON;
 
-  ind_v = (S.contact(cr).point.Irg_v < 1  |                             ...
-           S.contact(cr).point.Irg_v > Lm);
-  if (any(ind_v)),                                  % eliminate points
-    S.contact(cr).point.boundary_v(ind_v) = false;  % outside the physical
-  end                                               % perimeter (PSI edges)
-  
 end
 
 return

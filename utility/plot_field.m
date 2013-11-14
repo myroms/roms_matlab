@@ -87,7 +87,7 @@ if (nvdims > 0),
         isr3d = true;
       case 's_w'
         isw3d = true;
-      case {'xi_rho','lon_rho'}
+      case {'xi_rho','lon_rho', 'lon'}
         Mname = 'mask_rho';
         got.Mname = true;
         if (~(got.Xname || got.Yname)),
@@ -136,7 +136,7 @@ if (nvdims > 0),
           got.Zname = true;
         end
         isvec = true;
-     case {'xi_v','lon_v'}
+      case {'xi_v','lon_v'}
         Mname = 'mask_v';
         got.Mname = true;
         if (~(got.Xname || got.Yname)),
@@ -153,7 +153,7 @@ if (nvdims > 0),
           got.Zname = true;
         end
         isvec = true;
-      case {'ocean_time', 'time'}
+      case {'ocean_time', 'time', ~isempty(strfind(dimnam,'time'))}
         recordless = false;    
         Tsize = I.Dimensions(n).Length;
     end
@@ -242,7 +242,20 @@ end
 
 if (~isempty(Tname)),
   Tvalue = nc_read(Hname,Tname,Tindex);
-  Tvalue = Tvalue/86400;                    % seconds to days
+  Tattr  = nc_getatt(Hname,'units',Tname);
+  Tdays  = true;
+  if (~isempty(strfind(Tattr, 'second'))),
+    Tvalue = Tvalue/86400;                    % seconds to days
+    Tdays  = false;
+  end  
+  iatt = strfind(Tattr, 'since');
+  if (~isempty(iatt)),
+    Torigin = Tattr(iatt+6:end);
+    epoch   = datenum(Torigin,31);            % 'yyyy-mm-dd HH:MM:SS' 
+    Tstring = datestr(epoch+Tvalue);
+  else
+    Tstring = num2str(Tvalue);    
+  end
 end
 
 ReplaceValue = NaN;
@@ -279,14 +292,15 @@ end
 
 figure;
 
-pcolor(X,Y,nanland(F,G)); shading interp; colorbar
+%pcolor(X,Y,nanland(F,G)); shading interp; colorbar
+pcolorjw(X,Y,nanland(F,G)); shading interp; colorbar
 
 if (is3d),
   if (~isempty(Tname)),
     ht = title([Vname, ':', blanks(4),                                  ...
                 'Level = ', num2str(Level), ',', blanks(4),             ...
                 'Record = ', num2str(Tindex), ',', blanks(4),           ...
-                'time = ', num2str(Tvalue)],                            ...
+                'time = ', Tstring],                                    ...
                'FontSize', 14, 'FontWeight', 'bold' );
   else
     ht = title([Vname, ':', blanks(4),                                  ...
@@ -298,7 +312,7 @@ else
   if (~isempty(Tname)),
     ht = title([Vname, ':', blanks(4),                                  ... 
                 'Record = ', num2str(Tindex), ',', blanks(4),           ...
-                'time = ', num2str(Tvalue)],                            ...
+                'time = ', Tstring],                                    ...
                'FontSize', 14, 'FontWeight', 'bold' );
   else
     ht = title([Vname, ':', blanks(4),                                  ... 
