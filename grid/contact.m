@@ -124,24 +124,32 @@ function [S,G] = contact(Gnames, Cname, varargin)
 %    S.contact(cr).boundary(ib).Idg(:)       points laying on receiver
 %    S.contact(cr).boundary(ib).Jdg(:)       grid perimeter, [] if false
 %
-%    S.contact(cr).point.Xrg_rho(:)        - Receiver grid contact points
-%    S.contact(cr).point.Yrg_rho(:)          (X,Y) coordinates and (I,J)
-%    S.contact(cr).point.Irg_rho(:)          indices (RHO-points) where
-%    S.contact(cr).point.Jrg_rho(:)          data is needed from donor
+%    S.contact(cr).point.xrg_rho(:)        - Receiver grid contact points
+%    S.contact(cr).point.erg_rho(:)          (XI,ETA) coordinates, (X,Y)
+%    S.contact(cr).point.Xrg_rho(:)          physical coordinates, and
+%    S.contact(cr).point.Yrg_rho(:)          (I,J) indices (RHO-points)
+%    S.contact(cr).point.Irg_rho(:)          where data is needed from
+%    S.contact(cr).point.Jrg_rho(:)          donor
+%
 %    S.contact(cr).point.Idg_rho(:)        - Donor (I,J) cell containing
 %    S.contact(cr).point.Jdg_rho(:)          receiver grid contact point
 %
-%    S.contact(cr).point.Xrg_u(:)          - Receiver grid contact points
-%    S.contact(cr).point.Yrg_u(:)            (X,Y) coordinates and (I,J)
-%    S.contact(cr).point.Irg_u(:)            indices (U-points) where
-%    S.contact(cr).point.Jrg_u(:)            data is needed from donor
+%    S.contact(cr).point.xrg_u(:)          - Receiver grid contact points
+%    S.contact(cr).point.erg_u(:)            (XI,ETA) coordinates, (X,Y)
+%    S.contact(cr).point.Xrg_u(:)            physical coordinates, and
+%    S.contact(cr).point.Yrg_u(:)            (I,J) indices (U-points)
+%    S.contact(cr).point.Irg_u(:)            where data is needed from
+%    S.contact(cr).point.Jrg_u(:)            donor
+%
 %    S.contact(cr).point.Idg_u(:)          - Donor (I,J) cell containing
 %    S.contact(cr).point.Jdg_u(:)            receiver grid contact point
 %
-%    S.contact(cr).point.Xrg_v(:)          - Receiver grid contact points
-%    S.contact(cr).point.Yrg_v(:)            (X,Y) coordinates and (I,J)
-%    S.contact(cr).point.Irg_v(:)            indices (V-points) where
-%    S.contact(cr).point.Jrg_v(:)            data is needed from donor
+%    S.contact(cr).point.xrg_v(:)          - Receiver grid contact points
+%    S.contact(cr).point.erg_v(:)            (XI,ETA) coordinates, (X,Y)
+%    S.contact(cr).point.Xrg_v(:)            physical coordinates, and
+%    S.contact(cr).point.Yrg_v(:)            (I,J) indices (V-points)
+%    S.contact(cr).point.Irg_v(:)            where data is needed from
+%    S.contact(cr).point.Jrg_v(:)            donor
 %
 %    S.contact(cr).point.Idg_v(:)          - Donor (I,J) cell containing
 %    S.contact(cr).point.Jdg_v(:)            receiver grid contact point
@@ -161,6 +169,9 @@ function [S,G] = contact(Gnames, Cname, varargin)
 %    S.contact(cr).point.mask_rho(:)           Land/Sea mask at RHO-points
 %    S.contact(cr).point.mask_u(:)             Land/Sea mask at U-points
 %    S.contact(cr).point.mask_v(:)             land/Sea mask at V-contact
+%
+%    S.refined(cr).xi_rho(:,:)             - Receiver grid curvilinear
+%    S.refined(cr).eta_rho(:,:)              (XI,ETA) coordinates
 %
 %    S.refined(cr).x_rho(:,:)              - Receiver grid Cartesian (X,Y)
 %    S.refined(cr).y_rho(:,:)                coordinates of the contact
@@ -382,32 +393,47 @@ function R = refine_coordinates(cr, dg, rg, G, S, MaskInterp)
 %
 %    R           Refinement coordinates structure (struct array)
 %
+%                  R.xi_rho         - Receiver grid curvilinear (XI,ETA)
+%                  R.eta_rho          coordinates in terms of the donor
+%                  R.xi_psi           grid coordinates for each C-grid
+%                  R.eta_psi          type variable (RHO-, PSI-, U-, and
+%                  R.xi_u             V-points). It will be used elsewhere
+%                  R.eta_u            for setting contact points and
+%                  R.xi_v             interpolation weights more
+%                  R.eta_v            accuratelly.
+%
+%                if (~spherical)
+%
 %                  R.x_rho          - Receiver grid Cartesian (X,Y)
 %                  R.y_rho            coordinates of the contact
 %                  R x_psi            points that requires data from
 %                  R y_psi            donor grid for each C-grid type
-%                  R.x_u              variable (RHO-, PSI, U-, and 
+%                  R.x_u              variable (RHO-, PSI-, U-, and 
 %                  R.y_u              V-points). It will be used
 %                  R.x_v              elsewhere for setting contact
-%                  R.y_v              point and interpolation weights.
+%                  R.y_v              points and interpolation weights.
+%
+%                elseif (spherical)
 %                                    
 %                  R.lon_rho        - Receiver grid spherical (lon,lat)
 %                  R.lat_rho          coordinates of the contact
 %                  R lon_psi          points that requires data from
 %                  R lat_psi          donor grid for each C-grid type
-%                  R.lon_u            variable (RHO-, PSI, U-, and 
+%                  R.lon_u            variable (RHO-, PSI-, U-, and 
 %                  R.lat_u            V-points). It will be used
 %                  R.lon_v            elsewhere for setting contact
-%                  R.lat_v            point and interpolation weights.
+%                  R.lat_v            points and interpolation weights.
+%
+%                end
 %
 %                  R.Irg_rho        - Receiver grid (I,J) coordinates
 %                  R.Jrg_rho          (ROMS indices) of the contact
 %                  R Irg_psi          points that requires data from
 %                  R Jrg_psi          donor grid for each C-grid type
-%                  R.Irg_u            variable (RHO-, PSI, U-, and 
+%                  R.Irg_u            variable (RHO-, PSI-, U-, and 
 %                  R.Jrg_u            V-points). It will be used
 %                  R.Irg_v            elsewhere for setting contact
-%                  R.Jrg_v            point and interpolation weights.
+%                  R.Jrg_v            points and interpolation weights.
 %
 %                  R.mask_rho       - Receiver grid land/sea mask of
 %                  R.mask_psi         the contact points interpolated
@@ -491,8 +517,15 @@ JrF = [JpF(1)-half JpF+half];                               % RHO-points
 
 R.spherical = spherical;
 
+% Set (XI,ETA) coordinates for the receiver finer grid in terms of the
+% donor coarser grid.  This will be needed for more precise determination
+% of the interpolation weights.
+
 % RHO-points coordinates.
-  
+
+R.xi_rho  = XrF;
+R.eta_rho = YrF;
+
 if (spherical),
   if (~isempty(G(dg).x_rho) && ~isempty(G(dg).y_rho)),
 
@@ -522,12 +555,12 @@ if (spherical),
                                R.x_rho = RCr(R.lon_rho, R.lat_rho);
     FCr.V = G(dg).y_rho(:);    R.y_rho = RCr(R.lon_rho, R.lat_rho);  
   end
-
+  
   [Im, Jm] = size(R.lon_rho);
   [Jrg, Irg] = meshgrid(1:Jm, 1:Im);
   R.Irg_rho = Irg - 4;                              % ROMS indices:
   R.Jrg_rho = Jrg - 4;                              % -3:L+2, -3:M+2
-
+  
 else
 
   FCr = TriScatteredInterp(XrC(:), YrC(:),                              ...
@@ -544,6 +577,9 @@ else
 end
 
 % PSI-points coordinates.
+
+R.xi_psi  = XpF;
+R.eta_psi = YpF;
 
 if (spherical),
   if (~isempty(G(dg).x_psi) && ~isempty(G(dg).y_psi)),
@@ -596,6 +632,9 @@ end
 
 % U-points coordinates.
 
+R.xi_u  = XuF;
+R.eta_u = YuF;
+
 if (spherical),
   if (~isempty(G(dg).x_u) && ~isempty(G(dg).y_u)),
 
@@ -647,6 +686,9 @@ else
 end
 
 % V-points coordinates.
+
+R.xi_v  = XvF;
+R.eta_v = YvF;
 
 if (spherical),
   if (~isempty(G(dg).x_v) && ~isempty(G(dg).y_v)),
@@ -900,24 +942,33 @@ function C = coincident(cr, dg, rg, Lmask, G, S)
 %
 %    C           Contact points structure (struct array):
 %
-%                  C.Xrg_rho(:)            - Receiver grid contact points
-%                  C.Yrg_rho(:)              (X,Y) coordinates and (I,J)
-%                  C.Irg_rho(:)              indices (RHO-points) where
-%                  C.Jrg_rho(:)              data is needed from donor
+%                  C.xrg_rho(:)            - Receiver grid contact points
+%                  C.erg_rho(:)              (XI,ETA) coordinates, (X,Y)
+%                  C.Xrg_rho(:)              physical coordinates, and
+%                  C.Yrg_rho(:)              and (I,J) indices (RHO-points)
+%                  C.Irg_rho(:)              where data is needed from
+%                  C.Jrg_rho(:)              donor
+%
 %                  C.Idg_rho(:)            - Donor (I,J) cell containing
 %                  C.Jdg_rho(:)              receiver grid contact point
 %
-%                  C.Xrg_u(:)              - Receiver grid contact points
-%                  C.Yrg_u(:)                (X,Y) coordinates and (I,J)
-%                  C.Irg_u(:)                indices (U-points) where
-%                  C.Jrg_u(:)                data is needed from donor
+%                  C.xrg_u(:)              - Receiver grid contact points
+%                  C.erg_u(:)                (XI,ETA) coordinates, (X,Y)
+%                  C.Xrg_u(:)                physical coordinates, and
+%                  C.Yrg_u(:)                and (I,J) indices (U-points)
+%                  C.Irg_u(:)                where data is needed from
+%                  C.Jrg_u(:)                donor
+%
 %                  C.Idg_u(:)              - Donor (I,J) cell containing
 %                  C.Jdg_u(:)                receiver grid contact point
 %
-%                  C.Xrg_v(:)              - Receiver grid contact points
-%                  C.Yrg_v(:)                (X,Y) coordinates and (I,J)
-%                  C.Irg_v(:)                indices (V-points) where
-%                  C.Jrg_v(:)                data is needed from donor
+%                  C.xrg_v(:)              - Receiver grid contact points
+%                  C.erg_v(:)                (XI,ETA) coordinates, (X,Y)
+%                  C.Xrg_v(:)                physical coordinates, and
+%                  C.Yrg_v(:)                and (I,J) indices (V-points)
+%                  C.Irg_v(:)                where data is needed from
+%                  C.Jrg_v(:)                donor
+%
 %                  C.Idg_v(:)              - Donor (I,J) cell containing
 %                  C.Jdg_v(:)                receiver grid contact point
 %
@@ -954,7 +1005,8 @@ Lrg  = S.grid(rg).L;    Mrg  = S.grid(rg).M;
 
 spherical = S.spherical;
 
-C = struct('Xrg_rho'     , [], 'Yrg_rho'     , [],                      ...
+C = struct('xrg_rho'     , [], 'erg_rho'     , [],                      ...
+           'Xrg_rho'     , [], 'Yrg_rho'     , [],                      ...
            'Irg_rho'     , [], 'Jrg_rho'     , [],                      ...
            'Idg_rho'     , [], 'Jdg_rho'     , [],                      ...
            'Xrg_u'       , [], 'Yrg_u'       , [],                      ...
@@ -990,6 +1042,15 @@ if (S.contact(cr).boundary(iwest).okey),
   Iu = S.grid(dg).I_u   <= Ioffu;
   Iv = S.grid(dg).I_v   <= Ioffv;  Iv(1,:) = false;
 
+  W(ib).xrg_rho = S.grid(dg).XI_rho(Ir);
+  W(ib).erg_rho = S.grid(dg).ETA_rho(Ir);
+
+  W(ib).xrg_u   = S.grid(dg).XI_u(Iu);
+  W(ib).erg_u   = S.grid(dg).ETA_u(Iu);
+
+  W(ib).xrg_v   = S.grid(dg).XI_v(Iv);
+  W(ib).erg_v   = S.grid(dg).ETA_v(Iv);
+  
   if (spherical),
     W(ib).Xrg_rho = G(dg).lon_rho(Ir);
     W(ib).Yrg_rho = G(dg).lat_rho(Ir);
@@ -1049,6 +1110,15 @@ if (S.contact(cr).boundary(isouth).okey),
   Ju = S.grid(dg).J_u   <= Joffu;  Ju(:,1) = false;
   Jv = S.grid(dg).J_v   <= Joffv;
 
+  W(ib).xrg_rho = S.grid(dg).XI_rho(Jr);
+  W(ib).erg_rho = S.grid(dg).ETA_rho(Jr);
+
+  W(ib).xrg_u   = S.grid(dg).XI_u(Ju);
+  W(ib).erg_u   = S.grid(dg).ETA_u(Ju);
+
+  W(ib).xrg_v   = S.grid(dg).XI_v(Jv);
+  W(ib).erg_v   = S.grid(dg).ETA_v(Jv);
+  
   if (spherical),
     W(ib).Xrg_rho = G(dg).lon_rho(Jr);
     W(ib).Yrg_rho = G(dg).lat_rho(Jr);
@@ -1107,6 +1177,15 @@ if (S.contact(cr).boundary(ieast).okey),
   Ir = S.grid(dg).I_rho >= -1 + Lpdg - Ioffr;  Ir(end,:) = false;
   Iu = S.grid(dg).I_u   >=  1 + Ldg  - Ioffu;
   Iv = S.grid(dg).I_v   >= -1 + Lpdg - Ioffv;  Iv(end,:) = false;
+
+  W(ib).xrg_rho = S.grid(dg).XI_rho(Ir);
+  W(ib).erg_rho = S.grid(dg).ETA_rho(Ir);
+
+  W(ib).xrg_u   = S.grid(dg).XI_u(Iu);
+  W(ib).erg_u   = S.grid(dg).ETA_u(Iu);
+
+  W(ib).xrg_v   = S.grid(dg).XI_v(Iv);
+  W(ib).erg_v   = S.grid(dg).ETA_v(Iv);
   
   if (spherical),
     W(ib).Xrg_rho = G(dg).lon_rho(Ir);
@@ -1167,6 +1246,15 @@ if (S.contact(cr).boundary(inorth).okey),
   Ju = S.grid(dg).J_u   >= -1 + Mpdg - Joffu;  Ju(:,end) = false;
   Jv = S.grid(dg).J_v   >=  1 + Mdg  - Joffv;
   
+  W(ib).xrg_rho = S.grid(dg).XI_rho(Jr);
+  W(ib).erg_rho = S.grid(dg).ETA_rho(Jr);
+
+  W(ib).xrg_u   = S.grid(dg).XI_u(Ju);
+  W(ib).erg_u   = S.grid(dg).ETA_u(Ju);
+
+  W(ib).xrg_v   = S.grid(dg).XI_v(Jv);
+  W(ib).erg_v   = S.grid(dg).ETA_v(Jv);
+
   if (spherical),
     W(ib).Xrg_rho = G(dg).lon_rho(Jr);
     W(ib).Yrg_rho = G(dg).lat_rho(Jr);
@@ -1222,6 +1310,13 @@ end
 
 for ib=1:4,
   if (S.contact(cr).boundary(ib).okey),
+    C.xrg_rho  = W(ib).xrg_rho;
+    C.erg_rho  = W(ib).erg_rho;
+    C.xrg_u    = W(ib).xrg_u;
+    C.erg_u    = W(ib).erg_u;
+    C.xrg_v    = W(ib).xrg_v;
+    C.erg_v    = W(ib).erg_v;
+    
     C.Xrg_rho  = W(ib).Xrg_rho;
     C.Yrg_rho  = W(ib).Yrg_rho;
     C.Irg_rho  = W(ib).Irg_rho(:);
@@ -1261,6 +1356,8 @@ for ib=1:4,
       indu = C.mask_u   < 0.5;
       indv = C.mask_v   < 0.5;
 
+      C.xrg_rho(indr) = [];
+      C.erg_rho(indr) = [];
       C.Xrg_rho(indr) = [];
       C.Yrg_rho(indr) = [];
       C.Irg_rho(indr) = [];
@@ -1268,6 +1365,8 @@ for ib=1:4,
       C.Idg_rho(indr) = [];
       C.Jdg_rho(indr) = [];
 
+      C.xrg_u(indr) = [];
+      C.erg_u(indr) = [];
       C.Xrg_u(indu) = [];
       C.Yrg_u(indu) = [];
       C.Irg_u(indu) = [];
@@ -1275,6 +1374,8 @@ for ib=1:4,
       C.Idg_u(indu) = [];
       C.Jdg_u(indu) = [];
 
+      C.xrg_v(indr) = [];
+      C.erg_v(indr) = [];
       C.Xrg_v(indv) = [];
       C.Yrg_v(indv) = [];
       C.Irg_v(indv) = [];
@@ -1323,24 +1424,33 @@ function [C, R] = refinement(cr, dg, rg, Lmask, G, S, MaskInterp)
 %
 %    C           Contact points structure (struct array):
 %
-%                  C.Xrg_rho(:)            - Receiver grid contact points
-%                  C.Yrg_rho(:)              (X,Y) coordinates and (I,J)
-%                  C.Irg_rho(:)              indices (RHO-points) where
-%                  C.Jrg_rho(:)              data is needed from donor
+%                  C.xrg_rho(:)            - Receiver grid contact points
+%                  C.erg_rho(:)              (XI,ETA) coordinates, (X,Y)
+%                  C.Xrg_rho(:)              physical coordinates, and
+%                  C.Yrg_rho(:)              and (I,J) indices (RHO-points)
+%                  C.Irg_rho(:)              where data is needed from
+%                  C.Jrg_rho(:)              donor
+%
 %                  C.Idg_rho(:)            - Donor (I,J) cell containing
 %                  C.Jdg_rho(:)              receiver grid contact point
 %
-%                  C.Xrg_u(:)              - Receiver grid contact points
-%                  C.Yrg_u(:)                (X,Y) coordinates and (I,J)
-%                  C.Irg_u(:)                indices (U-points) where
-%                  C.Jrg_u(:)                data is needed from donor
+%                  C.xrg_u(:)              - Receiver grid contact points
+%                  C.erg_u(:)                (XI,ETA) coordinates, (X,Y)
+%                  C.Xrg_u(:)                physical coordinates, and
+%                  C.Yrg_u(:)                and (I,J) indices (U-points)
+%                  C.Irg_u(:)                where data is needed from
+%                  C.Jrg_u(:)                donor
+%
 %                  C.Idg_u(:)              - Donor (I,J) cell containing
 %                  C.Jdg_u(:)                receiver grid contact point
 %
-%                  C.Xrg_v(:)              - Receiver grid contact points
-%                  C.Yrg_v(:)                (X,Y) coordinates and (I,J)
-%                  C.Irg_v(:)                indices (V-points) where
-%                  C.Jrg_v(:)                data is needed from donor
+%                  C.xrg_v(:)              - Receiver grid contact points
+%                  C.erg_v(:)                (XI,ETA) coordinates, (X,Y)
+%                  C.Xrg_v(:)                physical coordinates, and
+%                  C.Yrg_v(:)                and (I,J) indices (V-points)
+%                  C.Irg_v(:)                where data is needed from
+%                  C.Jrg_v(:)                donor
+%
 %                  C.Idg_v(:)              - Donor (I,J) cell containing
 %                  C.Jdg_v(:)                receiver grid contact point
 %
@@ -1366,14 +1476,17 @@ function [C, R] = refinement(cr, dg, rg, Lmask, G, S, MaskInterp)
 
 method      = 'natural';
 spherical   = S.spherical;
-InterpDonor = true;                 % Interpolate Donor indices method
+Debugging   = true;                  % plot contact points for debugging
 
-C = struct('Xrg_rho'     , [], 'Yrg_rho'     , [],                      ...
+C = struct('xrg_rho'     , [], 'erg_rho'     , [],                      ...
+           'Xrg_rho'     , [], 'Yrg_rho'     , [],                      ...
            'Irg_rho'     , [], 'Jrg_rho'     , [],                      ...
            'Idg_rho'     , [], 'Jdg_rho'     , [],                      ...
+           'xrg_u'       , [], 'erg_u'       , [],                      ...
            'Xrg_u'       , [], 'Yrg_u'       , [],                      ...
            'Irg_u'       , [], 'Jrg_u'       , [],                      ...
            'Idg_u'       , [], 'Jdg_u'       , [],                      ...
+           'xrg_v'       , [], 'erg_v'       , [],                      ...
            'Xrg_v'       , [], 'Yrg_v'       , [],                      ...
            'Irg_v'       , [], 'Jrg_v'       , [],                      ...
            'Idg_v'       , [], 'Jdg_v'       , [],                      ...
@@ -1397,201 +1510,240 @@ if (S.grid(rg).refine_factor > 0),
 % Set the donor grid (Io,Jo) origin coordinates (left-bottom corner) at
 % PSI-points used to extract receiver (fine) grid.
 
-  delta = 1.0/S.grid(rg).refine_factor;
-  half  = double(S.grid(rg).refine_factor)/2;
+  refine_factor = double(S.grid(rg).refine_factor);
+  
+  delta = 1.0/refine_factor;
+  half  = refine_factor/2;
   Io    = min(S.contact(cr).corners.Idg);
   Jo    = min(S.contact(cr).corners.Jdg);
 
 % Set receiver grid contact points: perimeter and outside contact region
-% on donor grid.  Currently, an interpolation to is carried out to compute
-% the donor coarse grid indices containing the receiver fine grid contact
-% point.  There is some roundoff in the interpolation so the appropriate
-% roundoff is required to get the correct (Idg, Jdg) indices.
+% on donor grid.
 
   if (spherical),
-    [IN,ON] = inpolygon(R.lon_rho(:), R.lat_rho(:),                     ...
-                        S.grid(rg).perimeter.X_psi,                     ...
-                        S.grid(rg).perimeter.Y_psi);
 
-    FCr = TriScatteredInterp (G(dg).lon_rho(:), G(dg).lat_rho(:),       ...
-                              S.grid(dg).I_rho(:), method);
+% RHO-contact points.
 
-    Idg_rho = FCr(R.lon_rho(:), R.lat_rho(:));
-    FCr.V   = S.grid(dg).J_rho(:);                       % edit interpolant
-    Jdg_rho = FCr(R.lon_rho(:), R.lat_rho(:));
+    [INr,ONr] = inpolygon(R.lon_rho(:), R.lat_rho(:),                   ...
+                          S.grid(rg).perimeter.X_psi,                   ...
+                          S.grid(rg).perimeter.Y_psi);
 
-    if (any(~IN)),
-      C.Xrg_rho   = R.lon_rho(~IN);
-      C.Yrg_rho   = R.lat_rho(~IN);
-      C.Irg_rho   = R.Irg_rho(~IN);
-      C.Jrg_rho   = R.Jrg_rho(~IN);
-      if (InterpDonor),
-        C.Idg_rho = floor(Idg_rho(~IN)+0.5*delta);
-        C.Jdg_rho = floor(Jdg_rho(~IN)+0.5*delta);
-      else
-        C.Idg_rho = floor(Io+(C.Irg_rho-half).*delta);
-        C.Jdg_rho = floor(Jo+(C.Jrg_rho-half).*delta);
-      end
-      C.angle     = R.angle(~IN);
-      C.f         = R.f(~IN);
-      C.h         = R.h(~IN);
-      C.pm        = R.pm(~IN);
-      C.pn        = R.pn(~IN);
-      C.dndx      = R.dndx(~IN);
-      C.dmde      = R.dmde(~IN);
-      C.mask_rho  = R.mask_rho(~IN);
+    if (any(~INr)),
+      C.xrg_rho  = R.xi_rho (~INr);
+      C.erg_rho  = R.eta_rho(~INr);
+      C.Xrg_rho  = R.lon_rho(~INr);
+      C.Yrg_rho  = R.lat_rho(~INr);
+      C.Irg_rho  = R.Irg_rho(~INr);
+      C.Jrg_rho  = R.Jrg_rho(~INr);
+      C.Idg_rho  = floor(Io+(C.Irg_rho-half).*delta);
+      C.Jdg_rho  = floor(Jo+(C.Jrg_rho-half).*delta);
+
+      C.angle    = R.angle(~INr);
+      C.f        = R.f(~INr);
+      C.h        = R.h(~INr);
+      C.pm       = R.pm(~INr);
+      C.pn       = R.pn(~INr);
+      C.dndx     = R.dndx(~INr);
+      C.dmde     = R.dmde(~INr);
+      C.mask_rho = R.mask_rho(~INr);
     end
 
-    [IN,ON] = inpolygon(R.lon_u(:), R.lat_u(:),                         ...
-                        S.grid(rg).perimeter.X_uv,                      ...
-                        S.grid(rg).perimeter.Y_uv);
-
-    FCu = TriScatteredInterp (G(dg).lon_u(:), G(dg).lat_u(:),           ...
-                              S.grid(dg).I_u(:), method);
-
-    Idg_u = FCu(R.lon_u(:), R.lat_u(:));
-    FCu.V = S.grid(dg).J_u(:);                           % edit interpolant
-    Jdg_u = FCu(R.lon_u(:), R.lat_u(:));
-
-    IN(ON) = false;                             % add U-points on perimeter
-
-    if (any(~IN)),
-      C.Xrg_u   = R.lon_u(~IN);
-      C.Yrg_u   = R.lat_u(~IN);
-      C.Irg_u   = R.Irg_u(~IN);
-      C.Jrg_u   = R.Jrg_u(~IN);
-      if (InterpDonor),
-        C.Idg_u = floor(Idg_u(~IN)+0.5*delta);
-        C.Jdg_u = floor(Jdg_u(~IN)+0.5*delta);
-      else
-        C.Idg_u = floor(Io+(C.Irg_u-half).*delta);
-        C.Jdg_u = floor(Jo+(C.Jrg_u-half).*delta);
-      end
-      C.mask_u  = R.mask_u(~IN);
+    if (Debugging),
+      figure;
+      plot(C.xrg_rho, C.erg_rho, 'r+',                                  ...
+           S.grid(dg).XI_rho(:), S.grid(dg).ETA_rho(:), 'co',           ...
+           C.Idg_rho+0.5, C.Jdg_rho+0.5, 'bo');
+      title(['(XI,ETA) Coordinates, RHO-points: ', blanks(4),           ...
+             'Refinement Contact Points (blue circles: Idg,Jdg)']);
+      xlabel(['cr = ', num2str(cr), blanks(4),                          ...
+              'dg = ', num2str(dg), blanks(4),                          ...
+              'rg = ', num2str(rg), blanks(8),                          ...
+              '(red plus: RHO-points, cyan circles: coarse RHO-points)']);
+      ylabel('Boundary Coarse to Fine Cells');
     end
 
-    [IN,ON] = inpolygon(R.lon_v(:), R.lat_v(:),                         ...
-                        S.grid(rg).perimeter.X_uv,                      ...
-                        S.grid(rg).perimeter.Y_uv);
-
-    FCv = TriScatteredInterp (G(dg).lon_v(:), G(dg).lat_v(:),           ...
-                              S.grid(dg).I_v(:), method);
-
-    Idg_v = FCv(R.lon_v(:), R.lat_v(:));
-    FCv.V = S.grid(dg).J_v(:);                           % edit interpolant
-    Jdg_v = FCv(R.lon_v(:), R.lat_v(:));
-
-    IN(ON) = false;                             % add V-points on perimeter
+% U-contact points.
     
-    if (any(~IN)),
-      C.Xrg_v   = R.lon_v(~IN);
-      C.Yrg_v   = R.lat_v(~IN);
-      C.Irg_v   = R.Irg_v(~IN);
-      C.Jrg_v   = R.Jrg_v(~IN);
-      if (InterpDonor),
-        C.Idg_v = floor(Idg_v(~IN)+0.5*delta);
-        C.Jdg_v = floor(Jdg_v(~IN)+0.5*delta);
-      else
-        C.Idg_v = floor(Io+(C.Irg_v-half).*delta);
-        C.Jdg_v = floor(Jo+(C.Jrg_v-half).*delta);
-      end
-      C.mask_v  = R.mask_v(~IN);
+    [INu,ONu] = inpolygon(R.lon_u(:), R.lat_u(:),                       ...
+                          S.grid(rg).perimeter.X_uv,                    ...
+                          S.grid(rg).perimeter.Y_uv);
+
+    INu(ONu) = false;                           % add U-points on perimeter
+
+    if (any(~INu)),
+      C.xrg_u  = R.xi_u (~INu);
+      C.erg_u  = R.eta_u(~INu);
+      C.Xrg_u  = R.lon_u(~INu);
+      C.Yrg_u  = R.lat_u(~INu);
+      C.Irg_u  = R.Irg_u(~INu);
+      C.Jrg_u  = R.Jrg_u(~INu);
+      C.Idg_u  = ceil(Io+(C.Irg_u-refine_factor).*delta);
+      C.Jdg_u  = floor(Jo+(C.Jrg_u-half).*delta);
+
+      C.mask_u = R.mask_u(~INu);
+    end
+
+    if (Debugging),
+      figure;
+      plot(C.xrg_u, C.erg_u, 'r+',                                      ...
+           S.grid(dg).XI_u(:), S.grid(dg).ETA_u(:), 'co',               ...
+           C.Idg_u, C.Jdg_u+0.5, 'bo');
+      title(['(XI,ETA) Coordinates, U-points: ', blanks(4),             ...
+             'Refinement Contact Points (blue circles: Idg,Jdg)']);
+      xlabel(['cr = ', num2str(cr), blanks(4),                          ...
+              'dg = ', num2str(dg), blanks(4),                          ...
+              'rg = ', num2str(rg), blanks(8),                          ...
+              '(red plus: U-points, cyan circles: coarse U-points)']);
+      ylabel('Boundary Coarse to Fine Cells');   
+    end
+
+% V-contact points.
+
+    [INv,ONv] = inpolygon(R.lon_v(:), R.lat_v(:),                       ...
+                          S.grid(rg).perimeter.X_uv,                    ...
+                          S.grid(rg).perimeter.Y_uv);
+
+    INv(ONv) = false;                           % add V-points on perimeter
+    
+    if (any(~INv)),
+      C.xrg_v  = R.xi_v (~INv);
+      C.erg_v  = R.eta_v(~INv);
+      C.Xrg_v  = R.lon_v(~INv);
+      C.Yrg_v  = R.lat_v(~INv);
+      C.Irg_v  = R.Irg_v(~INv);
+      C.Jrg_v  = R.Jrg_v(~INv);
+      C.Idg_v  = floor(Io+(C.Irg_v-half).*delta);
+      C.Jdg_v  = ceil(Jo+(C.Jrg_v-refine_factor).*delta);
+
+      C.mask_v = R.mask_v(~INv);
     end
   
+    if (Debugging),
+      figure;
+      plot(C.xrg_v, C.erg_v, 'r+',                                      ...
+           S.grid(dg).XI_v(:), S.grid(dg).ETA_v(:), 'co',               ...
+           C.Idg_v+0.5, C.Jdg_v, 'bo');
+      title(['(XI,ETA) Coordinates, V-points: ', blanks(4),             ...
+             'Refinement Contact Points (blue circles: Idg,Jdg)']);
+      xlabel(['cr = ', num2str(cr), blanks(4),                          ...
+              'dg = ', num2str(dg), blanks(4),                          ...
+              'rg = ', num2str(rg), blanks(8),                          ...
+              '(red plus: V-points, cyan circles: coarse V-points)']);
+      ylabel('Boundary Coarse to Fine Cells');    
+    end
+
   else
 
-    [IN,ON] = inpolygon(R.x_rho(:), R.y_rho(:),                         ...
-                        S.grid(rg).perimeter.X_psi,                     ...
-                        S.grid(rg).perimeter.Y_psi);
+% RHO-contact points.
 
-    FCr = TriScatteredInterp (G(dg).x_rho(:), G(dg).y_rho(:),           ...
-                              S.grid(dg).I_rho(:), method);
+    [INr,ONr] = inpolygon(R.x_rho(:), R.y_rho(:),                       ...
+                          S.grid(rg).perimeter.X_psi,                   ...
+                          S.grid(rg).perimeter.Y_psi);
 
-    Idg_rho = FCr(R.x_rho(:), R.y_rho(:));
-    FCr.V = S.grid(dg).J_rho(:);                    % edit interpolant
-    Jdg_rho = FCr(R.x_rho(:), R.y_rho(:));
-    
-    if (any(~IN)),
-      C.Xrg_rho   = R.x_rho(~IN);
-      C.Yrg_rho   = R.y_rho(~IN);
-      C.Irg_rho   = R.Irg_rho(~IN);
-      C.Jrg_rho   = R.Jrg_rho(~IN);
-      if (InterpDonor),
-        C.Idg_rho = floor(Idg_rho(~IN)+0.5*delta);
-        C.Jdg_rho = floor(Jdg_rho(~IN)+0.5*delta);
-      else
-        C.Idg_rho = floor(Io+(C.Irg_rho-half).*delta);
-        C.Jdg_rho = floor(Jo+(C.Jrg_rho-half).*delta);
-      end
+    if (any(~INr)),
+      C.xrg_rho  = R.xi_rho (~INr);
+      C.erg_rho  = R.eta_rho(~INr);
+      C.Xrg_rho  = R.x_rho  (~INr);
+      C.Yrg_rho  = R.y_rho  (~INr);
+      C.Irg_rho  = R.Irg_rho(~INr);
+      C.Jrg_rho  = R.Jrg_rho(~INr);
+      C.Idg_rho  = floor(Io+(C.Irg_rho-half).*delta);
+      C.Jdg_rho  = floor(Jo+(C.Jrg_rho-half).*delta);
 
-      C.angle     = R.angle(~IN);
-      C.f         = R.f(~IN);
-      C.h         = R.h(~IN);
-      C.pm        = R.pm(~IN);
-      C.pn        = R.pn(~IN);
-      C.dndx      = R.dndx(~IN);
-      C.dmde      = R.dmde(~IN);
-      C.mask_rho  = R.mask_rho(~IN);
+      C.angle    = R.angle(~INr);
+      C.f        = R.f(~INr);
+      C.h        = R.h(~INr);
+      C.pm       = R.pm(~INr);
+      C.pn       = R.pn(~INr);
+      C.dndx     = R.dndx(~INr);
+      C.dmde     = R.dmde(~INr);
+      C.mask_rho = R.mask_rho(~INr);
     end
 
-    [IN,ON] = inpolygon(R.x_u(:), R.y_u(:),                             ...
-                        S.grid(rg).perimeter.X_uv,                      ...
-                        S.grid(rg).perimeter.Y_uv);
+    if (Debugging),
+      figure;
+      plot(C.xrg_rho, C.erg_rho, 'r+',                                  ...
+           S.grid(dg).XI_rho(:), S.grid(dg).ETA_rho(:), 'co',           ...
+           C.Idg_rho+0.5, C.Jdg_rho+0.5, 'bo');
+      title(['(XI,ETA) Coordinates, RHO-points: ', blanks(4),           ...
+             'Refinement Contact Points (blue circles: Idg,Jdg)']);
+      xlabel(['cr = ', num2str(cr), blanks(4),                          ...
+              'dg = ', num2str(dg), blanks(4),                          ...
+              'rg = ', num2str(rg), blanks(8),                          ...
+              '(red plus: RHO-points, cyan circles: coarse RHO-points)']);
+      ylabel('Boundary Coarse to Fine Cells');    
+    end
 
-    FCu = TriScatteredInterp (G(dg).x_u(:), G(dg).y_u(:),               ...
-                              S.grid(dg).I_u(:), method);
+% U-contact points.
 
-    Idg_u = FCu(R.x_u(:), R.y_u(:));
-    FCu.V = S.grid(dg).J_u(:);                           % edit interpolant
-    Jdg_u = FCu(R.x_u(:), R.y_u(:));
+    [INu,ONu] = inpolygon(R.x_u(:), R.y_u(:),                           ...
+                          S.grid(rg).perimeter.X_uv,                    ...
+                          S.grid(rg).perimeter.Y_uv);
 
-    IN(ON) = false;                             % add U-points on perimeter
+    INu(ONu) = false;                           % add U-points on perimeter
    
-    if (any(~IN)),
-      C.Xrg_u   = R.x_u(~IN);
-      C.Yrg_u   = R.y_u(~IN);
-      C.Irg_u   = R.Irg_u(~IN);
-      C.Jrg_u   = R.Jrg_u(~IN);
-      if (InterpDonor),
-        C.Idg_u = floor(Idg_u(~IN)+0.5*delta);
-        C.Jdg_u = floor(Jdg_u(~IN)+0.5*delta);
-      else
-        C.Idg_u = floor(Io+(C.Irg_u-half).*delta);
-        C.Jdg_u = floor(Jo+(C.Jrg_u-half).*delta);
-      end
+    if (any(~INu)),
+      C.xrg_u  = R.xi_u (~INu);
+      C.erg_u  = R.eta_u(~INu);
+      C.Xrg_u  = R.x_u  (~INu);
+      C.Yrg_u  = R.y_u  (~INu);
+      C.Irg_u  = R.Irg_u(~INu);
+      C.Jrg_u  = R.Jrg_u(~INu);
+      C.Idg_u  = ceil(Io+(C.Irg_u-refine_factor).*delta);
+      C.Jdg_u  = floor(Jo+(C.Jrg_u-half).*delta);
 
-      C.mask_u  = R.mask_u(~IN);
+      C.mask_u = R.mask_u(~INu);
     end
 
-    [IN,ON] = inpolygon(R.x_v(:), R.y_v(:),                             ...
-                        S.grid(rg).perimeter.X_uv,                      ...
-                        S.grid(rg).perimeter.Y_uv);
+    if (Debugging),
+      figure;
+      plot(C.xrg_u, C.erg_u, 'r+',                                      ...
+           S.grid(dg).XI_u(:), S.grid(dg).ETA_u(:), 'co',               ...
+           C.Idg_u, C.Jdg_u+0.5, 'bo');
+      title(['(XI,ETA) Coordinates, U-points: ', blanks(4),             ...
+             'Refinement Contact Points (blue circles: Idg,Jdg)']);
+      xlabel(['cr = ', num2str(cr), blanks(4),                          ...
+              'dg = ', num2str(dg), blanks(4),                          ...
+              'rg = ', num2str(rg), blanks(8),                          ...
+              '(red plus: U-points, cyan circles: coarse U-points)']);
+      ylabel('Boundary Coarse to Fine Cells');    
+    end
+    
+% V-contact points.
+    
+    [INv,ONv] = inpolygon(R.x_v(:), R.y_v(:),                           ...
+                          S.grid(rg).perimeter.X_uv,                    ...
+                          S.grid(rg).perimeter.Y_uv);
 
-    FCv = TriScatteredInterp (G(dg).x_v(:), G(dg).y_v(:),               ...
-                              S.grid(dg).I_v(:), method);
+    INv(ONv) = false;                           % add V-points on perimeter
 
-    Idg_v = FCv(R.x_v(:), R.y_v(:));
-    FCv.V = S.grid(dg).J_v(:);                           % edit interpolant
-    Jdg_v = FCv(R.x_v(:), R.y_v(:));
+    if (any(~INv)),
+      C.xrg_v  = R.xi_v (~INv);
+      C.erg_v  = R.eta_v(~INv);
+      C.Xrg_v  = R.x_v  (~INv);
+      C.Yrg_v  = R.y_v  (~INv);
+      C.Irg_v  = R.Irg_v(~INv);
+      C.Jrg_v  = R.Jrg_v(~INv);
+      C.Idg_v  = floor(Io+(C.Irg_v-half).*delta);
+      C.Jdg_v  = ceil(Jo+(C.Jrg_v-refine_factor).*delta);
 
-    IN(ON) = false;                             % add V-points on perimeter
-
-    if (any(~IN)),
-      C.Xrg_v   = R.x_v(~IN);
-      C.Yrg_v   = R.y_v(~IN);
-      C.Irg_v   = R.Irg_v(~IN);
-      C.Jrg_v   = R.Jrg_v(~IN);
-      if (InterpDonor),
-        C.Idg_v = floor(Idg_v(~IN)+0.5*delta);
-        C.Jdg_v = floor(Jdg_v(~IN)+0.5*delta);
-      else
-        C.Idg_v = floor(Io+(C.Irg_v-half).*delta);
-        C.Jdg_v = floor(Jo+(C.Jrg_v-half).*delta);
-      end
-
-      C.mask_v  = R.mask_v(~IN);
+      C.mask_v = R.mask_v(~INv);
     end
 
+    if (Debugging),
+      figure;
+      plot(C.xrg_v, C.erg_v, 'r+',                                      ...
+           S.grid(dg).XI_v(:), S.grid(dg).ETA_v(:), 'co',               ...
+           C.Idg_v+0.5, C.Jdg_v, 'bo');
+      title(['(XI,ETA) Coordinates, V-points: ', blanks(4),             ...
+             'Refinement Contact Points (blue circles: Idg,Jdg)']);
+      xlabel(['cr = ', num2str(cr), blanks(4),                          ...
+              'dg = ', num2str(dg), blanks(4),                          ...
+              'rg = ', num2str(rg), blanks(8),                          ...
+              '(red plus: V-points, cyan circles: coarse V-points)']);
+      ylabel('Boundary Coarse to Fine Cells');    
+    end
+    
   end
 
 % Remove point on land mask.
@@ -1601,6 +1753,8 @@ if (S.grid(rg).refine_factor > 0),
     indu = C.mask_u   < 0.5;
     indv = C.mask_v   < 0.5;
 
+    C.xrg_rho(indr) = [];
+    C.erg_rho(indr) = [];
     C.Xrg_rho(indr) = [];
     C.Yrg_rho(indr) = [];
     C.Irg_rho(indr) = [];
@@ -1608,6 +1762,8 @@ if (S.grid(rg).refine_factor > 0),
     C.Idg_rho(indr) = [];
     C.Jdg_rho(indr) = [];
 
+    C.xrg_u(indu) = [];
+    C.erg_u(indu) = [];
     C.Xrg_u(indu) = [];
     C.Yrg_u(indu) = [];
     C.Irg_u(indu) = [];
@@ -1615,6 +1771,8 @@ if (S.grid(rg).refine_factor > 0),
     C.Idg_u(indu) = [];
     C.Jdg_u(indu) = [];
 
+    C.xrg_v(indv) = [];
+    C.erg_v(indv) = [];
     C.Xrg_v(indv) = [];
     C.Yrg_v(indv) = [];
     C.Irg_v(indv) = [];
@@ -1660,200 +1818,282 @@ if (dg > rg || S.grid(dg).refine_factor > 0),
 % (fine) grid. This will be used in the fine two coarse two-way nesting.
 
   if (spherical),
-    [IN,ON] = inpolygon(G(rg).lon_rho(:), G(rg).lat_rho(:),             ...
-                        S.grid(dg).perimeter.X_psi,                     ...
-                        S.grid(dg).perimeter.Y_psi);
 
-    FFr = TriScatteredInterp (G(dg).lon_rho(:), G(dg).lat_rho(:),       ...
-                              S.grid(dg).I_rho(:), method);
+% RHO-contact points.
 
-    Idg_rho = FFr(G(rg).lon_rho(IN), G(rg).lat_rho(IN));
-    FFr.V   = S.grid(dg).J_rho(:);                       % edit interpolant
-    Jdg_rho = FFr(G(rg).lon_rho(IN), G(rg).lat_rho(IN));
+    [INr,ONr] = inpolygon(G(rg).lon_rho(:), G(rg).lat_rho(:),           ...
+                          S.grid(dg).perimeter.X_psi,                   ...
+                          S.grid(dg).perimeter.Y_psi);
 
-    if (any(IN)),
-      C.Xrg_rho   = G(rg).lon_rho(IN);
-      C.Yrg_rho   = G(rg).lat_rho(IN);
-      C.Irg_rho   = S.grid(rg).I_rho(IN);
-      C.Jrg_rho   = S.grid(rg).J_rho(IN);
-      if (InterpDonor),
-        C.Idg_rho = floor(Idg_rho+0.5/delta);
-        C.Jdg_rho = floor(Jdg_rho+0.5/delta);
-      else
-        C.Idg_rho = offset+(C.Irg_rho-Io)*delta;
-        C.Jdg_rho = offset+(C.Jrg_rho-Jo)*delta;
-      end
+    if (any(INr)),
+      C.xrg_rho  = S.grid(rg).XI_rho(INr);
+      C.erg_rho  = S.grid(rg).ETA_rho(INr);
+      C.Xrg_rho  = G(rg).lon_rho(INr);
+      C.Yrg_rho  = G(rg).lat_rho(INr);
+      C.Irg_rho  = S.grid(rg).I_rho(INr);
+      C.Jrg_rho  = S.grid(rg).J_rho(INr);
+      C.Idg_rho  = offset+(C.Irg_rho-Io)*delta;
+      C.Jdg_rho  = offset+(C.Jrg_rho-Jo)*delta;
 
-      C.angle     = G(rg).angle(IN);
-      C.f         = G(rg).f(IN);
-      C.h         = G(rg).h(IN);
-      C.pm        = G(rg).pm(IN);
-      C.pn        = G(rg).pn(IN);
-      C.dndx      = G(rg).dndx(IN);
-      C.dmde      = G(rg).dmde(IN);
-      C.mask_rho  = G(rg).mask_rho(IN);
+      C.angle    = G(rg).angle(INr);
+      C.f        = G(rg).f(INr);
+      C.h        = G(rg).h(INr);
+      C.pm       = G(rg).pm(INr);
+      C.pn       = G(rg).pn(INr);
+      C.dndx     = G(rg).dndx(INr);
+      C.dmde     = G(rg).dmde(INr);
+      C.mask_rho = G(rg).mask_rho(INr);
     end
 
-    [IN,ON] = inpolygon(G(rg).lon_u(:), G(rg).lat_u(:),                 ...
-                        S.grid(dg).perimeter.X_uv,                      ...
-                        S.grid(dg).perimeter.Y_uv);
-
-    IN(ON) = false;                  % remove U-points on perimeter, if any
-
-    FFu = TriScatteredInterp (G(dg).lon_u(:), G(dg).lat_u(:),           ...
-                              S.grid(dg).I_u(:), method);
-
-    Idg_u = FFu(G(rg).lon_u(IN), G(rg).lat_u(IN));
-    FFu.V = S.grid(dg).J_u(:);                           % edit interpolant
-    Jdg_u = FFu(G(rg).lon_u(IN), G(rg).lat_u(IN));
-
-    if (any(IN)),
-      C.Xrg_u   = G(rg).lon_u(IN);
-      C.Yrg_u   = G(rg).lat_u(IN);
-      C.Irg_u   = S.grid(rg).I_u(IN);
-      C.Jrg_u   = S.grid(rg).J_u(IN);
-      if (InterpDonor),
-        C.Idg_u = floor(Idg_u+0.5/delta);
-        C.Jdg_u = floor(Jdg_u+0.5/delta);
-      else
-        C.Idg_u = offset+(C.Irg_u-Io)*delta;
-        C.Jdg_u = offset+(C.Jrg_u-Jo)*delta;
-      end
-
-      C.mask_u  = G(rg).mask_u(IN);
+    if (Debugging),
+      figure;
+      plot(S.grid(dg).XI_psi,  S.grid(dg).ETA_psi,  'k:',               ...
+           S.grid(dg).XI_psi', S.grid(dg).ETA_psi', 'k:',               ...
+           S.grid(dg).XI_psi (:,1:delta:end),                           ...
+           S.grid(dg).ETA_psi(:,1:delta:end),  'k-',                    ...
+           S.grid(dg).XI_psi (1:delta:end,:)',                          ...
+           S.grid(dg).ETA_psi(1:delta:end,:)', 'k-',                    ...
+           S.grid(dg).XI_rho(:), S.grid(dg).ETA_rho(:), 'r+',           ...
+           C.Idg_rho+0.5, C.Jdg_rho+0.5,'bo');
+      title(['(XI,ETA) Coordinates, RHO-points: ', blanks(4),           ...
+             'two-way Coarse Grid Points (blue circles)']);
+      xlabel(['cr = ', num2str(cr), blanks(4),                          ...
+              'dg = ', num2str(dg), blanks(4),                          ...
+              'rg = ', num2str(rg), blanks(8),                          ...
+              '(red plus: RHO-points, mesh: PSI-points)']);
+      ylabel('Interior Fine To Coarse Cells');
     end
 
-    [IN,ON] = inpolygon(G(rg).lon_v(:), G(rg).lat_v,                    ...
-                        S.grid(dg).perimeter.X_uv,                      ...
-                        S.grid(dg).perimeter.Y_uv);
+% U-contact points.
 
-    IN(ON) = false;                  % remove V-points on perimeter, if any
+    [INu,ONu] = inpolygon(G(rg).lon_u(:), G(rg).lat_u(:),               ...
+                          S.grid(dg).perimeter.X_uv,                    ...
+                          S.grid(dg).perimeter.Y_uv);
 
-    FFv = TriScatteredInterp (G(dg).lon_v(:), G(dg).lat_v(:),           ...
-                              S.grid(dg).I_v(:), method);
+    INu(ONu) = false;                   % remove U-points on perimeter
 
-    Idg_v = FFv(G(rg).lon_v(IN), G(rg).lat_v(IN));
-    FFu.V = S.grid(dg).J_v(:);                           % edit interpolant
-    Jdg_v = FFv(G(rg).lon_v(IN), G(rg).lat_v(IN));
+    if (any(INu)),
+      C.xrg_u  = S.grid(rg).XI_u(INu);
+      C.erg_u  = S.grid(rg).ETA_u(INu);
+      C.Xrg_u  = G(rg).lon_u(INu);
+      C.Yrg_u  = G(rg).lat_u(INu);
+      C.Irg_u  = S.grid(rg).I_u(INu);
+      C.Jrg_u  = S.grid(rg).J_u(INu);
+      C.Idg_u  = 1+(C.Irg_u-Io)*delta;
+      C.Jdg_u  = offset+(C.Jrg_u-Jo)*delta;
 
-    if (any(IN)),
-      C.Xrg_v    = G(rg).lon_v(IN);
-      C.Yrg_v    = G(rg).lat_v(IN);
-      C.Irg_v    = S.grid(rg).I_v(IN);
-      C.Jrg_v    = S.grid(rg).J_v(IN);
-      if (InterpDonor),
-        C.Idg_v = floor(Idg_v+0.5/delta);
-        C.Jdg_v = floor(Jdg_v+0.5/delta);
-      else
-        C.Idg_v = offset+(C.Irg_v-Io).*delta;
-        C.Jdg_v = offset+(C.Jrg_v-Jo).*delta;
-      end
+      C.mask_u = G(rg).mask_u(INu);
+    end
+
+    if (Debugging),
+      figure;
+      plot(S.grid(dg).XI_v,  S.grid(dg).ETA_v,  'k:',                   ...
+           S.grid(dg).XI_v', S.grid(dg).ETA_v', 'k:',                   ...
+           S.grid(dg).XI_v (offset+1:end-offset,1:delta:end),           ...
+           S.grid(dg).ETA_v(offset+1:end-offset,1:delta:end), 'k-',     ...
+           S.grid(dg).XI_v (offset+1:delta:end,:)',                     ...
+           S.grid(dg).ETA_v(offset+1:delta:end,:)', 'k-',               ...
+           S.grid(dg).perimeter.XI_psi,                                 ...
+           S.grid(dg).perimeter.ETA_psi, 'ks',                          ...
+           S.grid(dg).XI_u(:), S.grid(dg).ETA_u(:), 'r+',               ...
+           C.Idg_u, C.Jdg_u+0.5,'bo');
+      title(['(XI,ETA) Coordinates, U-points: ', blanks(4),             ...
+             'two-way Coarse Grid Points (blue circles)']);
+      xlabel(['cr = ', num2str(cr), blanks(4),                          ...
+              'dg = ', num2str(dg), blanks(4),                          ...
+              'rg = ', num2str(rg), blanks(8),                          ...
+              '(red plus: U-points, black squares: PSI-points, ',       ...
+              'mesh: V-points)']);
+      ylabel('Interior Fine To Coarse Cells');
+    end
+
+% V-contact points.
+
+    [INv,ONv] = inpolygon(G(rg).lon_v(:), G(rg).lat_v,                  ...
+                          S.grid(dg).perimeter.X_uv,                    ...
+                          S.grid(dg).perimeter.Y_uv);
+
+    INv(ONv) = false;                   % remove V-points on perimeter
+
+    if (any(INv)),
+      C.xrg_v  = S.grid(rg).XI_v(INv);
+      C.erg_v  = S.grid(rg).ETA_v(INv);
+      C.Xrg_v  = G(rg).lon_v(INv);
+      C.Yrg_v  = G(rg).lat_v(INv);
+      C.Irg_v  = S.grid(rg).I_v(INv);
+      C.Jrg_v  = S.grid(rg).J_v(INv);
+      C.Idg_v  = offset+(C.Irg_v-Io).*delta;
+      C.Jdg_v  = 1+(C.Jrg_v-Jo).*delta;
       
-      C.mask_v  = G(rg).mask_v(IN);
+      C.mask_v = G(rg).mask_v(INv);
     end
 
-  else
-    
-    [IN,ON] = inpolygon(G(rg).x_rho(:), G(rg).y_rho(:),                 ...
-                        S.grid(dg).perimeter.X_psi,                     ...
-                        S.grid(dg).perimeter.Y_psi);
-
-    FFr = TriScatteredInterp (G(dg).x_rho(:), G(dg).y_rho(:),           ...
-                              S.grid(dg).I_rho(:), method);
-
-    Idg_rho = FFr(G(rg).x_rho(IN), G(rg).y_rho(IN));
-    FFr.V   = S.grid(dg).J_rho(:);                       % edit interpolant
-    Jdg_rho = FFr(G(rg).x_rho(IN), G(rg).y_rho(IN));
-
-    if (any(~IN)),
-      C.Xrg_rho   = G(rg).x_rho(IN);
-      C.Yrg_rho   = G(rg).y_rho(IN);
-      C.Irg_rho   = S.grid(rg).I_rho(IN);
-      C.Jrg_rho   = S.grid(rg).J_rho(IN);
-      if (InterpDonor),
-        C.Idg_rho = floor(Idg_rho+0.5/delta);
-        C.Jdg_rho = floor(Jdg_rho+0.5/delta);
-      else
-        C.Idg_rho = offset+(C.Irg_rho-Io)*delta;
-        C.Jdg_rho = offset+(C.Jrg_rho-Jo)*delta;
-      end
-    
-      C.angle     = G(rg).angle(IN);
-      C.f         = G(rg).f(IN);
-      C.h         = G(rg).h(IN);
-      C.pm        = G(rg).pm(IN);
-      C.pn        = G(rg).pn(IN);
-      C.dndx      = G(rg).dndx(IN);
-      C.dmde      = G(rg).dmde(IN);
-      C.mask_rho  = G(rg).mask_rho(IN);
-    end
-
-    [IN,ON] = inpolygon(G(rg).x_u(:), G(rg).y_u(:),                     ...
-                        S.grid(dg).perimeter.X_uv,                      ...
-                        S.grid(dg).perimeter.Y_uv);
-
-    IN(ON) = false;                  % remove U-points on perimeter, if any
-
-    FFu = TriScatteredInterp (G(dg).x_u(:), G(dg).y_u(:),               ...
-                              S.grid(dg).I_u(:), method);
-
-    Idg_u = FFu(G(rg).x_u(IN), G(rg).y_u(IN));
-    FFu.V = S.grid(dg).J_u(:);                           % edit interpolant
-    Jdg_u = FFu(G(rg).x_u(IN), G(rg).y_u(IN));
-
-    if (any(IN)),
-      C.Xrg_u   = G(rg).x_u(IN);
-      C.Yrg_u   = G(rg).y_u(IN);
-      C.Irg_u   = S.grid(rg).I_u(IN);
-      C.Jrg_u   = S.grid(rg).J_u(IN);
-      if (InterpDonor),
-	C.Idg_u = floor(Idg_u+0.5/delta);
-        C.Jdg_u = floor(Jdg_u+0.5/delta);
-      else
-        C.Idg_u = offset+(C.Irg_u-Io)*delta;
-        C.Jdg_u = offset+(C.Jrg_u-Jo)*delta;
-      end
-
-      C.mask_u  = G(rg).mask_u(IN);
-    end
-
-    [IN,ON] = inpolygon(G(rg).x_v(:), G(rg).y_v(:),                     ...
-                        S.grid(dg).perimeter.X_uv,                      ...
-                        S.grid(dg).perimeter.Y_uv);
-
-    IN(ON) = false;                  % remove V-points on perimeter, if any
-
-    FFv = TriScatteredInterp (G(dg).x_v(:), G(dg).y_v(:),               ...
-                              S.grid(dg).I_v(:), method);
-
-    Idg_v = FFv(G(rg).x_v(IN), G(rg).y_v(IN));
-    FFv.V = S.grid(dg).J_v(:);                           % edit interpolant
-    Jdg_v = FFv(G(rg).x_v(IN), G(rg).y_v(IN));
-
-    if (any(IN)),
-      C.Xrg_v   = G(rg).x_v(IN);
-      C.Yrg_v   = G(rg).y_v(IN);
-      C.Irg_v   = S.grid(rg).I_v(IN);
-      C.Jrg_v   = S.grid(rg).J_v(IN);
-      if (InterpDonor),
-        C.Idg_v = floor(Idg_v+0.5/delta);
-        C.Jdg_v = floor(Jdg_v+0.5/delta);
-      else
-        C.Idg_v = offset+(C.Irg_v-Io).*delta;
-        C.Jdg_v = offset+(C.Jrg_v-Jo).*delta;
-      end
-
-      C.mask_v  = G(rg).mask_v(IN);
+    if (Debugging),
+      figure;
+      plot(S.grid(dg).XI_u,  S.grid(dg).ETA_u,  'k:',                   ...
+           S.grid(dg).XI_u', S.grid(dg).ETA_u', 'k:',                   ...
+           S.grid(dg).XI_u (:,offset+1:delta:end),                      ...
+           S.grid(dg).ETA_u(:,offset+1:delta:end), 'k-',                ...
+           S.grid(dg).XI_u (1:delta:end,offset+1:end-offset)',          ...
+           S.grid(dg).ETA_u(1:delta:end,offset+1:end-offset)', 'k-',    ...
+           S.grid(dg).perimeter.XI_psi,                                 ...
+           S.grid(dg).perimeter.ETA_psi, 'ks',                          ...
+           S.grid(dg).XI_v(:), S.grid(dg).ETA_v(:), 'r+',               ...
+           C.Idg_v+0.5, C.Jdg_v,'bo');
+      title(['(XI,ETA) Coordinates, V-points: ', blanks(4),             ...
+             'two-way Coarse Grid Points (blue circles)']);
+      xlabel(['cr = ', num2str(cr), blanks(4),                          ...
+              'dg = ', num2str(dg), blanks(4),                          ...
+              'rg = ', num2str(rg), blanks(8),                          ...
+              '(red plus: V-points, black squares: PSI-points, ',       ...
+              'mesh: U-points)']);
+      ylabel('Interior Fine To Coarse Cells');
     end
   
+  else
+
+% RHO-contact points.
+
+    [INr,ONr] = inpolygon(G(rg).x_rho(:), G(rg).y_rho(:),               ...
+                          S.grid(dg).perimeter.X_psi,                   ...
+                          S.grid(dg).perimeter.Y_psi);
+
+    if (any(INr)),
+      C.xrg_rho  = S.grid(rg).XI_rho(INr);
+      C.erg_rho  = S.grid(rg).ETA_rho(INr);
+      C.Xrg_rho  = G(rg).x_rho(INr);
+      C.Yrg_rho  = G(rg).y_rho(INr);
+      C.Irg_rho  = S.grid(rg).I_rho(INr);
+      C.Jrg_rho  = S.grid(rg).J_rho(INr);
+      C.Idg_rho  = offset+(C.Irg_rho-Io)*delta;
+      C.Jdg_rho  = offset+(C.Jrg_rho-Jo)*delta;
+    
+      C.angle    = G(rg).angle(INr);
+      C.f        = G(rg).f(INr);
+      C.h        = G(rg).h(INr);
+      C.pm       = G(rg).pm(INr);
+      C.pn       = G(rg).pn(INr);
+      C.dndx     = G(rg).dndx(INr);
+      C.dmde     = G(rg).dmde(INr);
+      C.mask_rho = G(rg).mask_rho(INr);
+    end
+
+    if (Debugging),
+      figure;
+      plot(S.grid(dg).XI_psi,  S.grid(dg).ETA_psi,  'k:',               ...
+           S.grid(dg).XI_psi', S.grid(dg).ETA_psi', 'k:',               ...
+           S.grid(dg).XI_psi (:,1:delta:end),                           ...
+           S.grid(dg).ETA_psi(:,1:delta:end),  'k-',                    ...
+           S.grid(dg).XI_psi (1:delta:end,:)',                          ...
+           S.grid(dg).ETA_psi(1:delta:end,:)', 'k-',                    ...
+           S.grid(dg).XI_rho(:), S.grid(dg).ETA_rho(:), 'r+',           ...
+           C.Idg_rho+0.5, C.Jdg_rho+0.5,'bo');
+      title(['(XI,ETA) Coordinates, RHO-points: ', blanks(4),           ...
+             'two-way Coarse Grid Points (blue circles)']);
+      xlabel(['cr = ', num2str(cr), blanks(4),                          ...
+              'dg = ', num2str(dg), blanks(4),                          ...
+              'rg = ', num2str(rg), blanks(8),                          ...
+              '(red plus: RHO-points, mesh: PSI-points)']);
+      ylabel('Interior Fine To Coarse Cells');
+    end
+    
+% U-contact points.
+
+    [INu,ONu] = inpolygon(G(rg).x_u(:), G(rg).y_u(:),                   ...
+                          S.grid(dg).perimeter.X_uv,                    ...
+                          S.grid(dg).perimeter.Y_uv);
+
+    INu(ONu) = false;                   % remove U-points on perimeter
+
+    if (any(INu)),
+      C.xrg_u  = S.grid(rg).XI_u(INu);
+      C.erg_u  = S.grid(rg).ETA_u(INu);
+      C.Xrg_u  = G(rg).x_u(INu);
+      C.Yrg_u  = G(rg).y_u(INu);
+      C.Irg_u  = S.grid(rg).I_u(INu);
+      C.Jrg_u  = S.grid(rg).J_u(INu);
+      C.Idg_u  = 1+(C.Irg_u-Io)*delta;
+      C.Jdg_u  = offset+(C.Jrg_u-Jo)*delta;
+
+      C.mask_u = G(rg).mask_u(INu);
+    end
+
+    if (Debugging),
+      figure;
+      plot(S.grid(dg).XI_v,  S.grid(dg).ETA_v,  'k:',                   ...
+           S.grid(dg).XI_v', S.grid(dg).ETA_v', 'k:',                   ...
+           S.grid(dg).XI_v (offset+1:end-offset,1:delta:end),           ...
+           S.grid(dg).ETA_v(offset+1:end-offset,1:delta:end), 'k-',     ...
+           S.grid(dg).XI_v (offset+1:delta:end,:)',                     ...
+           S.grid(dg).ETA_v(offset+1:delta:end,:)', 'k-',               ...
+           S.grid(dg).perimeter.XI_psi,                                 ...
+           S.grid(dg).perimeter.ETA_psi, 'ks',                          ...
+           S.grid(dg).XI_u(:), S.grid(dg).ETA_u(:), 'r+',               ...
+           C.Idg_u, C.Jdg_u+0.5,'bo');
+      title(['(XI,ETA) Coordinates, U-points: ', blanks(4),             ...
+             'two-way Coarse Grid Points (blue circles)']);
+      xlabel(['cr = ', num2str(cr), blanks(4),                          ...
+              'dg = ', num2str(dg), blanks(4),                          ...
+              'rg = ', num2str(rg), blanks(8),                          ...
+              '(red plus: U-points, black squares: PSI-points, ',       ...
+              'mesh: V-points)']);
+      ylabel('Interior Fine To Coarse Cells');
+    end
+    
+% V-contact points.
+
+    [INv,ONv] = inpolygon(G(rg).x_v(:), G(rg).y_v(:),                   ...
+                          S.grid(dg).perimeter.X_uv,                    ...
+                          S.grid(dg).perimeter.Y_uv);
+
+    INv(ONv) = false;                   % remove V-points on perimeter
+
+    if (any(INv)),
+      C.xrg_v  = S.grid(rg).XI_v(INv);
+      C.erg_v  = S.grid(rg).ETA_v(INv);
+      C.Xrg_v  = G(rg).x_v(INv);
+      C.Yrg_v  = G(rg).y_v(INv);
+      C.Irg_v  = S.grid(rg).I_v(INv);
+      C.Jrg_v  = S.grid(rg).J_v(INv);
+      C.Idg_v  = offset+(C.Irg_v-Io).*delta;
+      C.Jdg_v  = 1+(C.Jrg_v-Jo).*delta;
+
+      C.mask_v = G(rg).mask_v(INv);
+    end
+    
+    if (Debugging),
+      figure;
+      plot(S.grid(dg).XI_u,  S.grid(dg).ETA_u,  'k:',                   ...
+           S.grid(dg).XI_u', S.grid(dg).ETA_u', 'k:',                   ...
+           S.grid(dg).XI_u (:,offset+1:delta:end),                      ...
+           S.grid(dg).ETA_u(:,offset+1:delta:end), 'k-',                ...
+           S.grid(dg).XI_u (1:delta:end,offset+1:end-offset)',          ...
+           S.grid(dg).ETA_u(1:delta:end,offset+1:end-offset)', 'k-',    ...
+           S.grid(dg).perimeter.XI_psi,                                 ...
+           S.grid(dg).perimeter.ETA_psi, 'ks',                          ...
+           S.grid(dg).XI_v(:), S.grid(dg).ETA_v(:), 'r+',               ...
+           C.Idg_v+0.5, C.Jdg_v,'bo');
+      title(['(XI,ETA) Coordinates,  V-points: ', blanks(4),            ...
+             'two-way Coarse Grid Points (blue circles)']);
+      xlabel(['cr = ', num2str(cr), blanks(4),                          ...
+              'dg = ', num2str(dg), blanks(4),                          ...
+              'rg = ', num2str(rg), blanks(8),                          ...
+              '(red plus: V-points, black squares: PSI-points, ',       ...
+              'mesh: U-points)']);
+      ylabel('Interior Fine To Coarse Cells');
+    end
+    
   end
 
 % Set intermediate refinement structure to empty.
 
   R.spherical = [];
 
-  R.x_rho = [];
-  R.y_rho = [];
+  R.xi_rho  = [];
+  R.eta_rho = [];
+
+  R.x_rho   = [];
+  R.y_rho   = [];
   if (spherical),
     R.lon_rho = [];
     R.lat_rho = [];
@@ -1862,8 +2102,11 @@ if (dg > rg || S.grid(dg).refine_factor > 0),
   R.Irg_rho = [];
   R.Jrg_rho = [];
 
-  R.x_psi = [];
-  R.y_psi = [];
+  R.xi_psi  = [];
+  R.eta_psi = [];
+
+  R.x_psi   = [];
+  R.y_psi   = [];
   if (spherical),
     R.lon_psi = [];
     R.lat_psi = [];
@@ -1872,8 +2115,11 @@ if (dg > rg || S.grid(dg).refine_factor > 0),
   R.Irg_psi = [];
   R.Jrg_psi = [];
 
-  R.x_u = [];
-  R.y_u = [];
+  R.xi_u  = [];
+  R.eta_u = [];
+
+  R.x_u   = [];
+  R.y_u   = [];
   if (spherical),
     R.lon_u = [];
     R.lat_u = [];
@@ -1882,8 +2128,11 @@ if (dg > rg || S.grid(dg).refine_factor > 0),
   R.Irg_u = [];
   R.Jrg_u = [];
 
-  R.x_v = [];
-  R.y_v = [];
+  R.xi_v  = [];
+  R.eta_v = [];
+  
+  R.x_v   = [];
+  R.y_v   = [];
   if (spherical),
     R.lon_v = [];
     R.lat_v = [];
@@ -2081,7 +2330,7 @@ S = Sinp;
 Ncontact  = S.Ncontact;
 spherical = S.spherical;
 
-Ldebug = false;
+Ldebug = true;
 
 %--------------------------------------------------------------------------
 % Set horizontal interpolation weights.
@@ -2095,27 +2344,13 @@ for cr=1:Ncontact,
 % RHO-contact points.  Recall that we need to shift I and J by one since
 % Matlat does not support zero-indices.
 
-  if (S.contact(cr).refinement),
-    if (dg > rg),
-      Hzero = zeros(size(S.contact(cr).point.Irg_rho));
-      S.weights(cr).H_rho(1,:) = Hzero;
-      S.weights(cr).H_rho(2,:) = Hzero;
-      S.weights(cr).H_rho(3,:) = Hzero;
-      S.weights(cr).H_rho(4,:) = Hzero;
-      Rcompute = false;
-    else
-      [Ir,Jr] = size(S.grid(dg).I_rho);
-      RindexO = sub2ind([Ir, Jr],                                       ...
-                        S.contact(cr).point.Idg_rho+1,                  ...
-                        S.contact(cr).point.Jdg_rho+1);      % Left-bottom
-      RindexR = sub2ind([Ir, Jr],                                       ...
-                        S.contact(cr).point.Idg_rho+2,                  ...
-                        S.contact(cr).point.Jdg_rho+1);      % rigth-bottom
-      RindexT = sub2ind([Ir, Jr],                                       ...
-                        S.contact(cr).point.Idg_rho+1,                  ...
-                        S.contact(cr).point.Jdg_rho+2);      % left-top
-      Rcompute = true;
-    end
+  if (S.contact(cr).refinement && (dg > rg)),
+    Hzero = zeros(size(S.contact(cr).point.Irg_rho));
+    S.weights(cr).H_rho(1,:) = Hzero;
+    S.weights(cr).H_rho(2,:) = Hzero;
+    S.weights(cr).H_rho(3,:) = Hzero;
+    S.weights(cr).H_rho(4,:) = Hzero;
+    Rcompute = false;
   else
     [Ir,Jr] = size(S.grid(dg).I_rho);
     RindexO = sub2ind([Ir, Jr],                                         ...
@@ -2130,16 +2365,23 @@ for cr=1:Ncontact,
     Rcompute = true;
   end
   if (Rcompute),
-    if (spherical),
-      pr = (S.contact(cr).point.Xrg_rho - G(dg).lon_rho(RindexO)) ./    ...
-           (G(dg).lon_rho(RindexR) - G(dg).lon_rho(RindexO));
-      qr = (S.contact(cr).point.Yrg_rho - G(dg).lat_rho(RindexO)) ./    ...
-           (G(dg).lat_rho(RindexT) - G(dg).lat_rho(RindexO));
+    if (S.contact(cr).refinement)
+      pr = (S.contact(cr).point.xrg_rho - S.grid(dg).XI_rho(RindexO))./ ...
+           (S.grid(dg).XI_rho(RindexR)  - S.grid(dg).XI_rho(RindexO));
+      qr = (S.contact(cr).point.erg_rho - S.grid(dg).ETA_rho(RindexO))./...
+           (S.grid(dg).ETA_rho(RindexT) - S.grid(dg).ETA_rho(RindexO));
     else
-      pr = (S.contact(cr).point.Xrg_rho - G(dg).x_rho(RindexO)) ./      ...
-           (G(dg).x_rho(RindexR) - G(dg).x_rho(RindexO));
-      qr = (S.contact(cr).point.Yrg_rho - G(dg).y_rho(RindexO)) ./      ...
-           (G(dg).y_rho(RindexT) - G(dg).y_rho(RindexO));
+      if (spherical),
+        pr = (S.contact(cr).point.Xrg_rho - G(dg).lon_rho(RindexO)) ./  ...
+             (G(dg).lon_rho(RindexR) - G(dg).lon_rho(RindexO));
+        qr = (S.contact(cr).point.Yrg_rho - G(dg).lat_rho(RindexO)) ./  ...
+             (G(dg).lat_rho(RindexT) - G(dg).lat_rho(RindexO));
+      else
+        pr = (S.contact(cr).point.Xrg_rho - G(dg).x_rho(RindexO)) ./    ...
+             (G(dg).x_rho(RindexR) - G(dg).x_rho(RindexO));
+        qr = (S.contact(cr).point.Yrg_rho - G(dg).y_rho(RindexO)) ./    ...
+             (G(dg).y_rho(RindexT) - G(dg).y_rho(RindexO));
+      end
     end
 
     if (any(isnan(pr))),      % If any of the factors are NaN,
@@ -2168,27 +2410,13 @@ for cr=1:Ncontact,
 % U-contact points.  Recall that we need to shift I by one since
 % Matlat does not support zero-indices.
 
-  if (S.contact(cr).refinement),
-    if (dg > rg),
-      Hzero = zeros(size(S.contact(cr).point.Irg_u));
-      S.weights(cr).H_u(1,:) = Hzero;
-      S.weights(cr).H_u(2,:) = Hzero;
-      S.weights(cr).H_u(3,:) = Hzero;
-      S.weights(cr).H_u(4,:) = Hzero;
-      Ucompute = false;
-    else
-      [Iu,Ju] = size(S.grid(dg).I_u);
-      UindexO = sub2ind([Iu, Ju],                                       ...
-                        S.contact(cr).point.Idg_u  ,                    ...
-                        S.contact(cr).point.Jdg_u+1);        % left-bottom
-      UindexR = sub2ind([Iu, Ju],                                       ...
-                        S.contact(cr).point.Idg_u+1,                    ...
-                        S.contact(cr).point.Jdg_u+1);        % right-bottom
-      UindexT = sub2ind([Iu, Ju],                                       ...
-                        S.contact(cr).point.Idg_u  ,                    ...
-                        S.contact(cr).point.Jdg_u+2);        % left-top
-      Ucompute = true;
-    end    
+  if (S.contact(cr).refinement && (dg > rg)),
+    Hzero = zeros(size(S.contact(cr).point.Irg_u));
+    S.weights(cr).H_u(1,:) = Hzero;
+    S.weights(cr).H_u(2,:) = Hzero;
+    S.weights(cr).H_u(3,:) = Hzero;
+    S.weights(cr).H_u(4,:) = Hzero;
+    Ucompute = false;
   else
     [Iu,Ju] = size(S.grid(dg).I_u);
     UindexO = sub2ind([Iu, Ju],                                         ...
@@ -2203,18 +2431,25 @@ for cr=1:Ncontact,
     Ucompute = true;
   end
   if (Ucompute)    
-    if (spherical),
-      pu = (S.contact(cr).point.Xrg_u - G(dg).lon_u(UindexO)) ./        ...
-           (G(dg).lon_u(UindexR) - G(dg).lon_u(UindexO));
-      qu = (S.contact(cr).point.Yrg_u - G(dg).lat_u(UindexO)) ./        ...
-           (G(dg).lat_u(UindexT) - G(dg).lat_u(UindexO)) ;
+    if (S.contact(cr).refinement)
+      pu = (S.contact(cr).point.xrg_u - S.grid(dg).XI_u(UindexO))./     ...
+           (S.grid(dg).XI_u(UindexR)  - S.grid(dg).XI_u(UindexO));
+      qu = (S.contact(cr).point.erg_u - S.grid(dg).ETA_u(UindexO))./    ...
+           (S.grid(dg).ETA_u(UindexT) - S.grid(dg).ETA_u(UindexO));
     else
-      pu = (S.contact(cr).point.Xrg_u - G(dg).x_u(UindexO)) ./          ...
-           (G(dg).x_u(UindexR) - G(dg).x_u(UindexO));
-      qu = (S.contact(cr).point.Yrg_u - G(dg).y_u(UindexO)) ./          ...
-           (G(dg).y_u(UindexT) - G(dg).y_u(UindexO));
+      if (spherical),
+        pu = (S.contact(cr).point.Xrg_u - G(dg).lon_u(UindexO)) ./      ...
+             (G(dg).lon_u(UindexR) - G(dg).lon_u(UindexO));
+        qu = (S.contact(cr).point.Yrg_u - G(dg).lat_u(UindexO)) ./      ...
+             (G(dg).lat_u(UindexT) - G(dg).lat_u(UindexO)) ;
+      else
+        pu = (S.contact(cr).point.Xrg_u - G(dg).x_u(UindexO)) ./        ...
+             (G(dg).x_u(UindexR) - G(dg).x_u(UindexO));
+        qu = (S.contact(cr).point.Yrg_u - G(dg).y_u(UindexO)) ./        ...
+             (G(dg).y_u(UindexT) - G(dg).y_u(UindexO));
+      end
     end
-
+      
     if (any(isnan(pu))),      % If any of the factors are NaN,
       pu(isnan(pu)) = 0;      % it imply that we are dividing
     end                       % by zero. Therefore, this is a
@@ -2241,27 +2476,13 @@ for cr=1:Ncontact,
 % V-contact points.  Recall that we need to shift J by one since
 % Matlat does not support zero-indices.
 
-  if (S.contact(cr).refinement),
-    if (dg > rg),
-      Hzero = zeros(size(S.contact(cr).point.Irg_v));
-      S.weights(cr).H_v(1,:) = Hzero;
-      S.weights(cr).H_v(2,:) = Hzero;
-      S.weights(cr).H_v(3,:) = Hzero;
-      S.weights(cr).H_v(4,:) = Hzero;
-      Vcompute = false;
-    else
-      [Iv,Jv] = size(S.grid(dg).I_v);
-      VindexO = sub2ind([Iv, Jv],                                       ...
-                        S.contact(cr).point.Idg_v+1,                    ...
-                        S.contact(cr).point.Jdg_v  );        % left-bottom
-      VindexR = sub2ind([Iv, Jv],                                       ...
-                        S.contact(cr).point.Idg_v+2,                    ...
-                        S.contact(cr).point.Jdg_v  );        % right-bottom
-      VindexT = sub2ind([Iv, Jv],                                       ...
-                        S.contact(cr).point.Idg_v+1,                    ...
-                        S.contact(cr).point.Jdg_v+1);        % left-top
-      Vcompute = true;
-    end
+  if (S.contact(cr).refinement && (dg > rg)),
+    Hzero = zeros(size(S.contact(cr).point.Irg_v));
+    S.weights(cr).H_v(1,:) = Hzero;
+    S.weights(cr).H_v(2,:) = Hzero;
+    S.weights(cr).H_v(3,:) = Hzero;
+    S.weights(cr).H_v(4,:) = Hzero;
+    Vcompute = false;
   else
     [Iv,Jv] = size(S.grid(dg).I_v);
     VindexO = sub2ind([Iv, Jv],                                         ...
@@ -2276,18 +2497,25 @@ for cr=1:Ncontact,
     Vcompute = true;
   end
   if (Vcompute),
-    if (spherical),
-      pv = (S.contact(cr).point.Xrg_v - G(dg).lon_v(VindexO)) ./        ...
-           (G(dg).lon_v(VindexR) - G(dg).lon_v(VindexO));
-      qv = (S.contact(cr).point.Yrg_v - G(dg).lat_v(VindexO)) ./        ...
-           (G(dg).lat_v(VindexT) - G(dg).lat_v(VindexO)) ;
+    if (S.contact(cr).refinement)
+      pv = (S.contact(cr).point.xrg_v - S.grid(dg).XI_v(VindexO))./     ...
+           (S.grid(dg).XI_v(VindexR)  - S.grid(dg).XI_v(VindexO));
+      qv = (S.contact(cr).point.erg_v - S.grid(dg).ETA_v(VindexO))./    ...
+           (S.grid(dg).ETA_v(VindexT) - S.grid(dg).ETA_v(VindexO));
     else
-      pv = (S.contact(cr).point.Xrg_v - G(dg).x_v(VindexO)) ./          ...
-           (G(dg).x_v(VindexR) - G(dg).x_v(VindexO));
-      qv = (S.contact(cr).point.Yrg_v - G(dg).y_v(VindexO)) ./          ...
-           (G(dg).y_v(VindexT) - G(dg).y_v(VindexO));
+      if (spherical),
+        pv = (S.contact(cr).point.Xrg_v - G(dg).lon_v(VindexO)) ./      ...
+             (G(dg).lon_v(VindexR) - G(dg).lon_v(VindexO));
+        qv = (S.contact(cr).point.Yrg_v - G(dg).lat_v(VindexO)) ./      ...
+             (G(dg).lat_v(VindexT) - G(dg).lat_v(VindexO)) ;
+      else
+        pv = (S.contact(cr).point.Xrg_v - G(dg).x_v(VindexO)) ./        ...
+             (G(dg).x_v(VindexR) - G(dg).x_v(VindexO));
+        qv = (S.contact(cr).point.Yrg_v - G(dg).y_v(VindexO)) ./        ...
+             (G(dg).y_v(VindexT) - G(dg).y_v(VindexO));
+      end
     end
-
+      
     if (any(isnan(pv))),      % If any of the factors are NaN,
       pv(isnan(pv)) = 0;      % it imply that we are dividing
     end                       % by zero. Therefore, this is a
@@ -2315,61 +2543,264 @@ for cr=1:Ncontact,
 
   if (Ldebug),
 
-    disp(' ')
-    for n=1:length(S.contact(cr).point.Xrg_rho),
-      disp([sprintf('%3i',n),' ',                                       ...
-            sprintf('%10.5f',S.weights(cr).H_rho(:,n)),' ',             ...
-            sprintf('%5.2f',sum(S.weights(cr).H_rho(:,n))),' ',         ...
-            sprintf('%3i',S.contact(cr).point.Idg_rho(n)+1),' ',        ...
-            sprintf('%3i',RindexO(n)),' ',                              ...
-            sprintf('%3i',RindexR(n)),' ',                              ...
-            sprintf('%7.1f',G(dg).x_rho(RindexO(n))),' ',               ...
-            sprintf('%10.3f',S.contact(cr).point.Xrg_rho(n)),' ',       ...
-            sprintf('%7.1f',G(dg).x_rho(RindexR(n))),' ',               ...
-            sprintf('%3i',S.contact(cr).point.Jdg_rho(n)+1),' ',        ...
-            sprintf('%3i',RindexT(n)),' ',                              ...
-            sprintf('%7.1f',G(dg).y_rho(RindexO(n))),' ',               ...
-            sprintf('%10.3f',S.contact(cr).point.Yrg_rho(n)),' ',       ...
-            sprintf('%7.1f',G(dg).y_rho(RindexT(n)))]);
+    frmt = ['%7.7i %12.5e %12.5e %12.5e %12.5e %12.5e %5i %7i %7i ',    ...
+              '%10.5f %10.5f %10.5f %5i %7i %10.5f %10.5f %10.5f\n'];
+    if (S.contact(cr).refinement),
+      Labels = ['   n     Hweight(1)   Hweight(2)   Hweight(3) ',       ...
+                '  Hweight(4)       SUM       Idg   indxO   indxR  ',   ...
+                '  XIdgO       XIrg      XIdgR     Jdg   indxT  ',      ...
+                '  ETAdgO     ETArg      ETAdgT'];
+    else
+      if (spherical)
+        Labels = ['   n     Hweight(1)   Hweight(2)   Hweight(3) ',     ...
+                  '  Hweight(4)       SUM       Idg   indxO ',          ...
+                  '  indxR    dgLonO      Xrg       dgLonR  ',          ...
+                  '  Jdg   indxT    dgLatO      Yrg       dgLatT'];
+      else
+        Labels = ['   n     Hweight(1)   Hweight(2)   Hweight(3) ',     ...
+                  '  Hweight(4)       SUM       Idg   indxO ',          ...
+                  '  indxR     XdgO       Xrg        XdgR   ',          ...
+                  '  Jdg   indxT     YdgO       Yrg        YdxT'];
+      end
+    end
+    
+    if (cr == 1),
+      Rname = 'Rweigths.txt';
+      Rout = fopen(Rname, 'w+');
+      if (Rout < 0),
+        error(['Hweights - Cannot create debugging file: ', Rname, '.']);
+      end
+      s = 'Interpolation Weights at RHO-contact points: ';
+      fprintf (Rout, '%s donor = %2.2i, receiver = %2.2i \n\n', s, dg, rg);
+    else
+      fprintf (Rout, ' \n\n');
+      fprintf (Rout, 'Contact Region = %2.2i\n\n', cr);
+    end
+    
+    if (Rcompute),
+      fprintf (Rout, '%s \n\n', Labels);
+      if (S.contact(cr).refinement),
+        for n=1:length(S.contact(cr).point.Xrg_rho),
+          fprintf (Rout, frmt,                                          ...
+                   [n,                                                  ...
+                    transpose(S.weights(cr).H_rho(:,n)),                ...
+                    sum(S.weights(cr).H_rho(:,n)),                      ...
+                    S.contact(cr).point.Idg_rho(n)+1,                   ...
+                    RindexO(n),                                         ...
+                    RindexR(n),                                         ...
+                    S.grid(dg).XI_rho(RindexO(n)),                      ...
+                    S.contact(cr).point.xrg_rho(n),                     ...
+                    S.grid(dg).XI_rho(RindexR(n)),                      ...
+                    S.contact(cr).point.Jdg_rho(n)+1,                   ...
+                    RindexT(n),                                         ...
+                    S.grid(dg).ETA_rho(RindexO(n)),                     ...
+                    S.contact(cr).point.erg_rho(n),                     ...
+                    S.grid(dg).ETA_rho(RindexT(n))]);
+        end
+      else
+        if (spherical)
+          for n=1:length(S.contact(cr).point.Xrg_rho),
+            fprintf (Rout, frmt,                                        ...
+                     [n,                                                ...
+                      transpose(S.weights(cr).H_rho(:,n)),              ...
+                      sum(S.weights(cr).H_rho(:,n)),                    ...
+                      S.contact(cr).point.Idg_rho(n)+1,                 ...
+                      RindexO(n),                                       ...
+                      RindexR(n),                                       ...
+                      G(dg).lon_rho(RindexO(n)),                        ...
+                      S.contact(cr).point.Xrg_rho(n),                   ...
+                      G(dg).lon_rho(RindexR(n)),                        ...
+                      S.contact(cr).point.Jdg_rho(n)+1,                 ...
+                      RindexT(n),                                       ...
+                      G(dg).lat_rho(RindexO(n)),                        ...
+                      S.contact(cr).point.Yrg_rho(n),                   ...
+                      G(dg).lat_rho(RindexT(n))]);
+          end
+        else
+          for n=1:length(S.contact(cr).point.Xrg_rho),
+            fprintf (Rout, frmt,                                        ...
+                     [n,                                                ...
+                      transpose(S.weights(cr).H_rho(:,n)),              ...
+                      sum(S.weights(cr).H_rho(:,n)),                    ...
+                      S.contact(cr).point.Idg_rho(n)+1,                 ...
+                      RindexO(n),                                       ...
+                      RindexR(n),                                       ...
+                      G(dg).x_rho(RindexO(n)),                          ...
+                      S.contact(cr).point.Xrg_rho(n),                   ...
+                      G(dg).x_rho(RindexR(n)),                          ...
+                      S.contact(cr).point.Jdg_rho(n)+1,                 ...
+                      RindexT(n),                                       ...
+                      G(dg).y_rho(RindexO(n)),                          ...
+                      S.contact(cr).point.Yrg_rho(n),                   ...
+                      G(dg).y_rho(RindexT(n))]);
+          end
+        end
+      end
+    else
+      fprintf (Rout,'  Weights are zero because they are not needed.\n\n');
     end
 
-    disp(' ')
-    for n=1:length(S.contact(cr).point.Xrg_u),
-      disp([sprintf('%3i',n),' ',                                       ...
-            sprintf('%10.5f',S.weights(cr).H_u(:,n)),' ',               ...
-            sprintf('%5.2f',sum(S.weights(cr).H_u(:,n))),' ',           ...
-            sprintf('%3i',S.contact(cr).point.Idg_u(n)),' ',            ...
-            sprintf('%3i',UindexO(n)),' ',                              ...
-            sprintf('%3i',UindexR(n)),' ',                              ...
-            sprintf('%7.1f',G(dg).x_u(UindexO(n))),' ',                 ...
-            sprintf('%10.3f',S.contact(cr).point.Xrg_u(n)),' ',         ...
-            sprintf('%7.1f',G(dg).x_u(UindexR(n))),' ',                 ...
-            sprintf('%3i',S.contact(cr).point.Jdg_u(n)+1),' ',          ...
-            sprintf('%3i',UindexT(n)),' ',                              ...
-            sprintf('%7.1f',G(dg).y_u(UindexO(n))),' ',                 ...
-            sprintf('%10.3f',S.contact(cr).point.Yrg_u(n)),' ',         ...
-            sprintf('%7.1f',G(dg).y_u(UindexT(n)))]);
+    if (cr == 1),
+      Uname = 'Uweigths.txt';
+      Uout = fopen(Uname, 'w+');
+      if (Uout < 0),
+        error(['Hweights - Cannot create debugging file: ', Uname, '.']);
+      end
+      s = 'Interpolation Weights at U-contact points: ';
+      fprintf (Uout, '%s donor = %2.2i, receiver = %2.2i \n\n', s, dg, rg);
+    else
+      fprintf (Uout, ' \n\n');
+      fprintf (Uout, 'Contact Region = %2.2i\n\n', cr);
     end
 
-    disp(' ')
-    for n=1:length(S.contact(cr).point.Xrg_v),
-      disp([sprintf('%3i',n),' ',                                       ...
-            sprintf('%10.5f',S.weights(cr).H_v(:,n)),' ',               ...
-            sprintf('%5.2f',sum(S.weights(cr).H_v(:,n))),' ',           ...
-            sprintf('%3i',S.contact(cr).point.Idg_v(n)+1),' ',          ...
-            sprintf('%3i',VindexO(n)),' ',                              ...
-            sprintf('%3i',VindexR(n)),' ',                              ...
-            sprintf('%7.1f',G(dg).x_v(VindexO(n))),' ',                 ...
-            sprintf('%10.3f',S.contact(cr).point.Xrg_v(n)),' ',         ...
-            sprintf('%7.1f',G(dg).x_v(VindexR(n))),' ',                 ...
-            sprintf('%3i',S.contact(cr).point.Jdg_v(n)),' ',            ...
-            sprintf('%3i',VindexT(n)),' ',                              ...
-            sprintf('%7.1f',G(dg).y_v(VindexO(n))),' ',                 ...
-            sprintf('%10.3f',S.contact(cr).point.Yrg_v(n)),' ',         ...
-            sprintf('%7.1f',G(dg).y_v(VindexT(n)))]);
+    if (Ucompute),
+      fprintf (Uout, '%s \n\n', Labels);
+      if (S.contact(cr).refinement),
+        for n=1:length(S.contact(cr).point.Xrg_u),
+          fprintf (Uout, frmt,                                          ...
+                   [n,                                                  ...
+                    transpose(S.weights(cr).H_u(:,n)),                  ...
+                    sum(S.weights(cr).H_u(:,n)),                        ...
+                    S.contact(cr).point.Idg_u(n)+1,                     ...
+                    UindexO(n),                                         ...
+                    UindexR(n),                                         ...
+                    S.grid(dg).XI_u(UindexO(n)),                        ...
+                    S.contact(cr).point.xrg_u(n),                       ...
+                    S.grid(dg).XI_u(UindexR(n)),                        ...
+                    S.contact(cr).point.Jdg_u(n)+1,                     ...
+                    UindexT(n),                                         ...
+                    S.grid(dg).ETA_u(UindexO(n)),                       ...
+                    S.contact(cr).point.erg_u(n),                       ...
+                    S.grid(dg).ETA_u(UindexT(n))]);
+        end
+      else
+        if (spherical)
+          for n=1:length(S.contact(cr).point.Xrg_u),
+            fprintf (Uout, frmt,                                        ...
+                     [n,                                                ...
+                      transpose(S.weights(cr).H_u(:,n)),                ...
+                      sum(S.weights(cr).H_u(:,n)),                      ...
+                      S.contact(cr).point.Idg_u(n)+1,                   ...
+                      UindexO(n),                                       ...
+                      UindexR(n),                                       ...
+                      G(dg).lon_u(UindexO(n)),                          ...
+                      S.contact(cr).point.Xrg_u(n),                     ...
+                      G(dg).lon_u(UindexR(n)),                          ...
+                      S.contact(cr).point.Jdg_u(n)+1,                   ...
+                      UindexT(n),                                       ...
+                      G(dg).lat_u(UindexO(n)),                          ...
+                      S.contact(cr).point.Yrg_u(n),                     ...
+                      G(dg).lat_u(UindexT(n))]);
+          end
+        else
+          for n=1:length(S.contact(cr).point.Xrg_u),
+            fprintf (Uout, frmt,                                        ...
+                     [n,                                                ...
+                      transpose(S.weights(cr).H_u(:,n)),                ...
+                      sum(S.weights(cr).H_u(:,n)),                      ...
+                      S.contact(cr).point.Idg_u(n)+1,                   ...
+                      UindexO(n),                                       ...
+                      UindexR(n),                                       ...
+                      G(dg).x_u(UindexO(n)),                            ...
+                      S.contact(cr).point.Xrg_u(n),                     ...
+                      G(dg).x_u(UindexR(n)),                            ...
+                      S.contact(cr).point.Jdg_u(n)+1,                   ...
+                      UindexT(n),                                       ...
+                      G(dg).y_u(UindexO(n)),                            ...
+                      S.contact(cr).point.Yrg_u(n),                     ...
+                      G(dg).y_u(UindexT(n))]);
+          end
+        end
+      end
+    else
+      fprintf (Uout,'  Weights are zero because they are not needed.\n\n');
+    end
+
+    if (cr == 1),
+      Vname = 'Vweigths.txt';
+      Vout = fopen(Vname, 'w+');
+      if (Vout < 0),
+        error(['Hweights - Cannot create debugging file: ', Vname, '.']);
+      end
+      s = 'Interpolation Weights at V-contact points: ';
+      fprintf (Vout, '%s donor = %2.2i, receiver = %2.2i \n\n', s, dg, rg);
+    else
+      fprintf (Vout, ' \n\n');
+      fprintf (Vout, 'Contact Region = %2.2i\n\n', cr);    
+    end
+
+    if (Vcompute),
+      fprintf (Vout, '%s \n\n', Labels);
+      if (S.contact(cr).refinement),
+        for n=1:length(S.contact(cr).point.Xrg_v),
+          fprintf (Vout, frmt,                                          ...
+                   [n,                                                  ...
+                    transpose(S.weights(cr).H_v(:,n)),                  ...
+                    sum(S.weights(cr).H_v(:,n)),                        ...
+                    S.contact(cr).point.Idg_v(n)+1,                     ...
+                    VindexO(n),                                         ...
+                    VindexR(n),                                         ...
+                    S.grid(dg).XI_v(VindexO(n)),                        ...
+                    S.contact(cr).point.xrg_v(n),                       ...
+                    S.grid(dg).XI_v(VindexR(n)),                        ...
+                    S.contact(cr).point.Jdg_v(n)+1,                     ...
+                    VindexT(n),                                         ...
+                    S.grid(dg).ETA_v(VindexO(n)),                       ...
+                    S.contact(cr).point.erg_v(n),                       ...
+                    S.grid(dg).ETA_v(VindexT(n))]);
+        end
+      else
+        if (spherical)
+          for n=1:length(S.contact(cr).point.Xrg_v),
+            fprintf (Vout, frmt,                                        ...
+                     [n,                                                ...
+                      transpose(S.weights(cr).H_v(:,n)),                ...
+                      sum(S.weights(cr).H_v(:,n)),                      ...
+                      S.contact(cr).point.Idg_v(n)+1,                   ...
+                      VindexO(n),                                       ...
+                      VindexR(n),                                       ...
+                      G(dg).lon_v(VindexO(n)),                          ...
+                      S.contact(cr).point.Xrg_v(n),                     ...
+                      G(dg).lon_v(VindexR(n)),                          ...
+                      S.contact(cr).point.Jdg_v(n)+1,                   ...
+                      VindexT(n),                                       ...
+                      G(dg).lat_v(VindexO(n)),                          ...
+                      S.contact(cr).point.Yrg_v(n),                     ...
+                      G(dg).lat_v(VindexT(n))]);
+          end
+        else
+          for n=1:length(S.contact(cr).point.Xrg_v),
+            fprintf (Vout, frmt,                                        ...
+                     [n,                                                ...
+                      transpose(S.weights(cr).H_v(:,n)),                ...
+                      sum(S.weights(cr).H_v(:,n)),                      ...
+                      S.contact(cr).point.Idg_v(n)+1,                   ...
+                      VindexO(n),                                       ...
+                      VindexR(n),                                       ...
+                      G(dg).x_v(VindexO(n)),                            ...
+                      S.contact(cr).point.Xrg_v(n),                     ...
+                      G(dg).x_v(VindexR(n)),                            ...
+                      S.contact(cr).point.Jdg_v(n)+1,                   ...
+                      VindexT(n),                                       ...
+                      G(dg).y_v(VindexO(n)),                            ...
+                      S.contact(cr).point.Yrg_v(n),                     ...
+                      G(dg).y_v(VindexT(n))]);
+          end
+        end
+      end
+    else
+      fprintf (Vout,'  Weights are zero because they are not needed.\n\n');
     end
   end
-
+  clear RindexO RindexR RindexT Rcompute
+  clear UindexO UindexR UindexT Ucompute
+  clear VindexO VindexR VindexT Vcompute
 end
+
+if (Ldebug),
+  fclose (Rout);
+  fclose (Uout);
+  fclose (Vout);
+end  
 
 return

@@ -48,8 +48,10 @@ function C = fine2coarse(Ginp,Gout,Gfactor,varargin)
 
 if (~isstruct(Ginp)),
   F = get_roms_grid(Ginp);
+  InpName = Ginp;
 else
   F = Ginp;
+  InpName = Ginp.grid_name;
 end
 
 % Set data sampling indices (PSI-points).
@@ -150,14 +152,6 @@ grd_vars = [grd_vars, 'hraw'];               % needs to be last
 % Extract coaser grid.  Only valid for C-grid...
 %--------------------------------------------------------------------------
 
-% Set fine grid ROMS indices to extract. Notice the zero lower bound due
-% to C-grid type conventions in ROMS.
-
-IpF = 1:1:L;  JpF = 1:1:M;
-IrF = 0:1:L;  JrF = 0:1:M;
-IuF = 1:1:L;  JuF = 0:1:M;
-IvF = 0:1:L;  JvF = 1:1:M;
-
 % Set extraction ranges. The "half" offset value is to extract RHO-points
 % boundaries (all four edges), U-points southern and northern boundary
 % edges, and V-points western and eastern boundary edges. All these points
@@ -174,33 +168,59 @@ JminR = Jmin-(half+1);   JmaxR = Jmax+(half+1);
 JminU = Jmin-(half+1);   JmaxU = Jmax+(half+1);
 JminV = Jmin;            JmaxV = Jmax;
 
-% Set indices to extract.  The "one" offset here is to account for the
-% zero Fortran index that it is illegal in Matlab. These arrays elements
-% are shifted by one in Matlab environment. The "fac" offset in the MOD
-% function is to insure the correct shift due to the zero Fortran index
-% in the MOD so we unity at the correct point, eq(mod(x,Gfactor)). This
-% is correct!!!  You may test it if you like.  It is a good algebra
-% exercise.
+% Set fine and coarse grid ROMS I-indices to extract.
 
-fac = half+1;         % use floor for integer arithmetic
+IindexP = false([1 L  ]);
+IindexR = false([1 L+1]);
+IindexU = false([1 L  ]);
+IindexV = false([1 L+1]);
 
-IindexP = eq(mod(IpF-fac, Gfactor), 0) & ge(IpF,IminP)   & le(IpF,ImaxP);
-JindexP = eq(mod(JpF-fac, Gfactor), 0) & ge(JpF,JminP)   & le(JpF,JmaxP);
+if (Imin == 1),
+  IpC = half:Gfactor:L;
+  IrC = 1   :Gfactor:L;
+  IuC = half:Gfactor:L;
+  IvC = 1   :Gfactor:L;
+else
+  IpC = Imin     :Gfactor:Imax;
+  IrC = Imin-half:Gfactor:Imax;
+  IuC = Imin     :Gfactor:Imax;
+  IvC = Imin-half:Gfactor:Imax;
+end
 
-IindexR = eq(mod(IrF    , Gfactor), 0) & ge(IrF,IminR-1) & le(IrF,ImaxR);
-JindexR = eq(mod(JrF    , Gfactor), 0) & ge(JrF,JminR-1) & le(JrF,JmaxR);
+IindexP(IpC) = true;
+IindexR(IrC) = true;
+IindexU(IuC) = true;
+IindexV(IvC) = true;
 
-IindexU = eq(mod(IuF-fac, Gfactor), 0) & ge(IuF,IminU  ) & le(IuF,ImaxU);
-JindexU = eq(mod(JuF    , Gfactor), 0) & ge(JuF,JminU-1) & le(JuF,JmaxU);
+% Set fine and coarse grid ROMS I-indices to extract.
 
-IindexV = eq(mod(IvF    , Gfactor), 0) & ge(IvF,IminV-1) & le(IvF,ImaxV);
-JindexV = eq(mod(JvF-fac, Gfactor), 0) & ge(JvF,JminV  ) & le(JvF,JmaxV);
+JindexP = false([1 M  ]);
+JindexR = false([1 M+1]);
+JindexU = false([1 M+1]);
+JindexV = false([1 M  ]);
+
+if (Jmin == 1),
+  JpC = half:Gfactor:M;
+  JrC = 1   :Gfactor:M;
+  JuC = 1   :Gfactor:M;
+  JvC = half:Gfactor:M;
+else
+  JpC = Jmin     :Gfactor:Jmax;
+  JrC = Jmin-half:Gfactor:Jmax;
+  JuC = Jmin-half:Gfactor:Jmax;
+  JvC = Jmin     :Gfactor:Jmax;
+end
+
+JindexP(JpC) = true;
+JindexR(JrC) = true;
+JindexU(JuC) = true;
+JindexV(JvC) = true;
 
 % Initialize several subsomain structure paameters.
 
 C.grid_name = Gout;
-C.Lm = length(IpF(IindexP))-1;
-C.Mm = length(JpF(JindexP))-1;
+C.Lm = length(IpC)-1;
+C.Mm = length(JpC)-1;
 C.spherical = F.spherical;
 
 % Extract grid variables.
@@ -239,6 +259,23 @@ else
   C.el = 0;
 end
 
+% Recompute metrics at coarser resolution.  We cannot extract their
+% values because grid spacing is larger by factor of Gfactors.
+% The computation of metrics from discrete point is subject to
+% roundoff.  There is not much that we can do here.  The roundoff
+% is small and of the order 1.0E-16 (eps value).
+
+disp(' ');
+if (G.spherical),
+  GreatCircle = true;
+  disp('Computing grid spacing: great circle distances');
+else
+  GreatCircle = false;
+  disp('Computing grid spacing: Cartesian distances');
+end
+
+[C.pm, C.pn, C.dndx, C.dmde]=grid_metrics(C, GreatCircle);
+
 %--------------------------------------------------------------------------
 % Create subdomain Grid NetCDF file and write out data.
 %--------------------------------------------------------------------------
@@ -261,7 +298,7 @@ if (status ~= 0), return, end
 
 % Set global attributes.
 
-status = nc_attadd(Gout, 'parent_grid', Ginp);
+status = nc_attadd(Gout, 'parent_grid', InpName);
 if (status ~= 0), return, end
 
 status = nc_attadd(Gout, 'parent_Imin', int32(Imin));
@@ -287,7 +324,7 @@ history = ['GRID file created using Matlab script: fine2coarse, ',      ...
 status = nc_attadd(Gout, 'history', history);
 if (status ~= 0), return, end
 
-% Write out fine resolution grid variables.
+% Write out coarse resolution grid variables.
 
 disp(['Writing subdomain grid variables into: ', Gout]);
 disp(' ');
@@ -319,6 +356,14 @@ for value = 1:length(grd_vars)-1,
     if (status ~= 0), return, end
   end  
 end,
+
+%--------------------------------------------------------------------------
+% Add coastline data if available.
+%--------------------------------------------------------------------------
+
+if (isfield(F, 'lon_coast') && isfield(F, 'lat_coast')),
+  add_coastline (Gout, F.lon_coast, F.lat_coast);
+end
 
 %--------------------------------------------------------------------------
 % Get full extracted grid structure.

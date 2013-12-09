@@ -214,7 +214,15 @@ for value = 1:length(grd_vars)-1,
     status = nc_write (Gout, field, S.(field));
     if (status ~= 0), return, end
   end  
-end,
+end
+
+%--------------------------------------------------------------------------
+% Add coastline data if available.
+%--------------------------------------------------------------------------
+
+if (isfield(L, 'lon_coast') && isfield(L, 'lat_coast')),
+  add_coastline (Gout, L.lon_coast, L.lat_coast);
+end
 
 %--------------------------------------------------------------------------
 % Get full extracted grid structure.
