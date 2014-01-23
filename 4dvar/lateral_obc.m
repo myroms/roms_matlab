@@ -27,7 +27,7 @@ function [A]=lateral_obc(A,Istr,Iend,Jstr,Jend,EW_periodic,NS_periodic);
 
 % svn $Id$
 %===========================================================================%
-%  Copyright (c) 2002-2013 The ROMS/TOMS Group                              %
+%  Copyright (c) 2002-2014 The ROMS/TOMS Group                              %
 %    Licensed under a MIT/X style license                                   %
 %    See License_ROMS.txt                           Hernan G. Arango        %
 %===========================================================================%

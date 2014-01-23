@@ -159,7 +159,7 @@ function [K]=balance_4dvar(A);
 
 % svn $Id$
 %===========================================================================%
-%  Copyright (c) 2002-2013 The ROMS/TOMS Group                              %
+%  Copyright (c) 2002-2014 The ROMS/TOMS Group                              %
 %    Licensed under a MIT/X style license           Hernan G. Arango        %
 %    See License_ROMS.txt                           Andrew M. Moore         %
 %===========================================================================%

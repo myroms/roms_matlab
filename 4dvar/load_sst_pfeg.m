@@ -59,7 +59,7 @@ function [data]=load_sst_pfeg(GRDfile, StartDay, EndDay, varargin)
 
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2013 The ROMS/TOMS Group                            %
+%  Copyright (c) 2002-2014 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license           Hernan G. Arango      %
 %    See License_ROMS.txt                           John Wilkin           %
 %=========================================================================%
