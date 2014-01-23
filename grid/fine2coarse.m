@@ -135,9 +135,14 @@ end
 
 % Set grid variables to process.
 
-grd_vars = {'h', 'f', 'angle', 'pm', 'pn', 'dndx', 'dmde',              ...
-            'x_rho', 'y_rho', 'x_psi', 'y_psi',                         ...
-            'x_u', 'y_u', 'x_v', 'y_v'};
+grd_vars = {'h', 'f', 'angle', 'pm', 'pn'};
+
+if (F.curvilinear),
+  field_list = [grd_vars, 'dmde', 'dndx'];
+end
+
+grd_vars = [grd_vars, 'x_rho', 'y_rho', 'x_psi', 'y_psi',               ...
+                      'x_u', 'y_u', 'x_v', 'y_v'};
 
 if (F.spherical),
   grd_vars = [grd_vars, 'lon_rho', 'lat_rho', 'lon_psi', 'lat_psi',     ...

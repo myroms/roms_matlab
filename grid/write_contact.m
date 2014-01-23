@@ -94,6 +94,8 @@ ncwrite(ncname, 'refine_factor', int32([S.grid.refine_factor]));
 
 % Contact Points vertical interpolation switch.
 
+ncwrite(ncname, 'interpolate', int32(ones([1 Ncontact])));
+
 % Contact region donor and receiver grid.
 
 ncwrite(ncname, 'donor_grid', int32([S.contact.donor_grid]));

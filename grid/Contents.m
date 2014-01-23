@@ -15,6 +15,11 @@
 %
 %   grid_metrics      - Computes ROMS Grid horizontal metrics.
 %
+%   grids_structure   - Compute a nested grids structure array, say G(:),
+%                         containing all the grid variables associated
+%                         with the application's horizontal and vertical
+%                         grids.
+%
 %   get_roms_grid     - Builds or updates a ROMS grid structure for
 %                         a particular ROMS application.
 %

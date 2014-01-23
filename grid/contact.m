@@ -1089,8 +1089,15 @@ if (S.contact(cr).boundary(iwest).okey),
   W(ib).h         = G(dg).h(Ir);
   W(ib).pm        = G(dg).pm(Ir);
   W(ib).pn        = G(dg).pn(Ir);
-  W(ib).dndx      = G(dg).dndx(Ir);
-  W(ib).dmde      = G(dg).dmde(Ir);
+
+  if (G(dg).curvilinear),
+    W(ib).dndx    = G(dg).dndx(Ir);
+    W(ib).dmde    = G(dg).dmde(Ir);
+  else
+    W(ib).dndx    = zeros(size(W(ib).h));
+    W(ib).dmde    = zeros(size(W(ib).h));
+  end
+
   W(ib).mask_rho  = G(dg).mask_rho(Ir);
   W(ib).mask_u    = G(dg).mask_u  (Iu);
   W(ib).mask_v    = G(dg).mask_v  (Iv);
@@ -1157,8 +1164,15 @@ if (S.contact(cr).boundary(isouth).okey),
   W(ib).h         = G(dg).h(Jr);
   W(ib).pm        = G(dg).pm(Jr);
   W(ib).pn        = G(dg).pn(Jr);
-  W(ib).dndx      = G(dg).dndx(Jr);
-  W(ib).dmde      = G(dg).dmde(Jr);
+
+  if (G(dg).curvilinear),
+    W(ib).dndx    = G(dg).dndx(Jr);
+    W(ib).dmde    = G(dg).dmde(Jr);
+  else
+    W(ib).dndx    = zeros(size(W(ib).h));
+    W(ib).dmde    = zeros(size(W(ib).h));
+  end
+
   W(ib).mask_rho  = G(dg).mask_rho(Jr);
   W(ib).mask_u    = G(dg).mask_u  (Ju);
   W(ib).mask_v    = G(dg).mask_v  (Jv);
@@ -1225,8 +1239,15 @@ if (S.contact(cr).boundary(ieast).okey),
   W(ib).h         = G(dg).h(Ir);
   W(ib).pm        = G(dg).pm(Ir);
   W(ib).pn        = G(dg).pn(Ir);
-  W(ib).dndx      = G(dg).dndx(Ir);
-  W(ib).dmde      = G(dg).dmde(Ir);
+ 
+  if (G(dg).curvilinear),
+    W(ib).dndx    = G(dg).dndx(Ir);
+    W(ib).dmde    = G(dg).dmde(Ir);
+  else
+    W(ib).dndx    = zeros(size(W(ib).h));
+    W(ib).dmde    = zeros(size(W(ib).h));
+  end
+
   W(ib).mask_rho  = G(dg).mask_rho(Ir);
   W(ib).mask_u    = G(dg).mask_u  (Iu);
   W(ib).mask_v    = G(dg).mask_v  (Iv);
@@ -1293,8 +1314,16 @@ if (S.contact(cr).boundary(inorth).okey),
   W(ib).h         = G(dg).h(Jr);
   W(ib).pm        = G(dg).pm(Jr);
   W(ib).pn        = G(dg).pn(Jr);
-  W(ib).dndx      = G(dg).dndx(Jr);
-  W(ib).dmde      = G(dg).dmde(Jr);
+
+  
+  if (G(dg).curvilinear),
+    W(ib).dndx    = G(dg).dndx(Jr);
+    W(ib).dmde    = G(dg).dmde(Jr);
+  else
+    W(ib).dndx    = zeros(size(W(ib).h));
+    W(ib).dmde    = zeros(size(W(ib).h));
+  end
+
   W(ib).mask_rho  = G(dg).mask_rho(Jr);
   W(ib).mask_u    = G(dg).mask_u  (Ju);
   W(ib).mask_v    = G(dg).mask_v  (Jv);
@@ -1474,6 +1503,9 @@ function [C, R] = refinement(cr, dg, rg, Lmask, G, S, MaskInterp)
 
 % Initialize.
 
+Ngrids      = length(G);             % number of nested grids
+Ncontact    = (Ngrids-1)*2;          % number of contact regions
+  
 method      = 'natural';
 spherical   = S.spherical;
 Debugging   = true;                  % plot contact points for debugging
@@ -1543,8 +1575,15 @@ if (S.grid(rg).refine_factor > 0),
       C.h        = R.h(~INr);
       C.pm       = R.pm(~INr);
       C.pn       = R.pn(~INr);
-      C.dndx     = R.dndx(~INr);
-      C.dmde     = R.dmde(~INr);
+
+      if (G(rg).curvilinear),
+        C.dndx   = R.dndx(~INr);
+        C.dmde   = R.dmde(~INr);
+      else
+        C.dndx   = zeros(size(C.h));
+        C.dmde   = zeros(size(C.h));
+      end
+
       C.mask_rho = R.mask_rho(~INr);
     end
 
@@ -1655,8 +1694,15 @@ if (S.grid(rg).refine_factor > 0),
       C.h        = R.h(~INr);
       C.pm       = R.pm(~INr);
       C.pn       = R.pn(~INr);
-      C.dndx     = R.dndx(~INr);
-      C.dmde     = R.dmde(~INr);
+
+      if (G(rg).curvilinear),
+        C.dndx   = R.dndx(~INr);
+        C.dmde   = R.dmde(~INr);
+      else
+        C.dndx   = zeros(size(C.h));
+        C.dmde   = zeros(size(C.h));
+      end
+
       C.mask_rho = R.mask_rho(~INr);
     end
 
@@ -1804,15 +1850,29 @@ if (dg > rg || S.grid(dg).refine_factor > 0),
 
 % Set coaser grid (Io,Jo) origin coordinates (left-bottom corner) at
 % PSI-points used to extract finer grid.  Set finer grid center indices
-% offset with respect the coarser grid.
+% offset with respect the coarser grid.  Since the corner values may be
+% empty or wrong for this contact region, we need to get the (Io,Jo)
+% from the conjugate contact region (donor is coarser grid and receiver
+% is the finer grid).
 
+  Io     = [];
+  Jo     = [];
   delta  = S.grid(dg).refine_factor;
   half   = floor((delta-1)/2);
   offset = double(half+1);
-  Io     = min(S.contact(cr-1).corners.Idg);  % Notice previous contact
-  Jo     = min(S.contact(cr-1).corners.Jdg);  % region: ic-1. Current
-                                              % region may be empty or
-                                              % have the wrong values
+
+  for my_cr = 1:Ncontact,
+    if (S.contact(my_cr).donor_grid    == rg &&                         ...
+        S.contact(my_cr).receiver_grid == dg &&                         ...
+        S.contact(my_cr).corners.okey),
+      Io = min(S.contact(my_cr).corners.Idg);
+      Jo = min(S.contact(my_cr).corners.Jdg);
+    end
+  end
+
+  if (isempty(Io) || isempty(Jo)),
+    error(' Unable to determine coaser origin coordinates (Io,Jo)');
+  end
 
 % Set receiver (coarse) grid contact points inside perimeter of donor
 % (fine) grid. This will be used in the fine two coarse two-way nesting.
@@ -1840,8 +1900,15 @@ if (dg > rg || S.grid(dg).refine_factor > 0),
       C.h        = G(rg).h(INr);
       C.pm       = G(rg).pm(INr);
       C.pn       = G(rg).pn(INr);
-      C.dndx     = G(rg).dndx(INr);
-      C.dmde     = G(rg).dmde(INr);
+
+      if (G(rg).curvilinear),
+        C.dndx   = G(rg).dndx(INr);
+        C.dmde   = G(rg).dmde(INr);
+      else
+        C.dndx   = zeros(size(C.h));
+        C.dmde   = zeros(size(C.h));
+      end
+      
       C.mask_rho = G(rg).mask_rho(INr);
     end
 
@@ -1973,8 +2040,15 @@ if (dg > rg || S.grid(dg).refine_factor > 0),
       C.h        = G(rg).h(INr);
       C.pm       = G(rg).pm(INr);
       C.pn       = G(rg).pn(INr);
-      C.dndx     = G(rg).dndx(INr);
-      C.dmde     = G(rg).dmde(INr);
+
+      if (G(rg).curvilinear),
+        C.dndx   = G(rg).dndx(INr);
+        C.dmde   = G(rg).dmde(INr);
+      else
+        C.dndx   = zeros(size(C.h));
+        C.dmde   = zeros(size(C.h));
+      end
+
       C.mask_rho = G(rg).mask_rho(INr);
     end
 

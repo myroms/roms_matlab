@@ -94,13 +94,23 @@ switch numel(varargin)
 end
 
 % Set spherical switch.
-  
+
 spherical = C.spherical;
 
 if (spherical),
   F.spherical = 1;
 else
   F.spherical = 0;
+end
+
+% Set curvilinear switch.
+
+curvilinear = C.curvilinear;
+
+if (spherical),
+  F.curvilinear = 1;
+else
+  F.curvilinear = 0;
 end
 
 % Get grid lengths.
@@ -129,10 +139,10 @@ end
 	    
 % Set fields to process.
 
-field_list = {'pm', 'pn', 'dmde', 'dndx', 'f', 'h'};
+field_list = {'f', 'h', 'pm', 'pn'};
 
-if (got.angle),
-  field_list = [field_list, 'angle'];
+if (curvilinear),
+  field_list = [field_list, 'dmde', 'dndx'];
 end
 
 if (got.x_rho && got.y_rho),
@@ -415,9 +425,19 @@ if (got.angle),
   Rr.V = C.angle(:);   F.angle = Rr(F.x_rho, F.y_rho);
 end
 
-% Bathymetry.
+% Bathymetry.  Make sure that the interpolation method is linear
+% to insure that the global integral of bathymetry is conserved.
+% Perhaps, we need to have here a conservation interpolation.
+% See Clark and Farley (1984) equations 30-36.
+%
+% Clark, T.L. and R.D. Farley, 1984:  Severe Downslope Windstorm
+%   Calculations in Two and Three Spatial Dimensions Using Anelastic
+%   Interative Grid Nesting: A Possible Mechanism for Gustiness,
+%   J. Atmos. Sci., 329-350.
 
-Rr.V = C.h(:);        F.h    = Rr(F.x_rho, F.y_rho);
+Rr.V = C.h(:);    Rr.Method = 'linear'
+
+F.h  = Rr(F.x_rho, F.y_rho);
 
 if (got.hraw),
   C.hraw = nc_read(Ginp,'hraw',1);

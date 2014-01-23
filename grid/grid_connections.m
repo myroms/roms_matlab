@@ -89,18 +89,16 @@ for dg=1:S.Ngrids,
   for rg=1:S.Ngrids,
     if (dg ~= rg),
 
-      cr = cr+1;                              % contact region number
-
-      S.contact(cr).donor_grid    = dg;       % donor grid number
-      S.contact(cr).receiver_grid = rg;       % receiver grid number
-      S.contact(cr).coincident    = false;
-      S.contact(cr).composite     = false;
-      S.contact(cr).mosaic        = false;
+      contact.donor_grid    = dg;             % donor grid number
+      contact.receiver_grid = rg;             % receiver grid number
+      contact.coincident    = false;
+      contact.composite     = false;
+      contact.mosaic        = false;
 
       if (S.grid(dg).refine_factor > 0 || S.grid(rg).refine_factor > 0),
-        S.contact(cr).refinement = true;
+        contact.refinement = true;
       else
-        S.contact(cr).refinement = false;
+        contact.refinement = false;
       end  
 
 % Determine which points from donor grid are inside the reciever grid.
@@ -118,25 +116,25 @@ for dg=1:S.Ngrids,
           I = S.grid(dg).I_rho(:);
           J = S.grid(dg).J_rho(:);
 
-          S.contact(cr).interior.okey = true;
+          contact.interior.okey = true;
           if (S.grid(rg).refine_factor > 0),
-            S.contact(cr).interior.Xdg = X(~IN(:));
-            S.contact(cr).interior.Ydg = Y(~IN(:));
-            S.contact(cr).interior.Idg = I(~IN(:));
-            S.contact(cr).interior.Jdg = J(~IN(:));
+            contact.interior.Xdg = X(~IN(:));
+            contact.interior.Ydg = Y(~IN(:));
+            contact.interior.Idg = I(~IN(:));
+            contact.interior.Jdg = J(~IN(:));
           else
-            S.contact(cr).interior.Xdg = X(IN(:));
-            S.contact(cr).interior.Ydg = Y(IN(:));
-            S.contact(cr).interior.Idg = I(IN(:));
-            S.contact(cr).interior.Jdg = J(IN(:));
+            contact.interior.Xdg = X(IN(:));
+            contact.interior.Ydg = Y(IN(:));
+            contact.interior.Idg = I(IN(:));
+            contact.interior.Jdg = J(IN(:));
           end
           clear I J X Y
         else
-          S.contact(cr).interior.okey  = false;
-          S.contact(cr).interior.Xdg   = [];
-          S.contact(cr).interior.Ydg   = [];
-          S.contact(cr).interior.Idg   = [];
-          S.contact(cr).interior.Jdg   = [];
+          contact.interior.okey  = false;
+          contact.interior.Xdg   = [];
+          contact.interior.Ydg   = [];
+          contact.interior.Idg   = [];
+          contact.interior.Jdg   = [];
         end
       else
         [IN,~] = inpolygon(G(dg).x_rho, G(dg).y_rho,                    ...
@@ -148,25 +146,25 @@ for dg=1:S.Ngrids,
           I = S.grid(dg).I_rho(:);
           J = S.grid(dg).J_rho(:);
 
-          S.contact(cr).interior.okey = true;
+          contact.interior.okey = true;
           if (S.grid(rg).refine_factor > 0),
-            S.contact(cr).interior.Xdg = X(~IN(:));
-            S.contact(cr).interior.Ydg = Y(~IN(:));
-            S.contact(cr).interior.Idg = I(~IN(:));
-            S.contact(cr).interior.Jdg = J(~IN(:));
+            contact.interior.Xdg = X(~IN(:));
+            contact.interior.Ydg = Y(~IN(:));
+            contact.interior.Idg = I(~IN(:));
+            contact.interior.Jdg = J(~IN(:));
           else
-            S.contact(cr).interior.Xdg = X(IN(:));
-            S.contact(cr).interior.Ydg = Y(IN(:));
-            S.contact(cr).interior.Idg = I(IN(:));
-            S.contact(cr).interior.Jdg = J(IN(:));
+            contact.interior.Xdg = X(IN(:));
+            contact.interior.Ydg = Y(IN(:));
+            contact.interior.Idg = I(IN(:));
+            contact.interior.Jdg = J(IN(:));
           end
           clear I J X Y
         else
-          S.contact(cr).interior.okey  = false;
-          S.contact(cr).interior.Xdg   = [];
-          S.contact(cr).interior.Ydg   = [];
-          S.contact(cr).interior.Idg   = [];
-          S.contact(cr).interior.Jdg   = [];
+          contact.interior.okey  = false;
+          contact.interior.Xdg   = [];
+          contact.interior.Ydg   = [];
+          contact.interior.Idg   = [];
+          contact.interior.Jdg   = [];
         end
       end
 
@@ -178,29 +176,29 @@ for dg=1:S.Ngrids,
                          S.grid(rg).perimeter.X_psi,                    ...
                          S.grid(rg).perimeter.Y_psi);
       if (any(ON)),
-        S.contact(cr).corners.okey = true;
+        contact.corners.okey = true;
         myindex = S.grid(dg).corners.index;
         if (spherical),
-          S.contact(cr).corners.Xdg = G(dg).lon_psi(myindex(ON));
-          S.contact(cr).corners.Ydg = G(dg).lat_psi(myindex(ON));
+          contact.corners.Xdg = G(dg).lon_psi(myindex(ON));
+          contact.corners.Ydg = G(dg).lat_psi(myindex(ON));
         else
-          S.contact(cr).corners.Xdg = G(dg).x_psi(myindex(ON));
-          S.contact(cr).corners.Ydg = G(dg).y_psi(myindex(ON));
+          contact.corners.Xdg = G(dg).x_psi(myindex(ON));
+          contact.corners.Ydg = G(dg).y_psi(myindex(ON));
         end
-        S.contact(cr).corners.Idg   = S.grid(dg).I_psi(myindex(ON));
-        S.contact(cr).corners.Jdg   = S.grid(dg).J_psi(myindex(ON));
+        contact.corners.Idg   = S.grid(dg).I_psi(myindex(ON));
+        contact.corners.Jdg   = S.grid(dg).J_psi(myindex(ON));
       else
-        S.contact(cr).corners.okey  = false;
-        S.contact(cr).corners.Xdg   = [];
-        S.contact(cr).corners.Ydg   = [];
-        S.contact(cr).corners.Idg   = [];
-        S.contact(cr).corners.Jdg   = [];
+        contact.corners.okey  = false;
+        contact.corners.Xdg   = [];
+        contact.corners.Ydg   = [];
+        contact.corners.Idg   = [];
+        contact.corners.Jdg   = [];
       end
 
 % If receiver is a refinement grid from donor, determine which donor
 % grid points lay in the receiver grid perimeter.
 
-      if (S.grid(rg).refine_factor > 0),
+      if (S.grid(rg).refine_factor > 0 && contact.interior.okey),
         if (spherical)
           [~,ON] = inpolygon(G(dg).lon_psi, G(dg).lat_psi,              ...
                              S.grid(rg).perimeter.X_psi,                ...
@@ -212,11 +210,11 @@ for dg=1:S.Ngrids,
 
           Icorners = [Is Ie]; Jcorners = [Js Je];
 
-          S.contact(cr).corners.okey = true;
-          S.contact(cr).corners.Xdg  = G(dg).lon_psi(Icorners,Jcorners);
-          S.contact(cr).corners.Ydg  = G(dg).lat_psi(Icorners,Jcorners);
-          S.contact(cr).corners.Idg  = [Is Ie Ie Is];
-          S.contact(cr).corners.Jdg  = [Js Js Je Je];
+          contact.corners.okey = true;
+          contact.corners.Xdg  = G(dg).lon_psi(Icorners,Jcorners);
+          contact.corners.Ydg  = G(dg).lat_psi(Icorners,Jcorners);
+          contact.corners.Idg  = [Is Ie Ie Is];
+          contact.corners.Jdg  = [Js Js Je Je];
 
           Jwest  = Js+1:Je-1;    Iwest  = ones(size(Jwest )).*Is;
           B(iwest ).ind = sub2ind(size(S.grid(dg).I_psi), Iwest , Jwest );
@@ -231,12 +229,12 @@ for dg=1:S.Ngrids,
           B(inorth).ind = sub2ind(size(S.grid(dg).I_psi), Inorth, Jnorth);
           
           for ib=1:4,
-            S.contact(cr).boundary(ib).okey  = true;
-            S.contact(cr).boundary(ib).match = true(size(B(ib).ind));
-            S.contact(cr).boundary(ib).Xdg   = G(dg).lon_psi(B(ib).ind);
-            S.contact(cr).boundary(ib).Ydg   = G(dg).lat_psi(B(ib).ind);
-            S.contact(cr).boundary(ib).Idg   = S.grid(dg).I_psi(B(ib).ind);
-            S.contact(cr).boundary(ib).Jdg   = S.grid(dg).J_psi(B(ib).ind);
+            contact.boundary(ib).okey  = true;
+            contact.boundary(ib).match = true(size(B(ib).ind));
+            contact.boundary(ib).Xdg   = G(dg).lon_psi(B(ib).ind);
+            contact.boundary(ib).Ydg   = G(dg).lat_psi(B(ib).ind);
+            contact.boundary(ib).Idg   = S.grid(dg).I_psi(B(ib).ind);
+            contact.boundary(ib).Jdg   = S.grid(dg).J_psi(B(ib).ind);
           end
         else
           [~,ON] = inpolygon(G(dg).x_psi, G(dg).y_psi,                  ...
@@ -249,11 +247,11 @@ for dg=1:S.Ngrids,
 
           Icorners = [Is Ie]; Jcorners = [Js Je];
 
-          S.contact(cr).corners.okey = true;
-          S.contact(cr).corners.Xdg  = G(dg).x_psi(Icorners,Jcorners);
-          S.contact(cr).corners.Ydg  = G(dg).y_psi(Icorners,Jcorners);
-          S.contact(cr).corners.Idg  = [Is Ie Ie Is];
-          S.contact(cr).corners.Jdg  = [Js Js Je Je];
+          contact.corners.okey = true;
+          contact.corners.Xdg  = G(dg).x_psi(Icorners,Jcorners);
+          contact.corners.Ydg  = G(dg).y_psi(Icorners,Jcorners);
+          contact.corners.Idg  = [Is Ie Ie Is];
+          contact.corners.Jdg  = [Js Js Je Je];
 
           Jwest  = Js+1:Je-1;    Iwest  = ones(size(Jwest )).*Is;
           B(iwest ).ind = sub2ind(size(S.grid(dg).I_psi), Iwest , Jwest );
@@ -268,12 +266,12 @@ for dg=1:S.Ngrids,
           B(inorth).ind = sub2ind(size(S.grid(dg).I_psi), Inorth, Jnorth);
 
           for ib=1:4,
-            S.contact(cr).boundary(ib).okey  = true;
-            S.contact(cr).boundary(ib).match = true(size(B(ib).ind));
-            S.contact(cr).boundary(ib).Xdg   = G(dg).x_psi(B(ib).ind);
-            S.contact(cr).boundary(ib).Ydg   = G(dg).y_psi(B(ib).ind);
-            S.contact(cr).boundary(ib).Idg   = S.grid(dg).I_psi(B(ib).ind);
-            S.contact(cr).boundary(ib).Jdg   = S.grid(dg).J_psi(B(ib).ind);
+            contact.boundary(ib).okey  = true;
+            contact.boundary(ib).match = true(size(B(ib).ind));
+            contact.boundary(ib).Xdg   = G(dg).x_psi(B(ib).ind);
+            contact.boundary(ib).Ydg   = G(dg).y_psi(B(ib).ind);
+            contact.boundary(ib).Idg   = S.grid(dg).I_psi(B(ib).ind);
+            contact.boundary(ib).Jdg   = S.grid(dg).J_psi(B(ib).ind);
           end
         end
       end
@@ -289,26 +287,26 @@ for dg=1:S.Ngrids,
                              S.grid(rg).perimeter.Y_psi);
           if (any(ON)),
             myindex = S.grid(dg).boundary(ib).index;
-            S.contact(cr).boundary(ib).okey  = true;
-            S.contact(cr).boundary(ib).match = [];
-            S.contact(cr).boundary(ib).index = myindex(ON);
+            contact.boundary(ib).okey  = true;
+            contact.boundary(ib).match = [];
+            contact.boundary(ib).index = myindex(ON);
             if (spherical),
-              S.contact(cr).boundary(ib).Xdg = G(dg).lon_psi(myindex(ON));
-              S.contact(cr).boundary(ib).Ydg = G(dg).lat_psi(myindex(ON));
+              contact.boundary(ib).Xdg = G(dg).lon_psi(myindex(ON));
+              contact.boundary(ib).Ydg = G(dg).lat_psi(myindex(ON));
             else
-              S.contact(cr).boundary(ib).Xdg = G(dg).x_psi(myindex(ON));
-              S.contact(cr).boundary(ib).Ydg = G(dg).y_psi(myindex(ON));
+              contact.boundary(ib).Xdg = G(dg).x_psi(myindex(ON));
+              contact.boundary(ib).Ydg = G(dg).y_psi(myindex(ON));
             end
-            S.contact(cr).boundary(ib).Idg = S.grid(dg).I_psi(myindex(ON));
-            S.contact(cr).boundary(ib).Jdg = S.grid(dg).J_psi(myindex(ON));
+            contact.boundary(ib).Idg = S.grid(dg).I_psi(myindex(ON));
+            contact.boundary(ib).Jdg = S.grid(dg).J_psi(myindex(ON));
           else
-            S.contact(cr).boundary(ib).okey  = false;
-            S.contact(cr).boundary(ib).match = [];
-            S.contact(cr).boundary(ib).index = [];
-            S.contact(cr).boundary(ib).Xdg   = [];
-            S.contact(cr).boundary(ib).Ydg   = [];
-            S.contact(cr).boundary(ib).Idg   = [];
-            S.contact(cr).boundary(ib).Jdg   = [];
+            contact.boundary(ib).okey  = false;
+            contact.boundary(ib).match = [];
+            contact.boundary(ib).index = [];
+            contact.boundary(ib).Xdg   = [];
+            contact.boundary(ib).Ydg   = [];
+            contact.boundary(ib).Idg   = [];
+            contact.boundary(ib).Jdg   = [];
           end
         end
       end
@@ -318,11 +316,11 @@ for dg=1:S.Ngrids,
 % It matches the contact points at the boundary between donor and
 % receiver grids.
 
-      if (S.contact(cr).corners.okey && ~S.contact(cr).refinement),
+      if (contact.corners.okey && ~contact.refinement),
         for ib=1:4,
           ir = adjacent(ib);
 
-          if (S.contact(cr).boundary(ib).okey),
+          if (contact.boundary(ib).okey),
             dlength = length(S.grid(dg).boundary(ib).X);
             rlength = length(S.grid(rg).boundary(ir).X);
 
@@ -347,7 +345,7 @@ for dg=1:S.Ngrids,
 % There are coincident points.
 
             if (icount > 0),
-              S.contact(cr).coincident = true;
+              contact.coincident = true;
             end
 
 % Either all the point along donor and receiver grids boundary edge
@@ -355,21 +353,30 @@ for dg=1:S.Ngrids,
 % coincident (composite grids connectivity).
 
             if (dlength == icount && rlength == icount),
-              S.contact(cr).composite = true;
-              S.contact(cr).mosaic = true;
+              contact.composite = true;
+              contact.mosaic = true;
             else
-              S.contact(cr).composite = true;
+              contact.composite = true;
             end
 
 % Store indices of points in the boundary that are coincident.
 
-            S.contact(cr).boundary(ib).match = dmatch;
+            contact.boundary(ib).match = dmatch;
           else
-            S.contact(cr).boundary(ib).match = [];
+            contact.boundary(ib).match = [];
           end
         end
       end
-    
+
+% Load connectivity information into structure S if current grids
+% 'dg' and 'rg' are connected.
+
+      if (contact.interior.okey),
+        cr = cr + 1;                          % contact region number
+        S.contact(cr) = contact;
+      end
+      clear contact
+
     end  % end of condional dg ~= rg
   end    % end of rg receiver grid loop
 end      % end of dg donor grid loop
