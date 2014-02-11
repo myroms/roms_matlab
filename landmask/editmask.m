@@ -307,29 +307,31 @@ switch lower(grid_file),
 % Read in coastline data. If appropriate, compute coastline (I,J)
 % grid indices.
 
-   if (got_Clon && got_Clat),
-     [C]=ijcoast(grid_file);
-     xcst=C.Icst;
-     ycst=C.Jcst;
-     clear C lat lon;
-   else
-     if (got_coast),
-       load(coast_file);
-       if (exist('C','var')),
-         xcst=C.Icst;
-         ycst=C.Jcst;
-         clear C;
-       elseif (exist('lon','var') && exist('lat','var')),
-         [C]=ijcoast(grid_file,coast_file);
-         xcst=C.Icst;
-         ycst=C.Jcst;
-         clear C lat lon;
-       else
-         error('Coast file should contain "lon" and "lat" vectors');
+   if (spherical),
+     if (got_Clon && got_Clat),
+       [C]=ijcoast(grid_file);
+       xcst=C.Icst;
+       ycst=C.Jcst;
+       clear C lat lon;
+     else
+       if (got_coast),
+         load(coast_file);
+         if (exist('C','var')),
+           xcst=C.Icst;
+           ycst=C.Jcst;
+           clear C;
+         elseif (exist('lon','var') && exist('lat','var')),
+           [C]=ijcoast(grid_file,coast_file);
+           xcst=C.Icst;
+           ycst=C.Jcst;
+           clear C lat lon;
+         else
+           error('Coast file should contain "lon" and "lat" vectors');
+         end
        end
      end
    end
-
+     
 % Initialize the window.
 
    fig=figure('NumberTitle','off',                                      ...
