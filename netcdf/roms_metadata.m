@@ -758,13 +758,59 @@ switch Vname
     if (spherical),
       V.Attributes(4).Value   = 'lon_v lat_v';
     else
-      V.Attributes(4).Value   = 'x_v y_';
+      V.Attributes(4).Value   = 'x_v y_v';
     end      
     V.Cgridtype.Name          = 'v-velocity point';
     V.Cgridtype.Value         = 4;
     V.Datatype                = 'double';
     V.ncType                  = nc_constant('nc_double');
-
+  case 'visc_factor'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'horizontal viscosity sponge factor';
+    V.Attributes(2).Name      = 'valid_min';
+    V.Attributes(2).Value     = double(0);
+    V.Attributes(3).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(3).Value   = 'lon_rho lat_rho';
+    else
+      V.Attributes(3).Value   = 'x_rho y_rho';
+    end      
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'diff_factor'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'horizontal diffusivity sponge factor';
+    V.Attributes(2).Name      = 'valid_min';
+    V.Attributes(2).Value     = double(0);
+    V.Attributes(3).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(3).Value   = 'lon_rho lat_rho';
+    else
+      V.Attributes(3).Value   = 'x_rho y_rho';
+    end      
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+    
 %--------------------------------------------------------------------------
 %  Boundary conditions grid variables.
 %--------------------------------------------------------------------------
@@ -1177,7 +1223,7 @@ switch Vname
     V.Cgridtype.Value         = 4;
     V.Datatype                = 'double';
     V.ncType                  = nc_constant('nc_double');
-		    
+
 %--------------------------------------------------------------------------
 %  Surface atmospheric forcing variables.
 %--------------------------------------------------------------------------
@@ -4822,7 +4868,7 @@ switch Vname
     V.ncType                  = nc_constant(nctype);
 
   case {'sandmass_01', 'sandmass_02', 'sandmass_03', 'sandmass_04',     ...
-        'sandmass_05', 'sandmass_06', 'sandmass_07', 'sandmass_08'}       
+        'sandmass_05', 'sandmass_06', 'sandmass_07', 'sandmass_08'}
     class = textscan(Vname, 'sandmass_ %d');
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_rho';
@@ -4886,6 +4932,125 @@ switch Vname
     V.Datatype                = Datatype;
     V.ncType                  = nc_constant(nctype);
     
+%--------------------------------------------------------------------------
+%  Inverse nudging time scales.
+%--------------------------------------------------------------------------
+
+  case 'M2_NudgeCoef'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = '2D momentum inverse nudging coefficients';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'day-1';
+    V.Attributes(3).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(3).Value   = 'lon_rho lat_rho';
+    else
+      V.Attributes(3).Value   = 'x_rho y_rho';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+ 
+ case 'M3_NudgeCoef'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 's_rho';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = '3D momentum inverse nudging coefficients';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'day-1';
+    V.Attributes(3).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(3).Value   = 'lon_rho lat_rho s_rho';
+    else
+      V.Attributes(3).Value   = 'x_rho y_rho s_rho';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+ 
+ case 'tracer_NudgeCoef'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 's_rho';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'generic tracer inverse nudging coefficients';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'day-1';
+    V.Attributes(3).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(3).Value   = 'lon_rho lat_rho s_rho';
+    else
+      V.Attributes(3).Value   = 'x_rho y_rho s_rho';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+ 
+ case {'temp_NudgeCoef',    'salt_NudgeCoef',                          ...
+        'DON_NudgeCoef',     'iron_NudgeCoef',    'NO3_NudgeCoef',      ...
+        'opal_NudgeCoef',    'PON_NudgeCoef',     'SiOH4_NudgeCoef',    ...
+        'TIC_NudgeCoef',                                                ...    
+        'mud_01_NudgeCoef',  'mud_02_NudgeCoef',  'mud_03_NudgeCoef',   ...
+        'mud_04_NudgeCoef',  'mud_05_NudgeCoef',  'mud_06_NudgeCoef',   ...
+        'mud_07_NudgeCoef',  'mud_08_NudgeCoef',                        ...
+        'sand_01_NudgeCoef', 'sand_02_NudgeCoef', 'sand_03_NudgeCoef',  ...
+        'sand_04_NudgeCoef', 'sand_05_NudgeCoef', 'sand_06_NudgeCoef',  ...
+        'sand_07_NudgeCoef', 'sand_08_NudgeCoef'}
+    field = Vname(1:strfind(Vname, '_NudgeCoef')-1);
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 's_rho';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = [field, ' inverse nudging coefficients'];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'day-1';
+    V.Attributes(3).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(3).Value   = 'lon_rho lat_rho s_rho';
+    else
+      V.Attributes(3).Value   = 'x_rho y_rho s_rho';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+
 %--------------------------------------------------------------------------
 %  Requested variable not found.
 %--------------------------------------------------------------------------

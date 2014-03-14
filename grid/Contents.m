@@ -4,6 +4,10 @@
 %
 % These functions are used for preparing ROMS Grid NetCDF file.
 %
+%   add_sponge        - Adds enhanced viscosity and diffusion scaling
+%                         variables (visc_factor and diff_factor) to an
+%                         existing ROMS Grid NetCDF file.
+%
 %   c_grid            - Creates ROMS Grid NetCDF file.
 %
 %   flip_grid         - Given a ROMS Grid NetCDF file, it creates a new

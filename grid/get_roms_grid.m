@@ -270,13 +270,13 @@ else
         Gout.(field) = nc_read(Ginp,field);
       case 'hc'
         Gout.(field) = nc_read(Ginp,field);
-      case 's_rho'
+      case {'s_rho', 'sc_r'}
         Gout.(field) = nc_read(Ginp,field);
         Gout.N = length(Gout.(field));
         got.N  = true;
       case 'Cs_r'
         Gout.(field) = nc_read(Ginp,field);
-      case 's_w'
+      case {'s_w', 'sc_w'}
         Gout.(field) = nc_read(Ginp,field);
       case 'Cs_w'
         Gout.(field) = nc_read(Ginp,field);
@@ -411,7 +411,7 @@ if (process.zeta),
         case 'hc'
           Gout.(field) = nc_read(Sinp,field);
           got.(field)  = true;
-        case 's_rho'
+        case {'s_rho', 'sc_r'}
           Gout.(field) = nc_read(Sinp,field);
           got.(field)  = true;
           Gout.N = length(Gout.(field));
@@ -419,7 +419,7 @@ if (process.zeta),
         case 'Cs_r'
           Gout.(field) = nc_read(Sinp,field);
           got.(field)  = true;
-        case 's_w'
+        case {'s_w', 'sc_w'}
           Gout.(field) = nc_read(Sinp,field);
           got.(field)  = true;
         case 'Cs_w'
