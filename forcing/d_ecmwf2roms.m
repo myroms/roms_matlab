@@ -149,15 +149,15 @@ F( 5).Vname  = {'swrad', 'ssr'};
 F( 5).Tname  = {'srf_time',  'time'};
 F( 5).input  = 'ecmwf_era_heat_';
 F( 5).output = 'gom_swrad_era.nc';
-F( 5).scale  = 1.0/(3*3600.0);
+F( 5).scale  = -1.0/(3*3600.0);
 
-F( 6).Vname  = {'Uwind', 'v10v'};
+F( 6).Vname  = {'Uwind', 'u10'};
 F( 6).Tname  = {'wind_time', 'time'};
 F( 6).input  = 'ecmwf_era_atms_';
 F( 6).output = 'gom_wind_era.nc';
 F( 6).scale  = 1.0;
 
-F( 7).Vname  = {'Vwind', 'v10u'};
+F( 7).Vname  = {'Vwind', 'v10'};
 F( 7).Tname  = {'wind_time', 'time'};
 F( 7).input  = 'ecmwf_era_atms_';
 F( 7).output = 'gom_wind_era.nc';
