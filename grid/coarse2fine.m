@@ -103,6 +103,14 @@ else
   F.spherical = 0;
 end
 
+% Set uniform grid switch.
+
+if isfield(C, 'uniform'),
+  F.uniform = C.uniform;
+else
+  F.uniform = 0;
+end
+
 % Set curvilinear switch.
 
 curvilinear = C.curvilinear;

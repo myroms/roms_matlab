@@ -228,6 +228,12 @@ C.Lm = length(IpC)-1;
 C.Mm = length(JpC)-1;
 C.spherical = F.spherical;
 
+if isfield(F, 'uniform'),
+  C.uniform = F.uniform;
+else
+  C.uniform = 0;
+end
+
 % Extract grid variables.
 
 for value = grd_vars,
