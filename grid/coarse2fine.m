@@ -153,6 +153,10 @@ if (curvilinear),
   field_list = [field_list, 'dmde', 'dndx'];
 end
 
+if (got.angle),
+  field_list = [field_list, 'angle'];
+end
+
 if (got.x_rho && got.y_rho),
   field_list = [field_list, 'x_rho', 'y_rho'];
 end
