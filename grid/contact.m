@@ -21,16 +21,19 @@ function [S,G] = contact(Gnames, Cname, varargin)
 %                  (default false)
 %
 %    MaskInterp  Switch to interpolate PSI-, U- and V-mask (true) or
-%                  computed from interpolated RHO-mask (false)
-%                  (default true)
+%                  computed from interpolated RHO-mask (false) using
+%                  . We
+%                  highly recommend for this switch to always be
+%                  false.  This is the default value.
+%                  (default false)
 %
 %    Lplot       Switch to plot various Contact Points figures
-%                  (default true)
+%                  (default false)
 %
 % On Output:
 %
 %    S           Nested grids Contact Points structure (struct array)
-%    G           Nested grids structure (1 x Ngrid struct array)
+%    G           Nested grids structure (1 x Ngrids struct array)
 %
 %
 % Calls to External Functions:
@@ -211,11 +214,11 @@ function [S,G] = contact(Gnames, Cname, varargin)
 %
 % The "refined" sub-structure is only relevant when processing the contact
 % region of a refinement grid. Otherwise, it will be empty.  The setting
-% of Land/Sea masking in the contact region is critical. Usually, it is
-% better to linearly interpolate the finer grid U- and V-masks from coarser
-% grid than recomputing via "uvp_masks". The recomputed U- and V-masks may
-% be one point smaller or larger. Use the "MaskInterp" switch to either
-% interpolate (true) or use "uvp_masks" (false).  Recall that we are not
+% of Land/Sea masking in the contact region is critical. Usually, the
+% RHO-mask is interpolated from the coarser grid and the U- and V-masks
+% are computed from the interpolated RHO-mask using "uvp_masks".  The 
+% "MaskInterp" switch can be used to either interpolate (true) their
+% values or compute using "uvp_masks" (false).  Recall that we are not
 % modifying the original refined grid mask, just computing the mask in
 % the contact region adjacent to the finer grid from the coarser grid mask.
 % This is only relevant when there are land/sea masking features in any
@@ -264,8 +267,8 @@ function [S,G] = contact(Gnames, Cname, varargin)
 % Initialize.
 
 Lmask = false;
-MaskInterp = true;
-Lplot = true;
+MaskInterp = false;
+Lplot = false;
 
 switch numel(varargin)
   case 1

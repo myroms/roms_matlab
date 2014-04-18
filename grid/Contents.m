@@ -8,6 +8,13 @@
 %                         variables (visc_factor and diff_factor) to an
 %                         existing ROMS Grid NetCDF file.
 %
+%   check_nest_masks  - Checks land/sea masks in nesting contact regions.
+%                         In particular, it can be used to examine the
+%                         nesting grids connectivity when there are land/sea
+%                         mask features in the contact regions. A plotting
+%                         section is provided as a guideline. Users may need
+%                         to adapt it for their particular application. 
+%
 %   c_grid            - Creates ROMS Grid NetCDF file.
 %
 %   flip_grid         - Given a ROMS Grid NetCDF file, it creates a new
