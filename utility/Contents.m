@@ -79,6 +79,24 @@
 %   ptile        - Plot (overlay) ROMS horizontal tile partitions.
 %   tile         - Compute ROMS horizontal tile partitions indices.
 %
+% Plotting:
+%
+%   pcolorjw       - modified version of "pcolor" the recomputes X,Y at the
+%                      mid points of the input, and pads C so that the
+%                      effect is to shift each square one half space to
+%                      the lower left.  The perimeter squares are only half
+%                      the width/height of all the others as can be seen if
+%                      one sets shading('faceted').
+%
+%   plot_nesting   - plots requested ROMS nesting variable from input
+%                      history NetCDF files. This function is very useful
+%                      when debugging a ROMS nesting application. The
+%                      plotting is not that fancy but it provides enough
+%                      information for browsing ROMS variables very quickly.
+%
+%   plot_perimeter - Adds a grid perimeter outline to an existing figure
+%                      plotted with 'plot_nesting'. 
+%
 
 % svn $Id$
 %=========================================================================%

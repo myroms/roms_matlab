@@ -20,12 +20,10 @@ function [S,G] = contact(Gnames, Cname, varargin)
 %    Lmask       Switch to remove Contact Points over land
 %                  (default false)
 %
-%    MaskInterp  Switch to interpolate PSI-, U- and V-mask (true) or
+%    MaskInterp  Switch to interpolate PSI-, U- and V-masks (true) or
 %                  computed from interpolated RHO-mask (false) using
-%                  . We
-%                  highly recommend for this switch to always be
-%                  false.  This is the default value.
-%                  (default false)
+%                  the "uvp_mask" script. We highly recommend for this
+%                  switch to always be false (default false)
 %
 %    Lplot       Switch to plot various Contact Points figures
 %                  (default false)
@@ -2463,27 +2461,10 @@ for cr=1:Ncontact,
       end
     end
 
-    if (any(isnan(pr))),      % If any of the factors are NaN,
-      pr(isnan(pr)) = 0;      % it imply that we are dividing
-    end                       % by zero. Therefore, this is a
-    if (any(isnan(qr))),      % coincident point since there
-      qr(isnan(qr)) = 0;      % are not values at either I+1
-    end                       % or J+1.
-
-    S.weights(cr).H_rho(1,:) = (1 - pr) .* (1 - qr);
-    S.weights(cr).H_rho(2,:) = pr .* (1 - qr);
-    S.weights(cr).H_rho(3,:) = pr .* qr;
-    S.weights(cr).H_rho(4,:) = (1 - pr) .* qr;
-  
-    indR = find(abs(S.weights(cr).H_rho) < 100*eps);
-    if (~isempty(indR)),                            % impose positive zero
-      S.weights(cr).H_rho(indR) = 0;
-    end
-
-    indR = find(abs(S.weights(cr).H_rho-1) < 100*eps);
-    if (~isempty(indR)),                             % impose exact one
-      S.weights(cr).H_rho(indR) = 1;
-    end
+    S.weights(cr).H_rho = interp_weights(pr, qr,                        ...
+                                         RindexO, RindexR, RindexT,     ...
+                                         G(dg).mask_rho);
+    
   end
 
 % U-contact points.  Recall that we need to shift I by one since
@@ -2529,27 +2510,10 @@ for cr=1:Ncontact,
       end
     end
       
-    if (any(isnan(pu))),      % If any of the factors are NaN,
-      pu(isnan(pu)) = 0;      % it imply that we are dividing
-    end                       % by zero. Therefore, this is a
-    if (any(isnan(qu))),      % coincident point since there
-      qu(isnan(qu)) = 0;      % are not values at either I+1
-    end                       % or J+1.
+    S.weights(cr).H_u = interp_weights(pu, qu,                          ...
+                                       UindexO, UindexR, UindexT,       ...
+                                       G(dg).mask_u);
 
-    S.weights(cr).H_u(1,:) = (1 - pu) .* (1 - qu);
-    S.weights(cr).H_u(2,:) = pu .* (1 - qu);
-    S.weights(cr).H_u(3,:) = pu .* qu;
-    S.weights(cr).H_u(4,:) = (1 - pu) .* qu;
-
-    indU = find(abs(S.weights(cr).H_u) < 100*eps);
-    if (~isempty(indU)),                             % impose positive zero
-      S.weights(cr).H_u(indU) = 0;
-    end
-
-    indU = find(abs(S.weights(cr).H_u-1) < 100*eps);
-    if (~isempty(indU)),                             % impose exact one
-      S.weights(cr).H_u(indU) = 1;
-    end
   end
 
 % V-contact points.  Recall that we need to shift J by one since
@@ -2595,27 +2559,10 @@ for cr=1:Ncontact,
       end
     end
       
-    if (any(isnan(pv))),      % If any of the factors are NaN,
-      pv(isnan(pv)) = 0;      % it imply that we are dividing
-    end                       % by zero. Therefore, this is a
-    if (any(isnan(qv))),      % coincident point since there
-      qv(isnan(qv)) = 0;      % are not values at either I+1
-    end                       % or J+1.
+    S.weights(cr).H_v = interp_weights(pv, qv,                          ...
+                                       VindexO, VindexR, VindexT,       ...
+                                       G(dg).mask_v);
 
-    S.weights(cr).H_v(1,:) = (1 - pv) .* (1 - qv);
-    S.weights(cr).H_v(2,:) = pv .* (1 - qv);
-    S.weights(cr).H_v(3,:) = pv .* qv;
-    S.weights(cr).H_v(4,:) = (1 - pv) .* qv;
-
-    indV = find(abs(S.weights(cr).H_v) < 100*eps);
-    if (~isempty(indV)),                             % impose positive zero
-      S.weights(cr).H_v(indV) = 0;
-    end
-
-    indV = find(abs(S.weights(cr).H_v-1) < 100*eps);
-    if (~isempty(indV)),                             % impose exact one
-      S.weights(cr).H_v(indV) = 1;
-    end
   end
 
 % Debugging.
@@ -2881,5 +2828,145 @@ if (Ldebug),
   fclose (Uout);
   fclose (Vout);
 end  
+
+return
+
+%--------------------------------------------------------------------------
+
+function W = interp_weights(p, q, index1, index2, index4, mask)
+
+%
+% W = interp_weights(p, q, index1, index2, index4, mask)
+%
+% This function computes the contact points horizontal interpolation
+% weights given the fractional distances (p,q) from the donor grid.
+% The weights are adjusted in the presence of land/sea masking.
+%
+% On Input:
+%
+%    p          Contact points fractional I-distance with respect
+%                 the donor grid cell (vector)
+%
+%    q          Contact points fractional J-distance with respect
+%                 the donor grid cell (vector)
+%
+%    index1     Single linear indexes for 2D subscripts in donor
+%                 grid cell corner 1 (Idg,Jdg) for each contact
+%                 point (vector).
+%
+%    index2     Single linear indexes for 2D subscripts in donor
+%                 grid cell corner 2 (Idg+1,Jdg) for each contact
+%                 point (vector).
+%
+%    index4     Single linear indexes for 2D subscripts in donor
+%                 grid cell corner 4 (Idg,Jdg+1) for each contact
+%                 point (vector).
+%
+%    mask       Donor grid land/sea masking (2D array).
+%
+% On Output:
+%
+%    W(1:4,:)   Contact point interpolation weights (2D array):
+%
+%                 W(1,:)    interpolation way for corner 1
+%                 W(2,:)    interpolation way for corner 2
+%                 W(3,:)    interpolation way for corner 3
+%                 W(4,:)    interpolation way for corner 4
+%
+%
+% The following diagrams show the conventions for interpolation:
+%
+%                 index4         index3
+%
+%                   4______________3  (Idg+1,Jdg+1)
+%                   |  :           |
+%                   |  :       p   |
+%                   | 1-q   <----->|
+%                   |  :           |
+%                 Jr|..:....x   :  |
+%                   |       .   :  |
+%                   |  1-p  .   :  |
+%                   |<------>   q  |
+%                   |       .   :  |
+%                   |       .   :  |
+%                   |___________:__| 
+%         (Idg,Jdg) 1       Ir     2
+%
+%                 index1         index2
+%
+% For linear interpolation and all water points, the weights are:
+%
+%     W(1,:) = (1 - p) * (1 - q)
+%     W(2,:) = p * (1 - q)
+%     W(3,:) = p * q
+%     W(4,:) = (1 - p) * q
+%
+% In ROMS, the interpolation is carried out as:
+%
+%     V(Irg, Jrg) = W(1,:) * F2D(Idg,  Jdg  ) +
+%                   W(2,:) * F2D(Idg+1,Jdg  ) + 
+%                   W(3,:) * F2D(Idg+1,Jdg+1) +
+%                   W(4,:) * F2D(Idg,  Jdg+1) 
+%
+
+% Initalize.
+
+Npoints = length(p);
+index3  = index4 + 1;                % (Idg+1, Jdg+1)
+
+% If any of the input fractional distances is NaN, it implies that
+% we were diving by zero in the calling function. Therefore, the
+% contact point is concident to the donor grid physical grid boundary
+% and there are not values at either Idg+1 or Jdg+1.
+
+if (any(isnan(p))),
+  p(isnan(p)) = 0;
+end
+
+if (any(isnan(q))),
+  q(isnan(qr)) = 0;
+end   
+
+%--------------------------------------------------------------------------
+% Compute interpolation weigths.
+%--------------------------------------------------------------------------
+
+W  = zeros([4 Npoints]);
+HW = [0 0 0 0];
+
+for n=1:Npoints,
+  HW(1) = mask(index1(n)) * (1 - p(n)) * (1 - q(n));
+  HW(2) = mask(index2(n)) * p(n) * (1 - q(n));
+  HW(3) = mask(index3(n)) * p(n) * q(n);
+  HW(4) = mask(index4(n)) * (1 -p(n)) * q(n);
+
+  MaskSum = mask(index1(n)) + mask(index2(n)) +                         ...
+            mask(index3(n)) + mask(index4(n));
+
+  if (MaskSum < 4),                  % at leas one of the cornes is land
+    HWsum = sum(HW);
+    if (HWsum > 0),
+      HW = HW ./ HWsum;              % using only water points
+    else
+      HW(1:4) = 0;                   % all donor grid corners are on land
+    end
+  end
+  
+  W(:,n) = HW;
+end
+
+% Impose positive zero.
+
+ind0 = find(abs(W) < 100*eps);
+if (~isempty(ind0)),
+  W(ind0) = 0;
+end
+
+% Impose exact unity.
+
+ind1 = find(abs(W - 1) < 100*eps);
+if (~isempty(ind1)),
+  W(ind1) = 1;
+end
 
 return
