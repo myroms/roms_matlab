@@ -115,7 +115,7 @@ max_depth = s.clipping_depths(2);
 
 bathymetry(find(isnan(bathymetry))) = min_depth;
 bathymetry(bathymetry<min_depth) = min_depth;
-bathemetry(bathymetry>max_depth) = max_depth;
+bathymetry(bathymetry>max_depth) = max_depth;
 
 spaced_x = s.spaced_grids{1};
 spaced_y = s.spaced_grids{2};

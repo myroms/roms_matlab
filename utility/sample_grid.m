@@ -117,7 +117,7 @@ end
 
 Jstr = min(J(:))-offset;
 if (isnan(Jstr) || Jstr < 1),
-  Jstr = JmD;
+  Jstr = 1;
 end
 
 Jend = max(J(:))+offset;

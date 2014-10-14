@@ -23,7 +23,8 @@ function S = grid_perimeter(G)
 %
 %    S.Ngrids                         - Number of nested grids
 %    S.Ncontact                       - Number of contact regions
-%    S.Nweights = 4                   - Number of horizontal weights
+%    S.nLweights = 4                  - Number of linear weights
+%    S.nQweights = 9                  - Number of quadratic weights
 %    S.Ndatum = 0                     - Total number of contact points
 %
 %    S.western_edge  = 1              - Western  boundary edge index
@@ -94,10 +95,11 @@ function S = grid_perimeter(G)
 
 % Initialize.
 
-S.Ngrids   = length(G);
-S.Ncontact = (S.Ngrids-1)*2;
-S.Nweights = 4;
-S.Ndatum   = 0;
+S.Ngrids    = length(G);
+S.Ncontact  = (S.Ngrids-1)*2;
+S.nLweights = 4;
+S.nQweights = 9;
+S.Ndatum    = 0;
 
 S.western_edge  = 1;
 S.southern_edge = 2;

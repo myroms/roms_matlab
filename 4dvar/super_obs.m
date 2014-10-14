@@ -307,7 +307,7 @@ if (isfield(Sinp,'state_flag_meanings'));
 end,
 
 if (isfield(Sinp,'origin_flag_values'));
-  Sout.origin_flag_values = Sinp.state_flag_values;
+  Sout.origin_flag_values = Sinp.origin_flag_values;
 end,
 
 if (isfield(Sinp,'origin_flag_meanings'));

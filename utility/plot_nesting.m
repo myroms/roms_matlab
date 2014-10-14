@@ -107,24 +107,10 @@ Nfiles = length(Hnames);
 %--------------------------------------------------------------------------
 
 if (~isstruct(Gnames)),
-  parent = {'parent_grid',                                              ...
-            'parent_Imin', 'parent_Imax',                               ...
-            'parent_Jmin', 'parent_Jmax'};
-  for n=1:Nfiles,
-    g = get_roms_grid(char(Gnames(n)), char(Hnames(n)));
-    if (isfield(g, 'parent_grid')),
-      G(n) = rmfield(g, parent);
-    else
-      G(n) = g;
-    end
-  end
+  G = grids_structure(Gnames, Hnames);
 else
   G = Gnames;
 end
-
-% Set ROMS Grid structure. If the grid structure have the parent fields,
-% remove them to have an array of similar structures.
-  
 
 % Get variable information.
 

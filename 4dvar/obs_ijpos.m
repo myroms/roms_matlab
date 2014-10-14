@@ -118,13 +118,13 @@ if (got.spherical),
   spherical=nc_read(GRDname,'spherical');
   if (ischar(spherical)),
     if (spherical == 'T' || spherical == 't'),
-      spherical = 1;
+      spherical = true;
     else,
-      spherical = 0;
+      spherical = false;
     end,
   end,
 else,
-  spherical = 1;
+  spherical = true;
 end,
 
 if (got.lon_rho),

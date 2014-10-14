@@ -30,8 +30,9 @@ function c_contact(ncname, spherical, Ngrids, Ndatum)
 
 % Set NetCDF file dimensions.
   
-Ncontact = (Ngrids-1)*2;
-Nweights = 4;
+Ncontact  = (Ngrids-1)*2;
+nLweights = 4;                      % Linear    interpolation weights
+nQweights = 9;                      % Quadratic interpolation weights
 
 if (nargin < 4),
   Ndatum = netcdf.getConstant('UNLIMITED');
@@ -54,10 +55,11 @@ ncid = netcdf.create(ncname,mode);
 
 % Define dimensions.
 
-Did.Ngrids   = netcdf.defDim(ncid, 'Ngrids'  ,Ngrids);
-Did.Ncontact = netcdf.defDim(ncid, 'Ncontact',Ncontact);
-Did.Nweights = netcdf.defDim(ncid, 'Nweights',Nweights);
-Did.datum    = netcdf.defDim(ncid, 'datum'   ,Ndatum);
+Did.Ngrids    = netcdf.defDim(ncid, 'Ngrids'   ,Ngrids);
+Did.Ncontact  = netcdf.defDim(ncid, 'Ncontact' ,Ncontact);
+Did.nLweights = netcdf.defDim(ncid, 'nLweights',nLweights);
+Did.nQweights = netcdf.defDim(ncid, 'nQweights',nQweights);
+Did.datum     = netcdf.defDim(ncid, 'datum'    ,Ndatum);
 
 % Define global attributes.
 
@@ -270,13 +272,23 @@ else
                 'meter');
 end
 
-% Horizontal interpolation weights.
+% Horizontal linear interpolation weights.
 
-varid = netcdf.defVar(ncid, 'Hweight',                                  ...
+varid = netcdf.defVar(ncid, 'Lweight',                                  ...
                       netcdf.getConstant('nc_double'),                  ...
-                      [Did.Nweights Did.datum]);
+                      [Did.nLweights Did.datum]);
 netcdf.putAtt(ncid, varid, 'long_name',                                 ...
-              'horizontal interpolation weights');
+              'horizontal linear interpolation weights');
+netcdf.putAtt(ncid, varid, 'coordinates',                               ...
+              'Xrg Yrg');
+
+% Horizontal quadratic interpolation weights.
+
+varid = netcdf.defVar(ncid, 'Qweight',                                  ...
+                      netcdf.getConstant('nc_double'),                  ...
+                      [Did.nQweights Did.datum]);
+netcdf.putAtt(ncid, varid, 'long_name',                                 ...
+              'horizontal quadratic interpolation weights');
 netcdf.putAtt(ncid, varid, 'coordinates',                               ...
               'Xrg Yrg');
 

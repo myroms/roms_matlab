@@ -89,11 +89,14 @@ end
 
 % Spherical switch.
 
-spherical=false;
 if (got.spher),
-  spher=nc_read(ncfile,Vname.spher);
-  if (spher == 'T' || spher == 't'),
-    spherical=true;
+  spherical=nc_read(ncfile,Vname.spher);
+  if (ischar(spherical)),
+    if (spherical == 'T' || spherical == 't')
+      spherical = true;
+    else
+      spherical = false;
+    end
   end
 end
 

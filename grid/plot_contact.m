@@ -92,14 +92,14 @@ for cr=1:S.Ncontact,
     set(gca,'fontsize',14,'fontweight','bold');
   end      
       
-  if (S.contact(cr).corners.okey),
+  if (S.contact(cr).corners.okay),
     ph3 = plot(S.contact(cr).corners.Xdg,                               ...
                S.contact(cr).corners.Ydg, 'ks');
     set(ph3, 'MarkerSize', 12);
   end
 
   for ib=1:4,
-    if (S.contact(cr).boundary(ib).okey),
+    if (S.contact(cr).boundary(ib).okay),
       ph4 = plot(S.contact(cr).boundary(ib).Xdg,                         ...
                  S.contact(cr).boundary(ib).Ydg, 'ks');
       set(ph4, 'MarkerSize', 12);

@@ -447,7 +447,7 @@ end
 %   Interative Grid Nesting: A Possible Mechanism for Gustiness,
 %   J. Atmos. Sci., 329-350.
 
-Rr.V = C.h(:);    Rr.Method = 'linear'
+Rr.V = C.h(:);    Rr.Method = 'linear';
 
 F.h  = Rr(F.x_rho, F.y_rho);
 

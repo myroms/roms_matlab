@@ -262,7 +262,7 @@ if (CREATE),
   disp([ 'Writing initial conditions ...']);
   disp(' ')
 
-  [status]=nc_write(INIname, 'spherical',   'T');
+  [status]=nc_write(INIname, 'spherical',   S.spherical);
   [status]=nc_write(INIname, 'Vtransform',  S.Vtransform);
   [status]=nc_write(INIname, 'Vstretching', S.Vstretching);
   [status]=nc_write(INIname, 'theta_s',     S.theta_s);

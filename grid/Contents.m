@@ -65,6 +65,9 @@
 %   plot_contact      - Plots various ROMS Nested Grids Contact Points
 %                         figures.
 %
+%   sponge            - Sets and writes diffusion and viscosity sponge
+%                         coefficients into Grid NetCDF file.
+%
 %   write_contact     - Writes out the Nested Grids Contact Point data
 %                         into a NetCDF file.
 %

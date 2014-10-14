@@ -33,19 +33,19 @@ function S = grid_connections(G, Sinp)
 %    S.contact(cr).mosaic                  - Mosaic grid switch
 %    S.contact(cr).refinement              - Refinement grid switch
 %
-%    S.contact(cr).interior.okey           - true/false logical
+%    S.contact(cr).interior.okay           - true/false logical
 %    S.contact(cr).interior.Xdg(:)         - (X,Y) coordinates and (I,J)
 %    S.contact(cr).interior.Ydg(:)           indices of donor grid points
 %    S.contact(cr).interior.Idg(:)           inside the receiver grid
 %    S.contact(cr).interior.Jdg(:)           perimeter, [] if false 
 %
-%    S.contact(cr).corners.okey            - true/false logical
+%    S.contact(cr).corners.okay            - true/false logical
 %    S.contact(cr).corners.Xdg(:)          - (X,Y) coordinates and (I,J)
 %    S.contact(cr).corners.Ydg(:)            indices of donor grid points
 %    S.contact(cr).corners.Idg(:)            corners laying on receiver
 %    S.contact(cr).corners.Idg(:)            grid perimeter, [] if false
 %
-%    S.contact(cr).boundary(ib).okey       - true/false logical
+%    S.contact(cr).boundary(ib).okay       - true/false logical
 %    S.contact(cr).boundary(ib).match(:)   - Donor matching points logical
 %    S.contact(cr).boundary(ib).Xdg(:)     - (X,Y) coordinates and (I,J)
 %    S.contact(cr).boundary(ib).Ydg(:)       indices of donor boundary
@@ -79,11 +79,31 @@ inorth = S.northern_edge;        % northern boundary edge index
 adjacent = [ieast, inorth, iwest, isouth];    % Receiver grid boundary
 spherical = S.spherical;                      % spherical grid switch
 
+% Compute mean grid cell area.  In refinement the donor and receiver have
+% different  mean grid cell area.
+
+for ng=1:S.Ngrids,
+  AreaAvg(ng)=mean(mean((1./G(ng).pm) .* (1./G(ng).pn)));
+end
+
 %--------------------------------------------------------------------------
 % Loop over all contact regions.
 %--------------------------------------------------------------------------
 
 cr = 0;
+
+connected = false([S.Ngrids S.Ngrids]);
+
+disp(blanks(2));
+disp(' Summary of Contact Regions Processed:')
+disp(blanks(2));
+for ng=1:S.Ngrids
+  disp(['   Grid ',num2str(ng, '%2.2i'), ': ', G(ng).grid_name]);
+end
+disp(blanks(2));
+disp(['   Contact   Donor   Receiver']);
+disp(['    Region    Grid       Grid']);
+disp(blanks(2));
 
 for dg=1:S.Ngrids,
   for rg=1:S.Ngrids,
@@ -101,6 +121,9 @@ for dg=1:S.Ngrids,
         contact.refinement = false;
       end  
 
+      AreaAvg_dg = mean(mean((1./G(dg).pm) .* (1./G(dg).pn)));
+      AreaAvg_rg = mean(mean((1./G(rg).pm) .* (1./G(rg).pn)));
+
 % Determine which points from donor grid are inside the reciever grid.
 % If the receiver is a refinment grid, consider only donor RHO-points
 % outside the receiver grid. Otherwise, consider only points inside
@@ -116,7 +139,7 @@ for dg=1:S.Ngrids,
           I = S.grid(dg).I_rho(:);
           J = S.grid(dg).J_rho(:);
 
-          contact.interior.okey = true;
+          contact.interior.okay = true;
           if (S.grid(rg).refine_factor > 0),
             contact.interior.Xdg = X(~IN(:));
             contact.interior.Ydg = Y(~IN(:));
@@ -130,7 +153,7 @@ for dg=1:S.Ngrids,
           end
           clear I J X Y
         else
-          contact.interior.okey  = false;
+          contact.interior.okay  = false;
           contact.interior.Xdg   = [];
           contact.interior.Ydg   = [];
           contact.interior.Idg   = [];
@@ -146,7 +169,7 @@ for dg=1:S.Ngrids,
           I = S.grid(dg).I_rho(:);
           J = S.grid(dg).J_rho(:);
 
-          contact.interior.okey = true;
+          contact.interior.okay = true;
           if (S.grid(rg).refine_factor > 0),
             contact.interior.Xdg = X(~IN(:));
             contact.interior.Ydg = Y(~IN(:));
@@ -160,7 +183,7 @@ for dg=1:S.Ngrids,
           end
           clear I J X Y
         else
-          contact.interior.okey  = false;
+          contact.interior.okay  = false;
           contact.interior.Xdg   = [];
           contact.interior.Ydg   = [];
           contact.interior.Idg   = [];
@@ -176,7 +199,7 @@ for dg=1:S.Ngrids,
                          S.grid(rg).perimeter.X_psi,                    ...
                          S.grid(rg).perimeter.Y_psi);
       if (any(ON)),
-        contact.corners.okey = true;
+        contact.corners.okay = true;
         myindex = S.grid(dg).corners.index;
         if (spherical),
           contact.corners.Xdg = G(dg).lon_psi(myindex(ON));
@@ -188,7 +211,7 @@ for dg=1:S.Ngrids,
         contact.corners.Idg   = S.grid(dg).I_psi(myindex(ON));
         contact.corners.Jdg   = S.grid(dg).J_psi(myindex(ON));
       else
-        contact.corners.okey  = false;
+        contact.corners.okay  = false;
         contact.corners.Xdg   = [];
         contact.corners.Ydg   = [];
         contact.corners.Idg   = [];
@@ -198,7 +221,9 @@ for dg=1:S.Ngrids,
 % If receiver is a refinement grid from donor, determine which donor
 % grid points lay in the receiver grid perimeter.
 
-      if (S.grid(rg).refine_factor > 0 && contact.interior.okey),
+      if (S.grid(rg).refine_factor > 0 && contact.interior.okay)
+        set_boundary = true;
+	
         if (spherical)
           [~,ON] = inpolygon(G(dg).lon_psi, G(dg).lat_psi,              ...
                              S.grid(rg).perimeter.X_psi,                ...
@@ -210,33 +235,77 @@ for dg=1:S.Ngrids,
 
           Icorners = [Is Ie]; Jcorners = [Js Je];
 
-          contact.corners.okey = true;
+          contact.corners.okay = true;
           contact.corners.Xdg  = G(dg).lon_psi(Icorners,Jcorners);
           contact.corners.Ydg  = G(dg).lat_psi(Icorners,Jcorners);
           contact.corners.Idg  = [Is Ie Ie Is];
           contact.corners.Jdg  = [Js Js Je Je];
 
-          Jwest  = Js+1:Je-1;    Iwest  = ones(size(Jwest )).*Is;
-          B(iwest ).ind = sub2ind(size(S.grid(dg).I_psi), Iwest , Jwest );
+% If any of edge boundary vectors are empty, the refined receiver grid
+% is inside of more that one nested grid.  That is, the application has
+% more than two nesting layers with cascating refinement grids.
+% For example, a refined grid (layer 3) is inside of another refined
+% grid (layer 2), which in terms is inside of a coarser grid (layer 1).
+% In this case the refined grid in layer 3 is not connected directly
+% to the coarser grid in layer 1.  This will be an invalid contact
+% region and we need to discard it.
 
-          Isouth = Is+1:Ie-1;    Jsouth = ones(size(Isouth)).*Js;
-          B(isouth).ind = sub2ind(size(S.grid(dg).I_psi), Isouth, Jsouth);
-
-          Jeast  = Js+1:Je-1;    Ieast  = ones(size(Jeast )).*Ie;
-          B(ieast ).ind = sub2ind(size(S.grid(dg).I_psi), Ieast , Jeast );
-
-          Inorth = Is+1:Ie-1;    Jnorth = ones(size(Inorth)).*Je;
-          B(inorth).ind = sub2ind(size(S.grid(dg).I_psi), Inorth, Jnorth);
-          
-          for ib=1:4,
-            contact.boundary(ib).okey  = true;
-            contact.boundary(ib).match = true(size(B(ib).ind));
-            contact.boundary(ib).Xdg   = G(dg).lon_psi(B(ib).ind);
-            contact.boundary(ib).Ydg   = G(dg).lat_psi(B(ib).ind);
-            contact.boundary(ib).Idg   = S.grid(dg).I_psi(B(ib).ind);
-            contact.boundary(ib).Jdg   = S.grid(dg).J_psi(B(ib).ind);
+          Jwest  = Js+1:Je-1;
+          if (~isempty(Jwest)),
+            Iwest  = ones(size(Jwest )).*Is;
+            B(iwest ).ind = sub2ind(size(S.grid(dg).I_psi),Iwest ,Jwest );
+          else
+            set_boundary = false;
           end
+
+          Isouth = Is+1:Ie-1;
+          if (~isempty(Isouth)),
+            Jsouth = ones(size(Isouth)).*Js;
+            B(isouth).ind = sub2ind(size(S.grid(dg).I_psi),Isouth,Jsouth);
+          else
+            set_boundary = false;
+          end
+
+          Jeast  = Js+1:Je-1;
+          if (~isempty(Jeast)),
+            Ieast  = ones(size(Jeast )).*Ie;
+            B(ieast ).ind = sub2ind(size(S.grid(dg).I_psi),Ieast ,Jeast );
+          else
+            set_boundary = false;
+          end
+
+          Inorth = Is+1:Ie-1;
+          if (~isempty(Inorth))
+            Jnorth = ones(size(Inorth)).*Je;
+            B(inorth).ind = sub2ind(size(S.grid(dg).I_psi),Inorth,Jnorth);
+          else
+            set_boundary = false;
+          end
+
+          if (set_boundary),
+            for ib=1:4,
+              contact.boundary(ib).okay  = true;
+              contact.boundary(ib).match = true(size(B(ib).ind));
+              contact.boundary(ib).Xdg   = G(dg).lon_psi(B(ib).ind);
+              contact.boundary(ib).Ydg   = G(dg).lat_psi(B(ib).ind);
+              contact.boundary(ib).Idg   = S.grid(dg).I_psi(B(ib).ind);
+              contact.boundary(ib).Jdg   = S.grid(dg).J_psi(B(ib).ind);
+            end
+            connected(dg,rg) = true;
+            connected(rg,dg) = true;
+          else
+            for ib=1:4,
+              contact.boundary(ib).okay  = false;
+              contact.boundary(ib).match = [];
+              contact.boundary(ib).Xdg   = [];
+              contact.boundary(ib).Ydg   = [];
+              contact.boundary(ib).Idg   = [];
+              contact.boundary(ib).Jdg   = [];
+            end 
+          end
+
         else
+
           [~,ON] = inpolygon(G(dg).x_psi, G(dg).y_psi,                  ...
                              S.grid(rg).perimeter.X_psi,                ...
                              S.grid(rg).perimeter.Y_psi);
@@ -247,32 +316,75 @@ for dg=1:S.Ngrids,
 
           Icorners = [Is Ie]; Jcorners = [Js Je];
 
-          contact.corners.okey = true;
+          contact.corners.okay = true;
           contact.corners.Xdg  = G(dg).x_psi(Icorners,Jcorners);
           contact.corners.Ydg  = G(dg).y_psi(Icorners,Jcorners);
           contact.corners.Idg  = [Is Ie Ie Is];
           contact.corners.Jdg  = [Js Js Je Je];
 
-          Jwest  = Js+1:Je-1;    Iwest  = ones(size(Jwest )).*Is;
-          B(iwest ).ind = sub2ind(size(S.grid(dg).I_psi), Iwest , Jwest );
+% If any of edge boundary vectors are empty, the refined receiver grid
+% is inside of more that one nested grid.  That is, the application has
+% more than two nesting layers with cascating refinement grids.
+% For example, a refined grid (layer 3) is inside of another refined
+% grid (layer 2), which in terms is inside of a coarser grid (layer 1).
+% In this case the refined grid in layer 3 is not connected directly
+% to the coarser grid in layer 1.  This will be an invalid contact
+% region and we need to discard it.
 
-          Isouth = Is+1:Ie-1;    Jsouth = ones(size(Isouth)).*Js;
-          B(isouth).ind = sub2ind(size(S.grid(dg).I_psi), Isouth, Jsouth);
-
-          Jeast  = Js+1:Je-1;    Ieast  = ones(size(Jeast )).*Ie;
-          B(ieast ).ind = sub2ind(size(S.grid(dg).I_psi), Ieast , Jeast );
-
-          Inorth = Is+1:Ie-1;    Jnorth = ones(size(Inorth)).*Je;
-          B(inorth).ind = sub2ind(size(S.grid(dg).I_psi), Inorth, Jnorth);
-
-          for ib=1:4,
-            contact.boundary(ib).okey  = true;
-            contact.boundary(ib).match = true(size(B(ib).ind));
-            contact.boundary(ib).Xdg   = G(dg).x_psi(B(ib).ind);
-            contact.boundary(ib).Ydg   = G(dg).y_psi(B(ib).ind);
-            contact.boundary(ib).Idg   = S.grid(dg).I_psi(B(ib).ind);
-            contact.boundary(ib).Jdg   = S.grid(dg).J_psi(B(ib).ind);
+          Jwest  = Js+1:Je-1;
+          if (~isempty(Jwest)),
+            Iwest  = ones(size(Jwest )).*Is;
+            B(iwest ).ind = sub2ind(size(S.grid(dg).I_psi),Iwest ,Jwest );
+          else
+            set_boundary = false;
           end
+
+          Isouth = Is+1:Ie-1;
+          if (~isempty(Isouth)),
+            Jsouth = ones(size(Isouth)).*Js;
+            B(isouth).ind = sub2ind(size(S.grid(dg).I_psi),Isouth,Jsouth);
+          else
+            set_boundary = false;
+          end
+
+          Jeast  = Js+1:Je-1;
+          if (~isempty(Jeast)),
+            Ieast  = ones(size(Jeast )).*Ie;
+            B(ieast ).ind = sub2ind(size(S.grid(dg).I_psi),Ieast ,Jeast );
+          else
+            set_boundary = false;
+          end
+
+          Inorth = Is+1:Ie-1;
+          if (~isempty(Inorth))
+            Jnorth = ones(size(Inorth)).*Je;
+            B(inorth).ind = sub2ind(size(S.grid(dg).I_psi),Inorth,Jnorth);
+          else
+            set_boundary = false;
+          end
+
+          if (set_boundary),
+            for ib=1:4,
+              contact.boundary(ib).okay  = true;
+              contact.boundary(ib).match = true(size(B(ib).ind));
+              contact.boundary(ib).Xdg   = G(dg).x_psi(B(ib).ind);
+              contact.boundary(ib).Ydg   = G(dg).y_psi(B(ib).ind);
+              contact.boundary(ib).Idg   = S.grid(dg).I_psi(B(ib).ind);
+              contact.boundary(ib).Jdg   = S.grid(dg).J_psi(B(ib).ind);
+            end
+            connected(dg,rg) = true;
+            connected(rg,dg) = true;
+          else
+            for ib=1:4,
+              contact.boundary(ib).okay  = false;
+              contact.boundary(ib).match = [];
+              contact.boundary(ib).Xdg   = [];
+              contact.boundary(ib).Ydg   = [];
+              contact.boundary(ib).Idg   = [];
+              contact.boundary(ib).Jdg   = [];
+            end
+          end
+        
         end
       end
 
@@ -287,7 +399,7 @@ for dg=1:S.Ngrids,
                              S.grid(rg).perimeter.Y_psi);
           if (any(ON)),
             myindex = S.grid(dg).boundary(ib).index;
-            contact.boundary(ib).okey  = true;
+            contact.boundary(ib).okay  = true;
             contact.boundary(ib).match = [];
             contact.boundary(ib).index = myindex(ON);
             if (spherical),
@@ -300,7 +412,7 @@ for dg=1:S.Ngrids,
             contact.boundary(ib).Idg = S.grid(dg).I_psi(myindex(ON));
             contact.boundary(ib).Jdg = S.grid(dg).J_psi(myindex(ON));
           else
-            contact.boundary(ib).okey  = false;
+            contact.boundary(ib).okay  = false;
             contact.boundary(ib).match = [];
             contact.boundary(ib).index = [];
             contact.boundary(ib).Xdg   = [];
@@ -316,11 +428,14 @@ for dg=1:S.Ngrids,
 % It matches the contact points at the boundary between donor and
 % receiver grids.
 
-      if (contact.corners.okey && ~contact.refinement),
+      if (contact.corners.okay && ~contact.refinement),
+        connected(dg,rg) = true;
+        connected(rg,dg) = true;
+
         for ib=1:4,
           ir = adjacent(ib);
 
-          if (contact.boundary(ib).okey),
+          if (contact.boundary(ib).okay),
             dlength = length(S.grid(dg).boundary(ib).X);
             rlength = length(S.grid(rg).boundary(ir).X);
 
@@ -368,17 +483,34 @@ for dg=1:S.Ngrids,
         end
       end
 
+% Determine if grids are connected.
+
+      if (contact.interior.okay),
+        if (connected(dg,rg) || connected(rg,dg)),
+          load_connectivity = true;
+        else
+          load_connectivity = false;
+        end
+      else
+        load_connectivity = false;
+      end
+
 % Load connectivity information into structure S if current grids
 % 'dg' and 'rg' are connected.
 
-      if (contact.interior.okey),
+      if (load_connectivity),
         cr = cr + 1;                          % contact region number
         S.contact(cr) = contact;
+        disp([blanks(5), num2str(cr, '%2.2i'),                          ...
+              blanks(8), num2str(dg, '%2.2i'),                          ...
+              blanks(8), num2str(rg, '%2.2i')]);
       end
       clear contact
 
     end  % end of condional dg ~= rg
   end    % end of rg receiver grid loop
 end      % end of dg donor grid loop
+
+disp(blanks(2));
 
 return

@@ -293,7 +293,7 @@ for var = VarList,
 
 %  Receiver grid.
 
-  if (isvec && D.vector_rotation),
+  if (isvec && R.vector_rotation),
     if (D.spherical),
       Xname = 'lon_rho';           % If requested, interpolate
       Yname = 'lat_rho';           % U- and V-points variables

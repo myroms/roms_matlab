@@ -37,7 +37,8 @@ end
 
 Ngrids    = S.Ngrids;           % number of nested grids
 Ncontact  = S.Ncontact;         % number of Contact Regions
-Nweights  = S.Nweights;         % Number of horizontal weights
+nLweights = S.nLweights;        % Number of linear    interpolation weights
+nQweights = S.nQweights;        % Number of quadratic interpolation weights
 Ndatum    = S.Ndatum;           % total number of Contact Points
 spherical = S.spherical;
 
@@ -190,17 +191,29 @@ end
 ncwrite(ncname, 'Irg', int32(Irg));
 ncwrite(ncname, 'Jrg', int32(Jrg));
 
-% Horizontal interpolation weights.
+% Horizontal linear interpolation weights.
 
-Hweight = NaN([Nweights Ndatum]);
+Lweight = NaN([nLweights Ndatum]);
 
 for cr=1:Ncontact,
-  Hweight(1:Nweights, NstrR(cr):NendR(cr)) = S.weights(cr).H_rho;
-  Hweight(1:Nweights, NstrU(cr):NendU(cr)) = S.weights(cr).H_u;
-  Hweight(1:Nweights, NstrV(cr):NendV(cr)) = S.weights(cr).H_v;
+  Lweight(1:nLweights, NstrR(cr):NendR(cr)) = S.Lweights(cr).H_rho;
+  Lweight(1:nLweights, NstrU(cr):NendU(cr)) = S.Lweights(cr).H_u;
+  Lweight(1:nLweights, NstrV(cr):NendV(cr)) = S.Lweights(cr).H_v;
 end
 
-ncwrite(ncname, 'Hweight', Hweight, [1 1]);
+ncwrite(ncname, 'Lweight', Lweight, [1 1]);
+
+% Horizontal quadratic interpolation weights.
+
+Qweight = NaN([nQweights Ndatum]);
+
+for cr=1:Ncontact,
+  Qweight(1:nQweights, NstrR(cr):NendR(cr)) = S.Qweights(cr).H_rho;
+  Qweight(1:nQweights, NstrU(cr):NendU(cr)) = S.Qweights(cr).H_u;
+  Qweight(1:nQweights, NstrV(cr):NendV(cr)) = S.Qweights(cr).H_v;
+end
+
+ncwrite(ncname, 'Qweight', Qweight, [1 1]);
 
 % Contact point locations.
 

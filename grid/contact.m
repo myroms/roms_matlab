@@ -47,7 +47,8 @@ function [S,G] = contact(Gnames, Cname, varargin)
 %
 %    S.Ngrids                              - Number of nested grids
 %    S.Ncontact                            - Number of contact regions
-%    S.Nweights = 4                        - Number of horizontal weights
+%    S.NLweights = 4                       - Number of linear weights
+%    S.NQweights = 9                       - Number of quadratic weights
 %    S.Ndatum                              - Total number of contact points
 %
 %    S.western_edge  = 1                   - Western  boundary edge index
@@ -103,21 +104,21 @@ function [S,G] = contact(Gnames, Cname, varargin)
 %    S.contact(cr).mosaic                  - Mosaic grid switch
 %    S.contact(cr).refinement              - Refinement grid switch
 %
-%    S.contact(cr).interior.okey           - true/false logical
+%    S.contact(cr).interior.okay           - true/false logical
 %
 %    S.contact(cr).interior.Xdg(:)         - (X,Y) coordinates and (I,J)
 %    S.contact(cr).interior.Ydg(:)           indices of donor grid points
 %    S.contact(cr).interior.Idg(:)           inside the receiver grid
 %    S.contact(cr).interior.Jdg(:)           perimeter, [] if false 
 %
-%    S.contact(cr).corners.okey            - true/false logical
+%    S.contact(cr).corners.okay            - true/false logical
 %
 %    S.contact(cr).corners.Xdg(:)          - (X,Y) coordinates and (I,J)
 %    S.contact(cr).corners.Ydg(:)            indices of donor grid points
 %    S.contact(cr).corners.Idg(:)            corners laying on receiver
 %    S.contact(cr).corners.Idg(:)            grid perimeter, [] if false
 %
-%    S.contact(cr).boundary(ib).okey       - true/false logical
+%    S.contact(cr).boundary(ib).okay       - true/false logical
 %    S.contact(cr).boundary(ib).match(:)   - Donor matching points logical
 %
 %    S.contact(cr).boundary(ib).Xdg(:)     - (X,Y) coordinates and (I,J)
@@ -206,9 +207,13 @@ function [S,G] = contact(Gnames, Cname, varargin)
 %    S.refined(cr).mask_u(:,:)               from donor grid at RHO-, PSI-,
 %    S.refined(cr).mask_v(:,:)               U- and V-points.
 %
-%    S.weights(cr).H_rho(:,4)              - Contact points weights (H) to
-%    S.weights(cr).H_u(:,4)                  horizontally interpolate
-%    S.weights(cr).H_v(:,4)                  reciever data from donor grid
+%    S.Lweights(cr).H_rho(4,:)             - Linear weights (H) to 
+%    S.Lweights(cr).H_u(4,:)                 horizontally interpolate
+%    S.Lweights(cr).H_v(4,:)                 reciever data from donor grid
+%
+%    S.Qweights(cr).H_rho(9,:)             - Quadratic weights (H) to
+%    S.Qweights(cr).H_u(9,:)                 horizontally interpolate
+%    S.Qweights(cr).H_v(9,:)                 reciever data from donor grid
 %
 % The "refined" sub-structure is only relevant when processing the contact
 % region of a refinement grid. Otherwise, it will be empty.  The setting
@@ -223,9 +228,9 @@ function [S,G] = contact(Gnames, Cname, varargin)
 % of the refinement grid physical boundaries. If so, the user just needs to
 % experiment with "MaskInterp" and edit such points during post-processing.
 %
-% The locations of the spatial interpolation weights in the donor grid
-% with respect the receiver grid contact region at a particulat contat
-% point x(Irg,Jrg,Krg) are:
+% The locations of the spatial linear interpolation weights in the donor
+% grid with respect the receiver grid contact region at a particulat
+% contact point x(Irg,Jrg,Krg) are:
 %
 %                       8___________7   (Idg+1,Jdg+1,Kdg)
 %                      /.          /|
@@ -247,10 +252,10 @@ function [S,G] = contact(Gnames, Cname, varargin)
 % ROMS.  Notice that if the contact point "cp" between donor and
 % receiver grids are coincident:
 %
-%          S.weights(cr).H_rho(cp,1) = 1.0 
-%          S.weights(cr).H_rho(cp,2) = 0.0 
-%          S.weights(cr).H_rho(cp,3) = 0.0 
-%          S.weights(cr).H_rho(cp,4) = 0.0 
+%          S.Lweights(cr).H_rho(1,cp) = 1.0 
+%          S.Lweights(cr).H_rho(2,cp) = 0.0 
+%          S.Lweights(cr).H_rho(3,cp) = 0.0 
+%          S.Lweights(cr).H_rho(4,cp) = 0.0 
 % Then
 %          receiver_value(Irg,Jrg) = donor_value(Idg,Jdg)
 %
@@ -287,23 +292,9 @@ Ncontact = (Ngrids-1)*2;           % number of contact regions
 % Get nested grids information and set perimeters and boundary edges.
 %--------------------------------------------------------------------------
 
-% Get nested grid structures.  If the grid structure have the parent
-% fields, remove them to have an array of similar structures.
+% Get nested grid structures.
 
-parent = {'parent_grid',                                                ...
-          'parent_Imin', 'parent_Imax',                                 ...
-          'parent_Jmin', 'parent_Jmax'};
-
-for n=1:Ngrids,
-  g = get_roms_grid(char(Gnames(n)));
-  if (isfield(g, 'parent_grid')),
-    G(n) = rmfield(g, parent);
-  else
-    G(n) = g;
-  end
-end
-
-clear g
+G = grids_structure(Gnames);
 
 % Set nested grids perimeters and boundary edges.
 
@@ -1033,7 +1024,7 @@ W = C;
 % Western boundary of the donor grid lies on the receiver grid eastern
 % boundary.
 
-if (S.contact(cr).boundary(iwest).okey),
+if (S.contact(cr).boundary(iwest).okay),
   Ioffr = 3;
   Ioffu = 3;
   Ioffv = 3;
@@ -1108,7 +1099,7 @@ end
 % Southern boundary of the donor grid lies on the receiver grid northern
 % boundary.
 
-if (S.contact(cr).boundary(isouth).okey),
+if (S.contact(cr).boundary(isouth).okay),
   Joffr = 3;
   Joffu = 3;
   Joffv = 3;
@@ -1183,7 +1174,7 @@ end
 % Eastern boundary of the donor grid lies on the receiver grid western
 % boundary.
 
-if (S.contact(cr).boundary(ieast).okey),
+if (S.contact(cr).boundary(ieast).okay),
   Ioffr = 4;
   Ioffu = 4;
   Ioffv = 4;
@@ -1258,7 +1249,7 @@ end
 % Northern boundary of the donor grid lies on the receiver grid southern
 % boundary.
 
-if (S.contact(cr).boundary(inorth).okey),
+if (S.contact(cr).boundary(inorth).okay),
   Joffr = 4;
   Joffu = 4;
   Joffv = 4;
@@ -1340,7 +1331,7 @@ end
 %--------------------------------------------------------------------------
 
 for ib=1:4,
-  if (S.contact(cr).boundary(ib).okey),
+  if (S.contact(cr).boundary(ib).okay),
     C.xrg_rho  = W(ib).xrg_rho;
     C.erg_rho  = W(ib).erg_rho;
     C.xrg_u    = W(ib).xrg_u;
@@ -1530,12 +1521,18 @@ C = struct('xrg_rho'     , [], 'erg_rho'     , [],                      ...
            'dndx'        , [], 'dmde'        , [],                      ...
            'mask_rho'    , [], 'mask_u'      , [], 'mask_v'      , []);
 
+% Compute mean grid cell area for donor and receiver grids. In refinement
+% the donor and receiver grids have different mean grid cell area.
+
+AreaAvg_dg = mean(mean((1./G(dg).pm) .* (1./G(dg).pn)));
+AreaAvg_rg = mean(mean((1./G(rg).pm) .* (1./G(rg).pn)));
+
 %--------------------------------------------------------------------------
-% If receiver is a refinement grid, determine the contact points from
-% coarser donor grid.
+% If receiver is a refinement grid (smaller cell area), determine the
+% contact points from coarser donor grid (larger cell area).
 %--------------------------------------------------------------------------
 
-if (S.grid(rg).refine_factor > 0),
+if ((S.grid(rg).refine_factor > 0) && (AreaAvg_dg > AreaAvg_rg)),
 
 % Extract larger receiver (fine) grid from donor (coarse) grid.
 
@@ -1842,13 +1839,13 @@ if (S.grid(rg).refine_factor > 0),
 end
 
 %--------------------------------------------------------------------------
-% Otherwise if the donor is the finer grid and receiver the coarser grid,
-% determine coarse grid contact point inside the finer grid.  This
-% information will be used for two-way nesting for the fine to coarse
-% processing.
+% Otherwise if the donor is the finer grid (smaller cell area) and receiver
+% the coarser grid (larger cell area), determine coarse grid contact point
+% inside the finer grid.  This information will be used for two-way nesting
+% for the fine to coarse processing.
 %--------------------------------------------------------------------------
 
-if (dg > rg || S.grid(dg).refine_factor > 0),
+if (dg > rg || AreaAvg_rg > AreaAvg_dg),
 
 % Set coaser grid (Io,Jo) origin coordinates (left-bottom corner) at
 % PSI-points used to extract finer grid.  Set finer grid center indices
@@ -1866,7 +1863,7 @@ if (dg > rg || S.grid(dg).refine_factor > 0),
   for my_cr = 1:Ncontact,
     if (S.contact(my_cr).donor_grid    == rg &&                         ...
         S.contact(my_cr).receiver_grid == dg &&                         ...
-        S.contact(my_cr).corners.okey),
+        S.contact(my_cr).corners.okay),
       Io = min(S.contact(my_cr).corners.Idg);
       Jo = min(S.contact(my_cr).corners.Jdg);
     end
@@ -2393,10 +2390,13 @@ function S = Hweights(G, Sinp)
 % This function add the following fields to the S structure for each
 % contact region, cr:
 %
-%    S.weights(cr).H_rho(:,4)              - Contact points weights (H) to
-%    S.weights(cr).H_u  (:,4)                horizontally interpolate
-%    S.weights(cr).H_v  (:,4)                reciever data from donor grid
+%    S.Lweights(cr).H_rho(4,:)            - Contact points linear weights
+%    S.Lweights(cr).H_u  (4,:)              (H) to horizontally interpolate
+%    S.Lweights(cr).H_v  (4,:)              reciever data from donor grid
 %     
+%    S.Qweights(cr).H_rho(9,:)            - Contact points quadratic weights
+%    S.Qweights(cr).H_u  (9,:)              (H) to horizontally interpolate
+%    S.Qweights(cr).H_v  (9,:)              reciever data from donor grid
 
 % Initialize output structure with input structure.
   
@@ -2423,22 +2423,37 @@ for cr=1:Ncontact,
 
   if (S.contact(cr).refinement && (dg > rg)),
     Hzero = zeros(size(S.contact(cr).point.Irg_rho));
-    S.weights(cr).H_rho(1,:) = Hzero;
-    S.weights(cr).H_rho(2,:) = Hzero;
-    S.weights(cr).H_rho(3,:) = Hzero;
-    S.weights(cr).H_rho(4,:) = Hzero;
+
+    S.Lweights(cr).H_rho(1,:) = Hzero;
+    S.Lweights(cr).H_rho(2,:) = Hzero;
+    S.Lweights(cr).H_rho(3,:) = Hzero;
+    S.Lweights(cr).H_rho(4,:) = Hzero;
+
+    S.Qweights(cr).H_rho(1,:) = Hzero;
+    S.Qweights(cr).H_rho(2,:) = Hzero;
+    S.Qweights(cr).H_rho(3,:) = Hzero;
+    S.Qweights(cr).H_rho(4,:) = Hzero;
+    S.Qweights(cr).H_rho(5,:) = Hzero;
+    S.Qweights(cr).H_rho(6,:) = Hzero;
+    S.Qweights(cr).H_rho(7,:) = Hzero;
+    S.Qweights(cr).H_rho(8,:) = Hzero;
+    S.Qweights(cr).H_rho(9,:) = Hzero;
+    
     Rcompute = false;
   else
     [Ir,Jr] = size(S.grid(dg).I_rho);
+    RindexB = sub2ind([Ir, Jr],                                         ...
+                      S.contact(cr).point.Idg_rho+1,                    ...
+                      min(Jr,S.contact(cr).point.Jdg_rho));  % (Idg, Jdg-1)
     RindexO = sub2ind([Ir, Jr],                                         ...
                       S.contact(cr).point.Idg_rho+1,                    ...
-                      S.contact(cr).point.Jdg_rho+1);        % left-bottom
-    RindexR = sub2ind([Ir, Jr],                                         ...
-                      min(Ir, S.contact(cr).point.Idg_rho+2),           ...
-                      S.contact(cr).point.Jdg_rho+1);        % right_bottom
+                      S.contact(cr).point.Jdg_rho+1);        % (Idg, Jdg)
     RindexT = sub2ind([Ir, Jr],                                         ...
                       S.contact(cr).point.Idg_rho+1,                    ...
-                      min(Jr,S.contact(cr).point.Jdg_rho+2));% left-top
+                      min(Jr,S.contact(cr).point.Jdg_rho+2));% (Idg, Jdg+1)
+    RindexR = sub2ind([Ir, Jr],                                         ...
+                      min(Ir, S.contact(cr).point.Idg_rho+2),           ...
+                      S.contact(cr).point.Jdg_rho+1);        % (Idg+1, Jdg)
     Rcompute = true;
   end
   if (Rcompute),
@@ -2461,10 +2476,15 @@ for cr=1:Ncontact,
       end
     end
 
-    S.weights(cr).H_rho = interp_weights(pr, qr,                        ...
-                                         RindexO, RindexR, RindexT,     ...
-                                         G(dg).mask_rho);
-    
+    S.Lweights(cr).H_rho = linear_weights(pr, qr,                       ...
+                                          RindexO, RindexR, RindexT,    ...
+                                          G(dg).mask_rho);
+
+    S.Qweights(cr).H_rho = quadratic_weights(1-pr, qr,                  ...
+                                             RindexB, RindexO, RindexT, ...
+                                             S.grid(rg).refine_factor,  ...
+                                             G(dg).mask_rho);
+
   end
 
 % U-contact points.  Recall that we need to shift I by one since
@@ -2472,22 +2492,37 @@ for cr=1:Ncontact,
 
   if (S.contact(cr).refinement && (dg > rg)),
     Hzero = zeros(size(S.contact(cr).point.Irg_u));
-    S.weights(cr).H_u(1,:) = Hzero;
-    S.weights(cr).H_u(2,:) = Hzero;
-    S.weights(cr).H_u(3,:) = Hzero;
-    S.weights(cr).H_u(4,:) = Hzero;
+
+    S.Lweights(cr).H_u(1,:) = Hzero;
+    S.Lweights(cr).H_u(2,:) = Hzero;
+    S.Lweights(cr).H_u(3,:) = Hzero;
+    S.Lweights(cr).H_u(4,:) = Hzero;
+
+    S.Qweights(cr).H_u(1,:) = Hzero;
+    S.Qweights(cr).H_u(2,:) = Hzero;
+    S.Qweights(cr).H_u(3,:) = Hzero;
+    S.Qweights(cr).H_u(4,:) = Hzero;
+    S.Qweights(cr).H_u(5,:) = Hzero;
+    S.Qweights(cr).H_u(6,:) = Hzero;
+    S.Qweights(cr).H_u(7,:) = Hzero;
+    S.Qweights(cr).H_u(8,:) = Hzero;
+    S.Qweights(cr).H_u(9,:) = Hzero;
+    
     Ucompute = false;
   else
     [Iu,Ju] = size(S.grid(dg).I_u);
+    UindexB = sub2ind([Iu, Ju],                                         ...
+                      S.contact(cr).point.Idg_u  ,                      ...
+                      min(Ju, S.contact(cr).point.Jdg_u));   % (Idg, Jdg-1)
     UindexO = sub2ind([Iu, Ju],                                         ...
                       S.contact(cr).point.Idg_u  ,                      ...
-                      min(Ju, S.contact(cr).point.Jdg_u+1)); % left-bottom
-    UindexR = sub2ind([Iu, Ju],                                         ...
-                      min(Iu, S.contact(cr).point.Idg_u+1),             ...
-                      min(Ju, S.contact(cr).point.Jdg_u+1)); % right-bottom
+                      min(Ju, S.contact(cr).point.Jdg_u+1)); % (Idg, Jdg)
     UindexT = sub2ind([Iu, Ju],                                         ...
                       S.contact(cr).point.Idg_u  ,                      ...
-                      min(Ju, S.contact(cr).point.Jdg_u+2)); % left-top
+                      min(Ju, S.contact(cr).point.Jdg_u+2)); % (Idg, Jdg+1)
+    UindexR = sub2ind([Iu, Ju],                                         ...
+                      min(Iu, S.contact(cr).point.Idg_u+1),             ...
+                      min(Ju, S.contact(cr).point.Jdg_u+1)); % (Idg+1, Jdg)
     Ucompute = true;
   end
   if (Ucompute)    
@@ -2510,9 +2545,14 @@ for cr=1:Ncontact,
       end
     end
       
-    S.weights(cr).H_u = interp_weights(pu, qu,                          ...
-                                       UindexO, UindexR, UindexT,       ...
-                                       G(dg).mask_u);
+    S.Lweights(cr).H_u = linear_weights(pu, qu,                         ...
+                                        UindexO, UindexR, UindexT,      ...
+                                        G(dg).mask_u);
+
+    S.Qweights(cr).H_u = quadratic_weights(1-pu, qu,                    ...
+                                           UindexB, UindexO, UindexT,   ...
+                                           S.grid(rg).refine_factor,    ...
+                                           G(dg).mask_u);
 
   end
 
@@ -2521,22 +2561,36 @@ for cr=1:Ncontact,
 
   if (S.contact(cr).refinement && (dg > rg)),
     Hzero = zeros(size(S.contact(cr).point.Irg_v));
-    S.weights(cr).H_v(1,:) = Hzero;
-    S.weights(cr).H_v(2,:) = Hzero;
-    S.weights(cr).H_v(3,:) = Hzero;
-    S.weights(cr).H_v(4,:) = Hzero;
+    S.Lweights(cr).H_v(1,:) = Hzero;
+    S.Lweights(cr).H_v(2,:) = Hzero;
+    S.Lweights(cr).H_v(3,:) = Hzero;
+    S.Lweights(cr).H_v(4,:) = Hzero;
+
+    S.Qweights(cr).H_v(1,:) = Hzero;
+    S.Qweights(cr).H_v(2,:) = Hzero;
+    S.Qweights(cr).H_v(3,:) = Hzero;
+    S.Qweights(cr).H_v(4,:) = Hzero;
+    S.Qweights(cr).H_v(5,:) = Hzero;
+    S.Qweights(cr).H_v(6,:) = Hzero;
+    S.Qweights(cr).H_v(7,:) = Hzero;
+    S.Qweights(cr).H_v(8,:) = Hzero;
+    S.Qweights(cr).H_v(9,:) = Hzero;
+
     Vcompute = false;
   else
     [Iv,Jv] = size(S.grid(dg).I_v);
+    VindexB = sub2ind([Iv, Jv],                                         ...
+                      min(Iv, S.contact(cr).point.Idg_v+1),             ...
+                      min(Jv, S.contact(cr).point.Jdg_v-1)); % (Idg, Jdg-1)
     VindexO = sub2ind([Iv, Jv],                                         ...
                       min(Iv, S.contact(cr).point.Idg_v+1),             ...
-                      S.contact(cr).point.Jdg_v  );          % left-bottom
-    VindexR = sub2ind([Iv, Jv],                                         ...
-                      min(Iv, S.contact(cr).point.Idg_v+2),             ...
-                      S.contact(cr).point.Jdg_v  );          % right-bottom
+                      S.contact(cr).point.Jdg_v  );          % (Idg, Jdg)
     VindexT = sub2ind([Iv, Jv],                                         ...
                       min(Iv, S.contact(cr).point.Idg_v+1),             ...
-                      min(Jv, S.contact(cr).point.Jdg_v+1)); % left-top
+                      min(Jv, S.contact(cr).point.Jdg_v+1)); % (Idg, Jdg+1)
+    VindexR = sub2ind([Iv, Jv],                                         ...
+                      min(Iv, S.contact(cr).point.Idg_v+2),             ...
+                      S.contact(cr).point.Jdg_v  );          % (Idg+1, Jdg)
     Vcompute = true;
   end
   if (Vcompute),
@@ -2559,10 +2613,14 @@ for cr=1:Ncontact,
       end
     end
       
-    S.weights(cr).H_v = interp_weights(pv, qv,                          ...
-                                       VindexO, VindexR, VindexT,       ...
-                                       G(dg).mask_v);
+    S.Lweights(cr).H_v = linear_weights(pv, qv,                         ...
+                                        VindexO, VindexR, VindexT,      ...
+                                        G(dg).mask_v);
 
+    S.Qweights(cr).H_v = quadratic_weights(1-pv, qv,                    ...
+                                           VindexB, VindexO, VindexT,   ...
+                                           S.grid(rg).refine_factor,    ...
+                                           G(dg).mask_v);
   end
 
 % Debugging.
@@ -2609,8 +2667,8 @@ for cr=1:Ncontact,
         for n=1:length(S.contact(cr).point.Xrg_rho),
           fprintf (Rout, frmt,                                          ...
                    [n,                                                  ...
-                    transpose(S.weights(cr).H_rho(:,n)),                ...
-                    sum(S.weights(cr).H_rho(:,n)),                      ...
+                    transpose(S.Lweights(cr).H_rho(:,n)),               ...
+                    sum(S.Lweights(cr).H_rho(:,n)),                     ...
                     S.contact(cr).point.Idg_rho(n)+1,                   ...
                     RindexO(n),                                         ...
                     RindexR(n),                                         ...
@@ -2628,8 +2686,8 @@ for cr=1:Ncontact,
           for n=1:length(S.contact(cr).point.Xrg_rho),
             fprintf (Rout, frmt,                                        ...
                      [n,                                                ...
-                      transpose(S.weights(cr).H_rho(:,n)),              ...
-                      sum(S.weights(cr).H_rho(:,n)),                    ...
+                      transpose(S.Lweights(cr).H_rho(:,n)),             ...
+                      sum(S.Lweights(cr).H_rho(:,n)),                   ...
                       S.contact(cr).point.Idg_rho(n)+1,                 ...
                       RindexO(n),                                       ...
                       RindexR(n),                                       ...
@@ -2646,8 +2704,8 @@ for cr=1:Ncontact,
           for n=1:length(S.contact(cr).point.Xrg_rho),
             fprintf (Rout, frmt,                                        ...
                      [n,                                                ...
-                      transpose(S.weights(cr).H_rho(:,n)),              ...
-                      sum(S.weights(cr).H_rho(:,n)),                    ...
+                      transpose(S.Lweights(cr).H_rho(:,n)),             ...
+                      sum(S.Lweights(cr).H_rho(:,n)),                   ...
                       S.contact(cr).point.Idg_rho(n)+1,                 ...
                       RindexO(n),                                       ...
                       RindexR(n),                                       ...
@@ -2685,8 +2743,8 @@ for cr=1:Ncontact,
         for n=1:length(S.contact(cr).point.Xrg_u),
           fprintf (Uout, frmt,                                          ...
                    [n,                                                  ...
-                    transpose(S.weights(cr).H_u(:,n)),                  ...
-                    sum(S.weights(cr).H_u(:,n)),                        ...
+                    transpose(S.Lweights(cr).H_u(:,n)),                 ...
+                    sum(S.Lweights(cr).H_u(:,n)),                       ...
                     S.contact(cr).point.Idg_u(n)+1,                     ...
                     UindexO(n),                                         ...
                     UindexR(n),                                         ...
@@ -2704,8 +2762,8 @@ for cr=1:Ncontact,
           for n=1:length(S.contact(cr).point.Xrg_u),
             fprintf (Uout, frmt,                                        ...
                      [n,                                                ...
-                      transpose(S.weights(cr).H_u(:,n)),                ...
-                      sum(S.weights(cr).H_u(:,n)),                      ...
+                      transpose(S.Lweights(cr).H_u(:,n)),               ...
+                      sum(S.Lweights(cr).H_u(:,n)),                     ...
                       S.contact(cr).point.Idg_u(n)+1,                   ...
                       UindexO(n),                                       ...
                       UindexR(n),                                       ...
@@ -2722,8 +2780,8 @@ for cr=1:Ncontact,
           for n=1:length(S.contact(cr).point.Xrg_u),
             fprintf (Uout, frmt,                                        ...
                      [n,                                                ...
-                      transpose(S.weights(cr).H_u(:,n)),                ...
-                      sum(S.weights(cr).H_u(:,n)),                      ...
+                      transpose(S.Lweights(cr).H_u(:,n)),               ...
+                      sum(S.Lweights(cr).H_u(:,n)),                     ...
                       S.contact(cr).point.Idg_u(n)+1,                   ...
                       UindexO(n),                                       ...
                       UindexR(n),                                       ...
@@ -2761,8 +2819,8 @@ for cr=1:Ncontact,
         for n=1:length(S.contact(cr).point.Xrg_v),
           fprintf (Vout, frmt,                                          ...
                    [n,                                                  ...
-                    transpose(S.weights(cr).H_v(:,n)),                  ...
-                    sum(S.weights(cr).H_v(:,n)),                        ...
+                    transpose(S.Lweights(cr).H_v(:,n)),                 ...
+                    sum(S.Lweights(cr).H_v(:,n)),                       ...
                     S.contact(cr).point.Idg_v(n)+1,                     ...
                     VindexO(n),                                         ...
                     VindexR(n),                                         ...
@@ -2780,8 +2838,8 @@ for cr=1:Ncontact,
           for n=1:length(S.contact(cr).point.Xrg_v),
             fprintf (Vout, frmt,                                        ...
                      [n,                                                ...
-                      transpose(S.weights(cr).H_v(:,n)),                ...
-                      sum(S.weights(cr).H_v(:,n)),                      ...
+                      transpose(S.Lweights(cr).H_v(:,n)),               ...
+                      sum(S.Lweights(cr).H_v(:,n)),                     ...
                       S.contact(cr).point.Idg_v(n)+1,                   ...
                       VindexO(n),                                       ...
                       VindexR(n),                                       ...
@@ -2798,8 +2856,8 @@ for cr=1:Ncontact,
           for n=1:length(S.contact(cr).point.Xrg_v),
             fprintf (Vout, frmt,                                        ...
                      [n,                                                ...
-                      transpose(S.weights(cr).H_v(:,n)),                ...
-                      sum(S.weights(cr).H_v(:,n)),                      ...
+                      transpose(S.Lweights(cr).H_v(:,n)),               ...
+                      sum(S.Lweights(cr).H_v(:,n)),                     ...
                       S.contact(cr).point.Idg_v(n)+1,                   ...
                       VindexO(n),                                       ...
                       VindexR(n),                                       ...
@@ -2833,14 +2891,15 @@ return
 
 %--------------------------------------------------------------------------
 
-function W = interp_weights(p, q, index1, index2, index4, mask)
+function W = linear_weights(p, q, index1, index2, index4, mask)
 
 %
-% W = interp_weights(p, q, index1, index2, index4, mask)
+% W = linear_weights(p, q, index1, index2, index4, mask)
 %
-% This function computes the contact points horizontal interpolation
-% weights given the fractional distances (p,q) from the donor grid.
-% The weights are adjusted in the presence of land/sea masking.
+% This function computes the contact points horizontal linear
+% interpolation weights given the fractional distances (p,q) from
+% the donor grid.  The weights are adjusted in the presence of
+% land/sea masking.
 %
 % On Input:
 %
@@ -2866,15 +2925,15 @@ function W = interp_weights(p, q, index1, index2, index4, mask)
 %
 % On Output:
 %
-%    W(1:4,:)   Contact point interpolation weights (2D array):
+%    W(1:4,:)   Contact point linear interpolation weights (2D array):
 %
-%                 W(1,:)    interpolation way for corner 1
-%                 W(2,:)    interpolation way for corner 2
-%                 W(3,:)    interpolation way for corner 3
-%                 W(4,:)    interpolation way for corner 4
+%                 W(1,:)    interpolation weight for corner 1
+%                 W(2,:)    interpolation weight for corner 2
+%                 W(3,:)    interpolation weight for corner 3
+%                 W(4,:)    interpolation weight for corner 4
 %
 %
-% The following diagrams show the conventions for interpolation:
+% The following diagrams show the conventions for linear interpolation:
 %
 %                 index4         index3
 %
@@ -2889,7 +2948,7 @@ function W = interp_weights(p, q, index1, index2, index4, mask)
 %                   |<------>   q  |
 %                   |       .   :  |
 %                   |       .   :  |
-%                   |___________:__| 
+%                   |___________:__|
 %         (Idg,Jdg) 1       Ir     2
 %
 %                 index1         index2
@@ -2901,7 +2960,7 @@ function W = interp_weights(p, q, index1, index2, index4, mask)
 %     W(3,:) = p * q
 %     W(4,:) = (1 - p) * q
 %
-% In ROMS, the interpolation is carried out as:
+% In ROMS, the linear interpolation is carried out as:
 %
 %     V(Irg, Jrg) = W(1,:) * F2D(Idg,  Jdg  ) +
 %                   W(2,:) * F2D(Idg+1,Jdg  ) + 
@@ -2925,34 +2984,257 @@ end
 
 if (any(isnan(q))),
   q(isnan(qr)) = 0;
-end   
+end
 
 %--------------------------------------------------------------------------
-% Compute interpolation weigths.
+% Compute linear interpolation weigths.
 %--------------------------------------------------------------------------
 
 W  = zeros([4 Npoints]);
-HW = [0 0 0 0];
+LW = [0 0 0 0];
 
 for n=1:Npoints,
-  HW(1) = mask(index1(n)) * (1 - p(n)) * (1 - q(n));
-  HW(2) = mask(index2(n)) * p(n) * (1 - q(n));
-  HW(3) = mask(index3(n)) * p(n) * q(n);
-  HW(4) = mask(index4(n)) * (1 -p(n)) * q(n);
+  LW(1) = mask(index1(n)) * (1 - p(n)) * (1 - q(n));
+  LW(2) = mask(index2(n)) * p(n) * (1 - q(n));
+  LW(3) = mask(index3(n)) * p(n) * q(n);
+  LW(4) = mask(index4(n)) * (1 -p(n)) * q(n);
 
   MaskSum = mask(index1(n)) + mask(index2(n)) +                         ...
             mask(index3(n)) + mask(index4(n));
 
-  if (MaskSum < 4),                  % at leas one of the cornes is land
-    HWsum = sum(HW);
-    if (HWsum > 0),
-      HW = HW ./ HWsum;              % using only water points
+  if (MaskSum < 4),                  % at least one of the corners is land
+    LWsum = sum(LW);
+    if (LWsum > 0),
+      LW = LW ./ LWsum;              % using only water points
     else
-      HW(1:4) = 0;                   % all donor grid corners are on land
+      LW(1:4) = 0;                   % all donor grid corners are on land
     end
   end
   
-  W(:,n) = HW;
+  W(:,n) = LW;
+end
+
+% Impose positive zero.
+
+ind0 = find(abs(W) < 100*eps);
+if (~isempty(ind0)),
+  W(ind0) = 0;
+end
+
+% Impose exact unity.
+
+ind1 = find(abs(W - 1) < 100*eps);
+if (~isempty(ind1)),
+  W(ind1) = 1;
+end
+
+return
+
+%--------------------------------------------------------------------------
+
+function W = quadratic_weights(p, q, index2, index5, index8, rfactor, mask)
+
+%
+% W = quadratic_weights(p, q, index2, index5, index8, rfactor, mask)
+%
+% This function computes the contact points horizontal quadratic
+% interpolation weights given the fractional distances (p,q) from
+% the donor grid.  The weights are adjusted in the presence of
+% land/sea masking.
+%
+% If refined grids (rfactor > 0), the quadratic interpolation weights are
+% conservative.  That is, the coarse-to-fine and fine-to-coarse are
+% reversible (Clark and Farley, 1984):
+%
+%        SUM(F(:,:,...) / rfactor^2 = C(Idg,Jdg,...)
+%
+% On Input:     (see diagram below)
+%
+%    p          Contact points fractional I-distance with respect
+%                 the donor grid point 5 (vector)
+%
+%    q          Contact points fractional J-distance with respect
+%                 the donor grid point 5 (vector)
+%
+%    index2     Single linear indexes for 2D subscripts in donor
+%                 grid cell corner 2 (Idg,Jdg-1) for each contact
+%                 point (vector).
+%
+%    index5     Single linear indexes for 2D subscripts in donor
+%                 grid cell corner 5 (Idg,Jdg) for each contact
+%                 point (vector).
+%
+%    index8     Single linear indexes for 2D subscripts in donor
+%                 grid cell corner 8 (Idg,Jdg+1) for each contact
+%                 point (vector).
+%
+%    rfactor    Refine grid factor (scalar)
+%
+%                 rfactor = 0      quadratic interpolation
+%                                  (composite/mosaic grids)
+%
+%                 rfactor > 0      conservative quadratic interpolation
+%                                  (refine grids)
+%
+%    mask       Donor grid land/sea masking (2D array).
+%
+% On Output:
+%
+%    W(1:9,:)   Contact point quadratic interpolation weights (2D array):
+%
+%                 W(1,:)    interpolation weight in terms of donor point 1
+%                 W(2,:)    interpolation weight in terms of donor point 2
+%                 W(3,:)    interpolation weight in terms of donor point 3
+%                 W(4,:)    interpolation weight in terms of donor point 4
+%                 W(5,:)    interpolation weight in terms of donor point 5
+%                 W(6,:)    interpolation weight in terms of donor point 6
+%                 W(7,:)    interpolation weight in terms of donor point 7
+%                 W(8,:)    interpolation weight in terms of donor point 8
+%                 W(9,:)    interpolation weight in terms of donor point 9
+%
+%
+% The following diagrams show the conventions for quadratic interpolation:
+%
+%               index7           index8           index9
+%
+%                 Rm               Ro               Rp
+%
+%            Jd+1 7________________8________________9     Sp
+%                 |                |                |
+%                 |                |                |
+%                 |                |<---p--->       |
+%                 |                |                |
+%                 |             Jr |........x   :   |
+%                 |                |       .    :   |
+%                 |                |       .    q   |
+%                 |                |       .    :   |
+%            Jd   |________________|____________:___|
+%                 4                5       Ir       6     So
+%                 |                |                |
+%               index4           index5           index6
+%                 |                |                |
+%                 |                |                |
+%                 |                |                |
+%                 |                |                |
+%                 |                |                |
+%            Jd-1 |________________|________________|
+%                 1                2                3     Sm
+%
+%                Id-1              Id              Id+1  
+%
+%               index1           index2           index3
+%
+% For quadratic interpolation the coefficients are:
+%
+%     Rm = 0.5 * p * (p - 1) + alpha
+%     Ro = (1 - p^2)         - 2 * alpha
+%     Rp = 0.5 * p * (p + 1) + alpha
+%
+%     Sm = 0.5 * q * (q - 1) + alpha
+%     So = (1 - q^2)         - 2 * alpha
+%     Sp = 0.5 * q * (q + 1) + alpha
+%  
+% where      alpha = [(1/rfactor)^2 - 1] / 24       for rfactor > 0
+%                                                   (conservative)
+%
+%            alpha = 0                              for rfactor = 0
+%
+% The quadratic interpolation weights for all water points are:
+%
+%     W(1,:) = Rm * Sm
+%     W(2,:) = Ro * Sm
+%     W(3,:) = Rp * Sm
+%     W(4,:) = Rm * So
+%     W(5,:) = Ro * So
+%     W(6,:) = Rp * So
+%     W(7,:) = Rm * Sp
+%     W(8,:) = Ro * Sp
+%     W(9,:) = Rp * Sp
+%
+% In ROMS, the quadratic interpolation is carried out as:
+%
+%     F(Irg, Jrg) = W(1,:) * C(Idg-1, Jdg-1) +
+%                   W(2,:) * C(Idg  , Jdg-1) +
+%                   W(3,:) * C(Idg+1, Jdg-1) +
+%                   W(4,:) * C(Idg-1, Jdg  ) +
+%                   W(5,:) * C(Idg  , Jdg  ) +
+%                   W(6,:) * C(Idg+1, Jdg  ) +
+%                   W(7,:) * C(Idg-1, Jdg+1) +
+%                   W(8,:) * C(Idg  , Jdg+1) +
+%                   W(9,:) * C(Idg+1, Jdg+1)
+%
+
+% Initalize.
+
+Npoints = length(p);
+index1  = index2 - 1;                % (Idg-1, Jdg-1)
+index3  = index2 + 1;                % (Idg+1, Jdg-1)
+index4  = index5 - 1;                % (Idg-1, Jdg  )
+index6  = index5 + 1;                % (Idg+1, Jdg  )
+index7  = index8 - 1;                % (Idg-1, Jdg+1)
+index9  = index8 + 1;                % (Idg+1, Jdg+1)
+
+% Compute coefficient for conservative quadratic interpolation.
+
+if (rfactor > 0)
+  alpha = ((1 / rfactor)^2 - 1) / 24;
+else
+  alpha = 0;
+end
+
+% If any of the input fractional distances is NaN, it implies that
+% we were diving by zero in the calling function. Therefore, the
+% contact point is concident to the donor grid physical grid boundary
+% and there are not values at either Idg+1 or Jdg+1.
+
+if (any(isnan(p))),
+  p(isnan(p)) = 0;
+end
+
+if (any(isnan(q))),
+  q(isnan(qr)) = 0;
+end
+
+%--------------------------------------------------------------------------
+% Compute quadratic interpolation weigths.
+%--------------------------------------------------------------------------
+
+W  = zeros([9 Npoints]);
+QW = zeros([1 9]);
+
+Rm = 0.5 .* p .* (p - 1) + alpha;
+Ro = (1 - p .* p)        - 2 * alpha;
+Rp = 0.5 .* p .* (p + 1) + alpha;
+
+Sm = 0.5 .* q .* (q - 1) + alpha;
+So = (1 - q .* q)        - 2 * alpha;
+Sp = 0.5 .* q .* (q + 1) + alpha;
+
+for n=1:Npoints,
+  QW(1) = mask(index1(n)) * Rm(n) * Sm(n);
+  QW(2) = mask(index2(n)) * Ro(n) * Sm(n);
+  QW(3) = mask(index3(n)) * Rp(n) * Sm(n);
+  QW(4) = mask(index4(n)) * Rm(n) * So(n);
+  QW(5) = mask(index5(n)) * Ro(n) * So(n);
+  QW(6) = mask(index6(n)) * Rp(n) * So(n);
+  QW(7) = mask(index7(n)) * Rm(n) * Sp(n);
+  QW(8) = mask(index8(n)) * Ro(n) * Sp(n);
+  QW(9) = mask(index9(n)) * Rp(n) * Sp(n);
+
+  MaskSum = mask(index1(n)) + mask(index2(n)) +  mask(index3(n)) +      ...
+            mask(index4(n)) + mask(index5(n)) +  mask(index6(n)) +      ...
+            mask(index7(n)) + mask(index8(n)) +  mask(index9(n));
+
+  if (MaskSum < 9),            % at least one of the donor points is land
+    QWsum = sum(QW);
+    if (QWsum > 0),
+      QW = QW ./ QWsum;        % using only water points
+    else
+      QW(1:9) = 0;             % all donor points are on land
+    end
+  end
+  
+  W(:,n) = QW;    
 end
 
 % Impose positive zero.
