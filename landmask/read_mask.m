@@ -73,7 +73,9 @@ for n=1:nvars,
     case {Vname.h}
       got.h=true;
     case {Vname.hraw}
-      got.hraw=true;
+      if ~any(V.Variables(n).Size == 0),
+        got.hraw=true;
+      end
     case {Vname.rmask}
       got.rmask=true;
     case {Vname.xr}
