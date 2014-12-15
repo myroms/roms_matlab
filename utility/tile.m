@@ -1,9 +1,9 @@
-function [Istr,Iend,Jstr,Jend]=tile(Lm,Mm,NtileX,NtileE,tile);
+function [Istr,Iend,Jstr,Jend]=tile(Lm,Mm,NtileX,NtileE,tile,varargin);
       
 %
 % TILE:  Compute ROMS parallel horizontal tile partitions
 %
-% [Istr,Iend,Jstr,Jend]=tile(Lm,Mm,NtileX,NtileE,tile);
+% [Istr,Iend,Jstr,Jend]=tile(Lm,Mm,NtileX,NtileE,tile,verbose);
 %
 % This function computes parallel tile partitions in grid units.
 %
@@ -14,6 +14,7 @@ function [Istr,Iend,Jstr,Jend]=tile(Lm,Mm,NtileX,NtileE,tile);
 %    NtileI      Number of parallel partitions in the I-direction
 %    NtileJ      Number of parallel partitions in the J-direction
 %    tile        Tile number (0 <= tile <= NtileI*NtileJ-1)
+%    verbose     display information (optional, default=true)
 %
 % On Output:
 %
@@ -29,6 +30,13 @@ function [Istr,Iend,Jstr,Jend]=tile(Lm,Mm,NtileX,NtileE,tile);
 %    Licensed under a MIT/X style license                                   %
 %    See License_ROMS.txt                           Hernan G. Arango        %
 %===========================================================================%
+
+verbose=true;
+
+switch numel(varargin)
+  case 1
+    verbose=varargin{1};
+end
 
 %---------------------------------------------------------------------------
 % Compute tile(s) starting and ending indices.
@@ -52,16 +60,18 @@ Jend=Jstr+ChunkSizeE-1;
 Jstr=max(Jstr,1);
 Jend=min(Jend,Mm);
 
-disp(' ');
-for i=1:length(tile),
-  disp([' tile: ',  num2str(tile(i),'%2.2i'), '  ', ...
-	' Itile = ', num2str(itile(i),'%2.2i'), ...
-        ' Jtile = ', num2str(jtile(i),'%2.2i'), ...
-	' Istr = ', num2str(Istr(i),'%3.3i'), ...
-        ' Iend = ', num2str(Iend(i),'%3.3i'), ...
-        ' Jstr = ', num2str(Jstr(i),'%3.3i'), ...
-        ' Jend = ', num2str(Jend(i),'%3.3i')]);
-end,
-disp(' ');
+if (verbose),
+  disp(' ');
+  for i=1:length(tile),
+    disp([' tile: ',  num2str(tile(i),'%2.2i'), '  ', ...
+	  ' Itile = ', num2str(itile(i),'%2.2i'), ...
+          ' Jtile = ', num2str(jtile(i),'%2.2i'), ...
+          ' Istr = ', num2str(Istr(i),'%3.3i'), ...
+          ' Iend = ', num2str(Iend(i),'%3.3i'), ...
+          ' Jstr = ', num2str(Jstr(i),'%3.3i'), ...
+          ' Jend = ', num2str(Jend(i),'%3.3i')]);
+  end
+  disp(' ');
+end
 
 return

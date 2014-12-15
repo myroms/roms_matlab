@@ -342,14 +342,20 @@ S = boundary_contact(S);
 %--------------------------------------------------------------------------
 % Set contact points horizontal interpolation weights.
 %--------------------------------------------------------------------------
+%
+% The weights are not scaled according to the land/sea mask.  This is done
+% in ROMS because the land/sea masking time dependecy when wetting and
+% drying is activated for an application.
 
-S = Hweights(G, S);
+ImposeMask = false;
+
+S = Hweights(G, S, ImposeMask);
 
 %--------------------------------------------------------------------------
 % Create and write out Contact Point data into output NetCDF file.
 %--------------------------------------------------------------------------
 
-write_contact(Cname, S);
+write_contact(Cname, S, G);
 
 %--------------------------------------------------------------------------
 % Plot contact areas and contact points.
@@ -2367,7 +2373,7 @@ return
 
 %--------------------------------------------------------------------------
 
-function S = Hweights(G, Sinp)
+function S = Hweights(G, Sinp, ImposeMask)
 
 %
 % S = Hweights(G, Sinp)
@@ -2381,6 +2387,8 @@ function S = Hweights(G, Sinp)
 %    G          Nested grids fields structure (struct array)
 %
 %    Sinp       Nested grids information structure (struct array)
+%
+%    ImposeMask Switch to scale weights with the land/sea mask.
 %
 % On Output:
 %
@@ -2478,12 +2486,12 @@ for cr=1:Ncontact,
 
     S.Lweights(cr).H_rho = linear_weights(pr, qr,                       ...
                                           RindexO, RindexR, RindexT,    ...
-                                          G(dg).mask_rho);
+                                          ImposeMask, G(dg).mask_rho);
 
     S.Qweights(cr).H_rho = quadratic_weights(1-pr, qr,                  ...
                                              RindexB, RindexO, RindexT, ...
                                              S.grid(rg).refine_factor,  ...
-                                             G(dg).mask_rho);
+                                             ImposeMask, G(dg).mask_rho);
 
   end
 
@@ -2547,12 +2555,12 @@ for cr=1:Ncontact,
       
     S.Lweights(cr).H_u = linear_weights(pu, qu,                         ...
                                         UindexO, UindexR, UindexT,      ...
-                                        G(dg).mask_u);
+                                        ImposeMask, G(dg).mask_u);
 
     S.Qweights(cr).H_u = quadratic_weights(1-pu, qu,                    ...
                                            UindexB, UindexO, UindexT,   ...
                                            S.grid(rg).refine_factor,    ...
-                                           G(dg).mask_u);
+                                           ImposeMask, G(dg).mask_u);
 
   end
 
@@ -2615,12 +2623,12 @@ for cr=1:Ncontact,
       
     S.Lweights(cr).H_v = linear_weights(pv, qv,                         ...
                                         VindexO, VindexR, VindexT,      ...
-                                        G(dg).mask_v);
+                                        ImposeMask, G(dg).mask_v);
 
     S.Qweights(cr).H_v = quadratic_weights(1-pv, qv,                    ...
                                            VindexB, VindexO, VindexT,   ...
                                            S.grid(rg).refine_factor,    ...
-                                           G(dg).mask_v);
+                                           ImposeMask, G(dg).mask_v);
   end
 
 % Debugging.
@@ -2891,10 +2899,10 @@ return
 
 %--------------------------------------------------------------------------
 
-function W = linear_weights(p, q, index1, index2, index4, mask)
+function W = linear_weights(p, q, index1, index2, index4, ImposeMask, mask)
 
 %
-% W = linear_weights(p, q, index1, index2, index4, mask)
+% W = linear_weights(p, q, index1, index2, index4, ImposeMask, mask)
 %
 % This function computes the contact points horizontal linear
 % interpolation weights given the fractional distances (p,q) from
@@ -2920,6 +2928,8 @@ function W = linear_weights(p, q, index1, index2, index4, mask)
 %    index4     Single linear indexes for 2D subscripts in donor
 %                 grid cell corner 4 (Idg,Jdg+1) for each contact
 %                 point (vector).
+%
+%    ImposeMask Switch to scale weights with the land/sea mask.
 %
 %    mask       Donor grid land/sea masking (2D array).
 %
@@ -2999,18 +3009,20 @@ for n=1:Npoints,
   LW(3) = mask(index3(n)) * p(n) * q(n);
   LW(4) = mask(index4(n)) * (1 -p(n)) * q(n);
 
-  MaskSum = mask(index1(n)) + mask(index2(n)) +                         ...
-            mask(index3(n)) + mask(index4(n));
+  if (ImposeMask),
+    MaskSum = mask(index1(n)) + mask(index2(n)) +                       ...
+              mask(index3(n)) + mask(index4(n));
 
-  if (MaskSum < 4),                  % at least one of the corners is land
-    LWsum = sum(LW);
-    if (LWsum > 0),
-      LW = LW ./ LWsum;              % using only water points
-    else
-      LW(1:4) = 0;                   % all donor grid corners are on land
+    if (MaskSum < 4),                % at least one of the corners is land
+      LWsum = sum(LW);
+      if (LWsum > 0),
+        LW = LW ./ LWsum;            % using only water points
+      else
+        LW(1:4) = 0;                 % all donor grid corners are on land
+      end
     end
   end
-  
+    
   W(:,n) = LW;
 end
 
@@ -3032,10 +3044,12 @@ return
 
 %--------------------------------------------------------------------------
 
-function W = quadratic_weights(p, q, index2, index5, index8, rfactor, mask)
+function W = quadratic_weights(p, q, index2, index5, index8, rfactor,   ...
+                               ImposeMask, mask)
 
 %
-% W = quadratic_weights(p, q, index2, index5, index8, rfactor, mask)
+% W = quadratic_weights(p, q, index2, index5, index8, rfactor,
+%                       ImposeMask, mask)
 %
 % This function computes the contact points horizontal quadratic
 % interpolation weights given the fractional distances (p,q) from
@@ -3075,6 +3089,8 @@ function W = quadratic_weights(p, q, index2, index5, index8, rfactor, mask)
 %
 %                 rfactor > 0      conservative quadratic interpolation
 %                                  (refine grids)
+%
+%    ImposeMask Switch to scale weights with the land/sea mask.
 %
 %    mask       Donor grid land/sea masking (2D array).
 %
@@ -3221,16 +3237,18 @@ for n=1:Npoints,
   QW(8) = mask(index8(n)) * Ro(n) * Sp(n);
   QW(9) = mask(index9(n)) * Rp(n) * Sp(n);
 
-  MaskSum = mask(index1(n)) + mask(index2(n)) +  mask(index3(n)) +      ...
-            mask(index4(n)) + mask(index5(n)) +  mask(index6(n)) +      ...
-            mask(index7(n)) + mask(index8(n)) +  mask(index9(n));
+  if (ImposeMask),
+    MaskSum = mask(index1(n)) + mask(index2(n)) +  mask(index3(n)) +    ...
+              mask(index4(n)) + mask(index5(n)) +  mask(index6(n)) +    ...
+              mask(index7(n)) + mask(index8(n)) +  mask(index9(n));
 
-  if (MaskSum < 9),            % at least one of the donor points is land
-    QWsum = sum(QW);
-    if (QWsum > 0),
-      QW = QW ./ QWsum;        % using only water points
-    else
-      QW(1:9) = 0;             % all donor points are on land
+    if (MaskSum < 9),          % at least one of the donor points is land
+      QWsum = sum(QW);
+      if (QWsum > 0),
+        QW = QW ./ QWsum;      % using only water points
+      else
+        QW(1:9) = 0;           % all donor points are on land
+      end
     end
   end
   
