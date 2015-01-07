@@ -44,7 +44,7 @@ function f = nc_read(ncfile, Vname, Tindex, ReplaceValue, PreserveType)
 
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2014 The ROMS/TOMS Group                            %
+%  Copyright (c) 2002-2015 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.txt                           Hernan G. Arango      %
 %=========================================================================%
