@@ -42,7 +42,7 @@ function S = nc_vnames(fname)
 
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2015 The ROMS/TOMS Group                            %
+%  Copyright (c) 2002-2016 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.txt                           Hernan G. Arango      %
 %=========================================================================%
