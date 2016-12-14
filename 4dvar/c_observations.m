@@ -361,7 +361,7 @@ clear Var
 Var.name          = Vname.type;
 Var.type          = nc_constant('nc_int');
 Var.dimid         = [did.datum];
-Var.long          = 'model state variable associated with observations';
+Var.long_name     = 'model state variable associated with observations';
 Var.flag_values   = S.state_flag_values;
 Var.flag_meanings = S.state_flag_meanings;
 [~,status]=nc_vdef(ncid,Var);
