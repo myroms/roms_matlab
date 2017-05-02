@@ -11,6 +11,9 @@
 %   d_observations    - Driver to process 4D-Var observation NetCDF file.
 %
 %
+%   obs_extract       - Extracts and creates observation NetCDF files
+%                       from input data assimilation observation NetCDF
+%                       files at the requested interval.
 %   obs_read          - Reads observation NetCDF file and load all data
 %                         into a structure array.
 %   obs_write         - Writes all observation data in structure array into

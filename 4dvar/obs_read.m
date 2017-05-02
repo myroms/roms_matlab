@@ -65,6 +65,12 @@ function [S]=obs_read(ncfile);
 S=[];
 
 %----------------------------------------------------------------------------
+%  Inquire input observations NetCDF file.
+%----------------------------------------------------------------------------
+
+I=nc_inq(ncfile);
+
+%----------------------------------------------------------------------------
 %  Read in all available variables.
 %----------------------------------------------------------------------------
 
@@ -77,6 +83,7 @@ S.Nstate=0;
 S.Ndatum=0;
 
 got.provenance=0;
+got.label=0;
 
 %  Insure that read vector variables have the singleton in the first
 %  dimension to allow vector concatenation when merging several datasets.
@@ -114,6 +121,12 @@ for n=1:nvars,
         S.provenance=transpose(S.provenance);
       end,
       got.provenance=1;
+    case 'obs_label'
+      S.label=nc_read(ncfile,'obs_label');
+      if (size(S.label,1) > 1),
+        S.label=transpose(S.label);
+      end,
+      got.label=1;
     case 'obs_time'
       S.time=nc_read(ncfile,'obs_time');
       if (size(S.time,1) > 1),
@@ -170,72 +183,95 @@ end,
 %  Read in 'flag_values' and 'flag_meanings attributes for variable
 %  'obs_type'.
 
-Avalue=nc_getatt(ncfile,'flag_values','obs_type');
-if (~isempty(Avalue)),
-  S.state_flag_values=Avalue;
-end,
+ivar=strcmp({I.Variables.Name},'obs_type');
+if (strcmp({I.Variables(ivar).Attributes.Name},'flag_values')),
+  Avalue=nc_getatt(ncfile,'flag_values','obs_type');
+  if (~isempty(Avalue)),
+    S.state_flag_values=Avalue;
+  end
+end
 
-Avalue=nc_getatt(ncfile,'flag_meanings','obs_type');
-if (~isempty(Avalue)),
-  S.state_flag_meanings=Avalue;
-end,
+ivar=strcmp({I.Variables.Name},'obs_type');
+if (strcmp({I.Variables(ivar).Attributes.Name},'flag_meanings')),
+  Avalue=nc_getatt(ncfile,'flag_meanings','obs_type');
+  if (~isempty(Avalue)),
+    S.state_flag_meanings=Avalue;
+  end
+end
 
 %  Read in 'flag_values' and 'flag_meanings attributes for variable
 %  'obs_provenace'.
 
 if (got.provenance), 
-  Avalue=nc_getatt(ncfile,'flag_values','obs_provenance');
-  if (~isempty(Avalue)),
-    S.origin_flag_values=Avalue;
-  end,
+  ivar=strcmp({I.Variables.Name},'obs_provenance');
+  if (strcmp({I.Variables(ivar).Attributes.Name},'flag_values')),
+    Avalue=nc_getatt(ncfile,'flag_values','obs_provenance');
+    if (~isempty(Avalue)),
+      S.origin_flag_values=Avalue;
+    end
+  end
 
-  Avalue=nc_getatt(ncfile,'flag_meanings','obs_provenance');
-  if (~isempty(Avalue)),
-    S.origin_flag_meanings=Avalue;
-  end,
-end,
-
+  ivar=strcmp({I.Variables.Name},'obs_provenance');
+  if (strcmp({I.Variables(ivar).Attributes.Name},'flag_meanings')),
+    Avalue=nc_getatt(ncfile,'flag_meanings','obs_provenance');
+    if (~isempty(Avalue)),
+      S.origin_flag_meanings=Avalue;
+    end
+  end
+end
+  
 % Read in 'title' global attribute.
 
-Avalue=nc_getatt(ncfile,'title');
-if (~isempty(Avalue)),
-  S.title=Avalue;
-end,
+if (strcmp({I.Attributes.Name},'title')),
+  Avalue=nc_getatt(ncfile,'title');
+  if (~isempty(Avalue)),
+    S.title=Avalue;
+  end
+end
 
 % Read in 'grd_file' global attribute.
 
-Avalue=nc_getatt(ncfile,'grd_file');
-if (~isempty(Avalue)),
-  S.grd_file=Avalue;
-end,
+if (strcmp({I.Attributes.Name},'grd_file')),
+  Avalue=nc_getatt(ncfile,'grd_file');
+  if (~isempty(Avalue)),
+    S.grd_file=Avalue;
+  end
+end
 
 % Read in 'grid_Lm_Mm_N' global attribute.
 
-Avalue=nc_getatt(ncfile,'grid_Lm_Mm_N');
-if (~isempty(Avalue)),
-  S.grid_Lm_Mm_N=int32(Avalue);
-end,
+if (strcmp({I.Attributes.Name},'grd_Lm_Mm_N')),
+  Avalue=nc_getatt(ncfile,'grid_Lm_Mm_N');
+  if (~isempty(Avalue)),
+    S.grid_Lm_Mm_N=int32(Avalue);
+  end
+end
 
 % Read in 'state_variables' global attribute.
 
-Avalue=nc_getatt(ncfile,'state_variables');
-if (~isempty(Avalue)),
-  S.global_variables=Avalue;
-end,
+if (strcmp({I.Attributes.Name},'state_variables')),
+  Avalue=nc_getatt(ncfile,'state_variables');
+  if (~isempty(Avalue)),
+    S.global_variables=Avalue;
+  end
+end
 
 % Read in 'obs_provenance' global attribute.
 
-Avalue=nc_getatt(ncfile,'obs_provenance');
-if (~isempty(Avalue)),
-  S.global_provenance=Avalue;
-end,
+if (strcmp({I.Attributes.Name},'obs_provenance')),
+  Avalue=nc_getatt(ncfile,'obs_provenance');
+  if (~isempty(Avalue)),
+    S.global_provenance=Avalue;
+  end
+end
 
 % Read in 'obs_sources' global attribute.
 
-Avalue=nc_getatt(ncfile,'obs_sources');
-if (~isempty(Avalue)),
-  S.global_sources=Avalue;
-end,
-
+if (strcmp({I.Attributes.Name},'obs_sources')),
+  Avalue=nc_getatt(ncfile,'obs_sources');
+  if (~isempty(Avalue)),
+    S.global_sources=Avalue;
+  end
+end
 
 return

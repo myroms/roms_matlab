@@ -44,7 +44,19 @@
 %                     tightly contains the Target Grid.
 %
 %   uv_barotropic - Computes vertically integrated velocity components
-%                      for ROMS full grid or boundaries.
+%                     for ROMS full grid or boundaries.
+%
+% Color Palettes:
+%
+%   inferno       - A 256 colormap by Nathaniel J. Smith and Stefan van
+%                     der Walt.
+%   magma         - A 256 colormap by Nathaniel J. Smith and Stefan van
+%                     der Walt.
+%   plasma        - A 256 colormap by Nathaniel J. Smith and Stefan van
+%                     der Walt.
+%   viridis       - A 256 colormap by Eric Firing.
+%   vivid         - A personalized colormap bh Joseph Kirk.
+%   zebra         - A banded colormap by S.B. Hooker et al. (1995).
 %
 % Filters:
 %
@@ -67,12 +79,15 @@
 %   caldate      - Converts Julian day number to calendar date structure.
 %   date_stamp   - Sets current date string.
 %   day_code     - Computes day of the week for a given date.
+%   daynum       - Calculates date number from date (ROMS Version).
+%   dayvec       - Calculates date from a date number (ROMS Version).
 %   gregorian    - Converts Julian day number to Gregorian calendar date.
 %   greg2str     - Converts Gregorian date array to string.
 %   hms2h        - Converts hours, minutes, and seconds to decimal hours.
 %   julian       - Converts Gregorian calendar date to Julian day numbers.
 %   s2hms        - Converts decimal seconds to integer hour, minute,
 %                    seconds.
+%   yearday      - Computes the day of the year.
 %
 % Parallelism:
 %

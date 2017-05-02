@@ -810,6 +810,73 @@ switch Vname
     V.Cgridtype.Value         = 1;
     V.Datatype                = 'double';
     V.ncType                  = nc_constant('nc_double');
+  case 'rdrag'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'linear bottom drag coefficient';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter second-1';
+    V.Attributes(3).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(3).Value   = 'lon_rho lat_rho';
+    else
+      V.Attributes(3).Value   = 'x_rho y_rho';
+    end      
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'rdrag2'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'quadratic bottom drag coefficient';
+    V.Attributes(2).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(2).Value   = 'lon_rho lat_rho';
+    else
+      V.Attributes(2).Value   = 'x_rho y_rho';
+    end      
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'ZoBot'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'time invariant, bottom roughness length';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter';
+    V.Attributes(3).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(3).Value   = 'lon_rho lat_rho';
+    else
+      V.Attributes(3).Value   = 'x_rho y_rho';
+    end      
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
     
 %--------------------------------------------------------------------------
 %  Boundary conditions grid variables.
@@ -4416,6 +4483,45 @@ switch Vname
     V.Datatype                = Datatype;
     V.ncType                  = nc_constant(nctype);
 
+%--------------------------------------------------------------------------
+%  Inert passive tracer variables.
+%--------------------------------------------------------------------------   
+  
+  case {'dye_01', 'dye_02', 'dye_03', 'dye_04',                         ...
+        'dye_05', 'dye_06', 'dye_07', 'dye_08'}
+    class = textscan(Vname, 'dye_ %d');
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 's_rho';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = false;
+    V.Dimensions(4).Name      = 'ocean_time';
+    V.Dimensions(4).Length    = [];
+    V.Dimensions(4).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = ['dye concentration, ',                 ...
+                                 num2str(class{:}, '%2.2i')];
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'kilogram meter-3';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'ocean_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho lat_rho s_rho ocean_time';
+    else
+      V.Attributes(4).Value   = 'x_rho y_rho s_rho ocean_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+       
 %--------------------------------------------------------------------------
 %  Sediment state variables.
 %--------------------------------------------------------------------------

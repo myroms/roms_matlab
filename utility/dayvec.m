@@ -1,0 +1,79 @@
+function [V]=dayvec(dnum)
+
+% DAYVEC: Calculates date from a date number (ROMS Version).
+%
+% [V]=dayvec(dnum)
+%
+% Converts a given date number as computed by "daynum" to a date vector
+% (year, month, day, hour, minutes, seconds).  It is the inverse function
+% to "daynum".  It is equivalent the native "datevec" function.
+%                                     
+% On Input:
+%
+%    dnum       Day numever computed from function "daynum"
+%     
+% On Output:
+%
+%    V          Date structure:
+%
+%                 V.daynum          input day number
+%                 V.yday            day of the year
+%                 V.year            year including century
+%                 V.month           month of the year
+%                 V.day             day of the month
+%                 V.hour            hour of the day
+%                 V.minutes         minutes of the hour
+%                 V.seconds         second of the minute
+%
+% Adapted from Gary Katch, Concordia University, Canada.
+%
+%    https://alcor.concordia.ca/~gpkatch/gdate-algorithm.html
+
+% svn $Id$
+%===========================================================================%
+%  Copyright (c) 2002-2017 The ROMS/TOMS Group                              %
+%    Licensed under a MIT/X style license                                   %
+%    See License_ROMS.txt                           Hernan G. Arango        %
+%===========================================================================%
+
+% Use variable precision arithmetic (vpa).
+
+dfrac=vpa(dnum-fix(dnum));
+d=fix(dnum);
+  
+year = fix((10000*d + 14780)/3652425)
+ddd = d - (365*year + fix(year/4) - fix(year/100) + fix(year/400))
+if (ddd < 0)
+ year = year - 1
+ ddd = d - (365*year + fix(year/4) - fix(year/100) + fix(year/400))
+end
+mi = fix((100*ddd + 52)/3060)
+month = fix(mod(mi + 2,12)) + 1
+year = year + fix((mi + 2)/12)
+day = ddd - fix((mi*306 + 5)/10) + 1
+
+s=(dfrac*86400d0)
+Hour=fix((s/3600d0))
+Minutes=fix((mod(s,3600d0)/60d0))
+Seconds=round(mod(s,60d0))
+
+if (mod(year,4) == 0 && mod(year,100) ~= 0 || mod(year,400) == 0)
+  fac=1d0;                                           ! leap year
+else
+  fac=2d0;
+end
+yday = fix((275.0*month)/9) - fac*fix((month+9)/12) + day - 30;
+
+V = struct('daynum',[], 'yday',[], 'year',[], 'month',[],               ...
+	   'day', [], 'hour', [], 'minutes',0, 'seconds',0);
+
+V.daynum  = dnum;
+V.yday    = yday;
+V.year    = year;
+V.month   = month;
+V.day     = day;
+V.hour    = double(Hour);
+V.minutes = double(Minutes);
+V.seconds = double(Seconds);
+
+return
