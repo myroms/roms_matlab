@@ -87,6 +87,8 @@
 %   julian       - Converts Gregorian calendar date to Julian day numbers.
 %   s2hms        - Converts decimal seconds to integer hour, minute,
 %                    seconds.
+%   tround       - Floating-point rounding function with a fuzzy or
+%                    tolerant floor function.
 %   yearday      - Computes the day of the year.
 %
 % Parallelism:

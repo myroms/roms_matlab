@@ -30,50 +30,64 @@ function [V]=dayvec(dnum)
 %    https://alcor.concordia.ca/~gpkatch/gdate-algorithm.html
 
 % svn $Id$
-%===========================================================================%
-%  Copyright (c) 2002-2017 The ROMS/TOMS Group                              %
-%    Licensed under a MIT/X style license                                   %
-%    See License_ROMS.txt                           Hernan G. Arango        %
-%===========================================================================%
+%=========================================================================%
+%  Copyright (c) 2002-2017 The ROMS/TOMS Group                            %
+%    Licensed under a MIT/X style license                                 %
+%    See License_ROMS.txt                           Hernan G. Arango      %
+%=========================================================================%
 
 % Use variable precision arithmetic (vpa).
 
 dfrac=vpa(dnum-fix(dnum));
 d=fix(dnum);
   
-year = fix((10000*d + 14780)/3652425)
-ddd = d - (365*year + fix(year/4) - fix(year/100) + fix(year/400))
+year = fix((10000*d + 14780)/3652425);
+ddd = d - (365*year + fix(year/4) - fix(year/100) + fix(year/400));
 if (ddd < 0)
- year = year - 1
- ddd = d - (365*year + fix(year/4) - fix(year/100) + fix(year/400))
+ year = year - 1;
+ ddd = d - (365*year + fix(year/4) - fix(year/100) + fix(year/400));
 end
-mi = fix((100*ddd + 52)/3060)
-month = fix(mod(mi + 2,12)) + 1
-year = year + fix((mi + 2)/12)
-day = ddd - fix((mi*306 + 5)/10) + 1
+mi = fix((100*ddd + 52)/3060);
+month = fix(mod(mi + 2,12)) + 1;
+year = year + fix((mi + 2)/12);
+day = ddd - fix((mi*306 + 5)/10) + 1;
 
-s=(dfrac*86400d0)
-Hour=fix((s/3600d0))
-Minutes=fix((mod(s,3600d0)/60d0))
-Seconds=round(mod(s,60d0))
+s=(dfrac*86400d0);
+s=tround(s, 3*eps(double(s)));
+Hour=fix((s/3600d0));
+s=abs(s-Hour*3600d0);
+Minutes=fix(s/60.0d0);
+Seconds=abs(s-Minutes*60d0);
 
 if (mod(year,4) == 0 && mod(year,100) ~= 0 || mod(year,400) == 0)
-  fac=1d0;                                           ! leap year
+  fac=1d0;                                           % leap year
+  leap='true';
 else
   fac=2d0;
+  leap='false';
 end
 yday = fix((275.0*month)/9) - fac*fix((month+9)/12) + day - 30;
 
-V = struct('daynum',[], 'yday',[], 'year',[], 'month',[],               ...
-	   'day', [], 'hour', [], 'minutes',0, 'seconds',0);
+string = [num2str(year,  '%4.4i'), '-',                                 ...
+          num2str(month, '%2.2i'), '-',                                 ...
+          num2str(day  , '%2.2i'), ' ',                                 ...
+          num2str(double(Hour), '%2.2i'), ':',                          ...
+          num2str(double(Minutes), '%2.2i'), ':',                       ...
+          num2str(double(Seconds), '%5.2f')];
+	  
+V = struct('daynum',[], 'leap_year', [],'yday',[], 'year',[],           ...
+	   'month',[], 'day', [], 'hour', [],                           ...
+           'minutes',0, 'seconds',0, 'string', []);
 
-V.daynum  = dnum;
-V.yday    = yday;
-V.year    = year;
-V.month   = month;
-V.day     = day;
-V.hour    = double(Hour);
-V.minutes = double(Minutes);
-V.seconds = double(Seconds);
+V.daynum    = dnum;
+V.leap_year = leap;
+V.yday      = yday;
+V.year      = year;
+V.month     = month;
+V.day       = day;
+V.hour      = double(Hour);
+V.minutes   = double(Minutes);
+V.seconds   = double(Seconds);
+V.string    = string;
 
 return
