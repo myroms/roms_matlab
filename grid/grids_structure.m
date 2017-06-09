@@ -24,7 +24,7 @@ function G = grids_structure(Gnames, Hnames)
 %
 % If the coastline information is needed in the output structure array,
 % you need to provide the Grid NetCDF files in Gnames. These data is not
-% available in histr=ory files. Of course, the coastline variables
+% available in history files. Of course, the coastline variables
 % (lon_coast, lat_coast) need to be in the Grid NetCDF file(s).  It is
 % very good idea to have the coastline data used when processing grids.
 % The script "add_coastline.m" can be used to append such data.

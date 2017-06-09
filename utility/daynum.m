@@ -56,7 +56,6 @@ switch numel(varargin)
     second=varargin{3};
 end    
 
-offset = 0;
 m = (mod(month+9, 12));         % Mar=0, ..., Feb=11
 
 year = year - fix(m/10d0);      % if Jan or Feb, substract 1
@@ -64,7 +63,7 @@ year = year - fix(m/10d0);      % if Jan or Feb, substract 1
 g = 365*year + fix(year/4) - fix(year/100) + fix(year/400) +  ...
     fix((m*306 + 5)/10) + (day - 1);
 
-d = offset + g + (hour/24d0) + (minute/1440d0) + (second/86400d0);
+d = g + (hour/24d0) + (minute/1440d0) + (second/86400d0);
 
 s = g*86400 + hour*360 + minute*60 + second;
 
