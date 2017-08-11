@@ -46,6 +46,8 @@
 %                      variables and attributes stored in the structure.
 %                      This structure can be created using "nc_inq" or
 %                      nativ function "ncinfo".
+%   nc_dfixed      - Creates a new NetCDF file with the requested record
+%                      unlimited dimension changed to fixed dimension.
 %   nc_dinfo       - Inquires about the dimensions in a NetCDF file.
 %   nc_drename     - Renames a NetCDF dimension.
 %   nc_getatt      - Gets a global or variable NetCDF attribute.

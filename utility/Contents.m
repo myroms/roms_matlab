@@ -46,18 +46,6 @@
 %   uv_barotropic - Computes vertically integrated velocity components
 %                     for ROMS full grid or boundaries.
 %
-% Color Palettes:
-%
-%   inferno       - A 256 colormap by Nathaniel J. Smith and Stefan van
-%                     der Walt.
-%   magma         - A 256 colormap by Nathaniel J. Smith and Stefan van
-%                     der Walt.
-%   plasma        - A 256 colormap by Nathaniel J. Smith and Stefan van
-%                     der Walt.
-%   viridis       - A 256 colormap by Eric Firing.
-%   vivid         - A personalized colormap bh Joseph Kirk.
-%   zebra         - A banded colormap by S.B. Hooker et al. (1995).
-%
 % Filters:
 %
 %   shapiro1      - 1D Shapiro filter.
