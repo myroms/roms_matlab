@@ -26,9 +26,15 @@ function [hour,min,sec]=s2hms(secs);
 %    See License_ROMS.txt                               Rich Signell        %
 %===========================================================================%
 
-sec=round(secs);
-hour=floor(sec/3600);
-min=floor(rem(sec,3600)/60);
-sec=round(rem(sec,60));
+%sec=round(secs);
+%hour=floor(sec/3600);
+%min=floor(rem(sec,3600)/60);
+%sec=round(rem(sec,60));
+
+sec = secs;
+hour = fix(sec / 3600);
+sec = sec - 3600*hour;
+min = fix(sec / 60);
+sec = sec - 60*min;
 
 return
