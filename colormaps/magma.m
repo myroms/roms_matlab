@@ -2,13 +2,17 @@ function cmap = magma(varargin)
 
 % MAGMA: 256 color palette
 %
-% cmap = magma()
+% cmap = magma(M)
 %
 % Magma colormap by Nathaniel J. Smith and Stefan van der Walt.
 %
+% On Input:
+%
+%    M        Number of colors (integer, OPTIONAL)
+%
 % On Ouput:
 %
-%    cmap     256x3 colormap matrix
+%    cmap     Mx3 colormap matrix
 %
 % Usage:
 %
@@ -22,6 +26,17 @@ function cmap = magma(varargin)
 %    Licensed under a MIT/X style license                                   %
 %    See License_ROMS.txt                           Hernan G. Arango        %
 %===========================================================================%
+
+% Initialize.
+
+switch numel(varargin)
+  case 0
+    M = 256;
+  case 1
+    M = varargin{1};
+end
+
+% Set 256 colormap.
 
 cmap = [[0.001462, 0.000466, 0.013866],
         [0.002258, 0.001295, 0.018331],
@@ -279,5 +294,13 @@ cmap = [[0.001462, 0.000466, 0.013866],
         [0.987691, 0.977154, 0.734536],
         [0.987387, 0.984288, 0.742002],
         [0.987053, 0.991438, 0.749504]];
+
+% Interpolate to requested number of colors.
+
+P = size(cmap,1);
+
+if (P ~= M)
+  cmap = interp1(1:size(cmap,1), cmap, linspace(1,P,M), 'linear');
+end
 
 return

@@ -2,13 +2,17 @@ function cmap = viridis(varargin)
 
 % VIRIDIS: 256 color palette
 %
-% cmap = viridis()
+% cmap = viridis(M)
 %
 % Viridis colormap by Eric Firing.
 %
+% On Input:
+%
+%    M        Number of colors (integer, OPTIONAL)
+%
 % On Ouput:
 %
-%    cmap     256x3 colormap matrix
+%    cmap     Mx3 colormap matrix
 %
 % Usage:
 %
@@ -22,6 +26,17 @@ function cmap = viridis(varargin)
 %    Licensed under a MIT/X style license                                   %
 %    See License_ROMS.txt                           Hernan G. Arango        %
 %===========================================================================%
+
+% Initialize.
+
+switch numel(varargin)
+  case 0
+    M = 256;
+  case 1
+    M = varargin{1};
+end
+
+% Set 256 colormap.
 
 cmap = [[0.267004, 0.004874, 0.329415],
         [0.268510, 0.009605, 0.335427],
@@ -279,5 +294,13 @@ cmap = [[0.267004, 0.004874, 0.329415],
         [0.974417, 0.903590, 0.130215],
         [0.983868, 0.904867, 0.136897],
         [0.993248, 0.906157, 0.143936]];
+
+% Interpolate to requested number of colors.
+
+P = size(cmap,1);
+
+if (P ~= M)
+  cmap = interp1(1:size(cmap,1), cmap, linspace(1,P,M), 'linear');
+end
 
 return

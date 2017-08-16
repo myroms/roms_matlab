@@ -2,13 +2,17 @@ function cmap = cm_curl(varargin)
 
 % CM_CURL: 256 color palette from CMOCEAN
 %
-% cmap = cm_curl()
+% cmap = cm_curl(M)
+%
+% On Input:
+%
+%    M        Number of colors (integer, OPTIONAL)
 %
 % CURL colormap by Kristen Thyng.
 %
 % On Ouput:
 %
-%    cmap     256x3 colormap matrix
+%    cmap     Mx3 colormap matrix
 %
 % Usage:
 %
@@ -23,6 +27,16 @@ function cmap = cm_curl(varargin)
 % 
 
 % svn $Id$
+% Initialize.
+
+switch numel(varargin)
+  case 0
+    M = 256;
+  case 1
+    M = varargin{1};
+end
+
+% Set 256 colormap.
 
 cmap = [[8.225559928700268419e-02, 1.149244079727295142e-01, 2.647901677800857390e-01],
         [8.312616532498406929e-02, 1.190383729463048712e-01, 2.668628892216621806e-01],
@@ -536,5 +550,13 @@ cmap = [[8.225559928700268419e-02, 1.149244079727295142e-01, 2.64790167780085739
         [2.131352588343927157e-01, 5.385491895770589538e-02, 2.173030574920574165e-01],
         [2.082620235717315138e-01, 5.257438772048273617e-02, 2.129328977906284059e-01],
         [2.034002463374002811e-01, 5.125715285178860520e-02, 2.085372063771265272e-01]];
+
+% Interpolate to requested number of colors.
+
+P = size(cmap,1);
+
+if (P ~= M)
+  cmap = interp1(1:size(cmap,1), cmap, linspace(1,P,M), 'linear');
+end
 
 return

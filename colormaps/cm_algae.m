@@ -2,13 +2,17 @@ function cmap = cm_algae(varargin)
 
 % CM_ALGAE: 256 color palette from CMOCEAN
 %
-% cmap = cm_algae()
+% cmap = cm_algae(M)
 %
 % ALGAE colormap by Kristen Thyng.
 %
+% On Input:
+%
+%    M        Number of colors (integer, OPTIONAL)
+%
 % On Ouput:
 %
-%    cmap     256x3 colormap matrix
+%    cmap     Mx3 colormap matrix
 %
 % Usage:
 %
@@ -23,6 +27,17 @@ function cmap = cm_algae(varargin)
 % 
 
 % svn $Id$
+
+% Initialize.
+
+switch numel(varargin)
+  case 0
+    M = 256;
+  case 1
+    M = varargin{1};
+end
+
+% Set 256 colormap.
 
 cmap = [[8.429022637670927631e-01, 9.769128443086748659e-01, 8.146495714674897304e-01],
         [8.379898654100343958e-01, 9.732407342044756549e-01, 8.088430556678033456e-01],
@@ -280,6 +295,14 @@ cmap = [[8.429022637670927631e-01, 9.769128443086748659e-01, 8.14649571467489730
         [7.158041455970551303e-02, 1.488655123209624287e-01, 8.459734502497687214e-02],
         [7.022733114464504989e-02, 1.454810031009998728e-01, 8.182251708486179553e-02],
         [6.885643403782271132e-02, 1.420894601159049808e-01, 7.903362825094448207e-02]];
+
+% Interpolate to requested number of colors.
+
+P = size(cmap,1);
+
+if (P ~= M)
+  cmap = interp1(1:size(cmap,1), cmap, linspace(1,P,M), 'linear');
+end
 
 return
 

@@ -2,9 +2,13 @@ function cmap = cm_tempo(varargin)
 
 % CM_TEMPO: 256 color palette from CMOCEAN
 %
-% cmap = cm_tempo()
+% cmap = cm_tempo(M)
 %
 % TEMPO colormap by Kristen Thyng.
+%
+% On Input:
+%
+%    M        Number of colors (integer, OPTIONAL)
 %
 % On Ouput:
 %
@@ -23,6 +27,17 @@ function cmap = cm_tempo(varargin)
 % 
 
 % svn $Id$
+
+% Initialize.
+
+switch numel(varargin)
+  case 0
+    M = 256;
+  case 1
+    M = varargin{1};
+end
+
+% Set 256 colormap.
 
 cmap = [[9.985763296811461798e-01, 9.632965417140263442e-01, 9.577895036430327247e-01],
         [9.934918422996558141e-01, 9.594375624216472387e-01, 9.516983192548315040e-01],
@@ -280,5 +295,13 @@ cmap = [[9.985763296811461798e-01, 9.632965417140263442e-01, 9.57789503643032724
         [8.400180885962132971e-02, 1.231074880892656653e-01, 2.689526699064171411e-01],
         [8.312616532498406929e-02, 1.190383729463048712e-01, 2.668628892216621806e-01],
         [8.225559928700268419e-02, 1.149244079727295142e-01, 2.647901677800857390e-01]];
+
+% Interpolate to requested number of colors.
+
+P = size(cmap,1);
+
+if (P ~= M)
+  cmap = interp1(1:size(cmap,1), cmap, linspace(1,P,M), 'linear');
+end
 
 return

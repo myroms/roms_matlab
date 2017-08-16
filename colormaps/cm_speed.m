@@ -2,13 +2,17 @@ function cmap = cm_speed(varargin)
 
 % CM_SPEED: 256 color palette from CMOCEAN
 %
-% cmap = cm_speed()
+% cmap = cm_speed(M)
 %
 % SPEED colormap by Kristen Thyng.
 %
+% On Input:
+%
+%    M        Number of colors (integer, OPTIONAL)
+%
 % On Ouput:
 %
-%    cmap     256x3 colormap matrix
+%    cmap     Mx3 colormap matrix
 %
 % Usage:
 %
@@ -23,6 +27,17 @@ function cmap = cm_speed(varargin)
 % 
 
 % svn $Id$
+
+% Initialize.
+
+switch numel(varargin)
+  case 0
+    M = 256;
+  case 1
+    M = varargin{1};
+end
+
+% Set 256 colormap.
 
 cmap = [[9.996253193176977137e-01, 9.913711226010460953e-01, 8.041012438578545307e-01],
         [9.969312990878144154e-01, 9.865865913107011442e-01, 7.958196545688069889e-01],
@@ -280,5 +295,13 @@ cmap = [[9.996253193176977137e-01, 9.913711226010460953e-01, 8.04101243857854530
         [9.241015243151923242e-02, 1.447574737795673805e-01, 7.947496936453349314e-02],
         [9.149313879389489590e-02, 1.410504572025015335e-01, 7.638732537156053826e-02],
         [9.053276383981978537e-02, 1.373386075843833487e-01, 7.325761429945673586e-02]];
+
+% Interpolate to requested number of colors.
+
+P = size(cmap,1);
+
+if (P ~= M)
+  cmap = interp1(1:size(cmap,1), cmap, linspace(1,P,M), 'linear');
+end
 
 return

@@ -2,13 +2,17 @@ function cmap = inferno(varargin)
 
 % INFERNO: 256 color palette 
 %
-% cmap = inferno()
+% cmap = inferno(M)
 %
 % Inferno colormap by Nathaniel J. Smith and Stefan van der Walt.
 %
+% On Input:
+%
+%    M        Number of colors (integer, OPTIONAL)
+%
 % On Ouput:
 %
-%    cmap     256x3 colormap matrix
+%    cmap     Mx3 colormap matrix
 %
 % Usage:
 %
@@ -22,6 +26,17 @@ function cmap = inferno(varargin)
 %    Licensed under a MIT/X style license                                   %
 %    See License_ROMS.txt                           Hernan G. Arango        %
 %===========================================================================%
+
+% Initialize.
+
+switch numel(varargin)
+  case 0
+    M = 256;
+  case 1
+    M = varargin{1};
+end
+
+% Set 256 colormap.
 
 cmap = [[0.001462, 0.000466, 0.013866],
         [0.002267, 0.001270, 0.018570],
@@ -279,5 +294,13 @@ cmap = [[0.001462, 0.000466, 0.013866],
         [0.976511, 0.989753, 0.616760],
         [0.982257, 0.994109, 0.631017],
         [0.988362, 0.998364, 0.644924]];
+
+% Interpolate to requested number of colors.
+
+P = size(cmap,1);
+
+if (P ~= M)
+  cmap = interp1(1:size(cmap,1), cmap, linspace(1,P,M), 'linear');
+end
 
 return

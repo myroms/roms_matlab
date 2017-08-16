@@ -2,13 +2,17 @@ function cmap = plasma(varargin)
 
 % PLASMA: 256 color palette
 %
-% cmap = plasma()
+% cmap = plasma(M)
 %
 % Plasma colormap by Nathaniel J. Smith and Stefan van der Walt.
 %
+% On Input:
+%
+%    M        Number of colors (integer, OPTIONAL)
+%
 % On Ouput:
 %
-%    cmap     256x3 colormap matrix
+%    cmap     Mx3 colormap matrix
 %
 % Usage:
 %
@@ -23,6 +27,16 @@ function cmap = plasma(varargin)
 %    See License_ROMS.txt                           Hernan G. Arango        %
 %===========================================================================%
 
+% Initialize.
+
+switch numel(varargin)
+  case 0
+    M = 256;
+  case 1
+    M = varargin{1};
+end
+
+% Set 256 colormap.
 
 cmap = [[0.050383, 0.029803, 0.527975],
         [0.063536, 0.028426, 0.533124],
@@ -280,5 +294,13 @@ cmap = [[0.050383, 0.029803, 0.527975],
         [0.944152, 0.961916, 0.146861],
         [0.941896, 0.968590, 0.140956],
         [0.940015, 0.975158, 0.131326]];
+
+% Interpolate to requested number of colors.
+
+P = size(cmap,1);
+
+if (P ~= M)
+  cmap = interp1(1:size(cmap,1), cmap, linspace(1,P,M), 'linear');
+end
 
 return

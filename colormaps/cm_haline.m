@@ -2,13 +2,17 @@ function cmap = cm_haline(varargin)
 
 % CM_HALINE: 256 color palette from CMOCEAN
 %
-% cmap = cm_haline()
+% cmap = cm_haline(M)
 %
 % HALINE colormap by Kristen Thyng.
 %
+% On Input:
+%
+%    M        Number of colors (integer, OPTIONAL)
+%
 % On Ouput:
 %
-%    cmap     256x3 colormap matrix
+%    cmap     Mx3 colormap matrix
 %
 % Usage:
 %
@@ -23,6 +27,17 @@ function cmap = cm_haline(varargin)
 % 
 
 % svn $Id$
+
+% Initialize.
+
+switch numel(varargin)
+  case 0
+    M = 256;
+  case 1
+    M = varargin{1};
+end
+
+% Set 256 colormap.
 
 cmap = [[1.629529545569048110e-01, 9.521591660747855124e-02, 4.225729247643043585e-01],
         [1.648101130638113809e-01, 9.635115909727909322e-02, 4.318459659833655540e-01],
@@ -280,5 +295,13 @@ cmap = [[1.629529545569048110e-01, 9.521591660747855124e-02, 4.22572924764304358
         [9.808627042040826138e-01, 9.317124815536732552e-01, 5.875425838151492330e-01],
         [9.874684104099172854e-01, 9.342202886448683907e-01, 5.950648878797101249e-01],
         [9.940805805099582892e-01, 9.367275819156850591e-01, 6.026699962989522374e-01]];
+
+% Interpolate to requested number of colors.
+
+P = size(cmap,1);
+
+if (P ~= M)
+  cmap = interp1(1:size(cmap,1), cmap, linspace(1,P,M), 'linear');
+end
 
 return

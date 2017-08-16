@@ -2,13 +2,17 @@ function cmap = cm_oxy(varargin)
 
 % CM_OXY: 256 color palette from CMOCEAN
 %
-% cmap = cm_oxy()
+% cmap = cm_oxy(M)
 %
 % OXY colormap by Kristen Thyng.
 %
+% On Input:
+%
+%    M        Number of colors (integer, OPTIONAL)
+%
 % On Ouput:
 %
-%    cmap     256x3 colormap matrix
+%    cmap     Mx3 colormap matrix
 %
 % Usage:
 %
@@ -23,6 +27,17 @@ function cmap = cm_oxy(varargin)
 % 
 
 % svn $Id$
+
+% Initialize.
+
+switch numel(varargin)
+  case 0
+    M = 256;
+  case 1
+    M = varargin{1};
+end
+
+% Set 256 colormap.
 
 cmap = [[2.503217690585841648e-01, 2.046237300762866404e-02, 1.966891524096342492e-02],
         [2.555648459031592545e-01, 2.111591456205731687e-02, 2.090007960568026485e-02],
@@ -280,5 +295,13 @@ cmap = [[2.503217690585841648e-01, 2.046237300762866404e-02, 1.96689152409634249
         [8.680428176626151515e-01, 6.956348241211850469e-01, 1.038977462027144416e-01],
         [8.664728647912948167e-01, 6.908014665312249836e-01, 1.019343675562955354e-01],
         [8.648889520799001307e-01, 6.859800077414488495e-01, 9.998838514326469085e-02]];
+
+% Interpolate to requested number of colors.
+
+P = size(cmap,1);
+
+if (P ~= M)
+  cmap = interp1(1:size(cmap,1), cmap, linspace(1,P,M), 'linear');
+end
 
 return

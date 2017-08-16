@@ -2,13 +2,17 @@ function cmap = cm_delta(varargin)
 
 % CM_DELTA: 512 color palette from CMOCEAN
 %
-% cmap = cm_delta()
+% cmap = cm_delta(M)
 %
 % DELTA colormap by Kristen Thyng.
 %
+% On Input:
+%
+%    M        Number of colors (integer, OPTIONAL)
+%
 % On Ouput:
 %
-%    cmap     512x3 colormap matrix
+%    cmap     Mx3 colormap matrix
 %
 % Usage:
 %
@@ -23,6 +27,17 @@ function cmap = cm_delta(varargin)
 % 
 
 % svn $Id$
+
+% Initialize.
+
+switch numel(varargin)
+  case 0
+    M = 512;
+  case 1
+    M = varargin{1};
+end
+
+% Set 512 colormap.
 
 cmap = [[6.597738601379860013e-02, 1.238600499381984077e-01, 2.494811599712867811e-01],
         [6.865757658541371544e-02, 1.266324956800233548e-01, 2.555762447808356264e-01],
@@ -536,5 +551,13 @@ cmap = [[6.597738601379860013e-02, 1.238600499381984077e-01, 2.49481159971286781
         [9.241015243151923242e-02, 1.447574737795673805e-01, 7.947496936453349314e-02],
         [9.149313879389489590e-02, 1.410504572025015335e-01, 7.638732537156053826e-02],
         [9.053276383981978537e-02, 1.373386075843833487e-01, 7.325761429945673586e-02]];
+
+% Interpolate to requested number of colors.
+
+P = size(cmap,1);
+
+if (P ~= M)
+  cmap = interp1(1:size(cmap,1), cmap, linspace(1,P,M), 'linear');
+end
 
 return

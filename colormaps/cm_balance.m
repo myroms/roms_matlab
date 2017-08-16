@@ -2,13 +2,17 @@ function cmap = cm_balance(varargin)
 
 % CM_BALANCE: 256 color palette from CMOCEAN
 %
-% cmap = cm_balance()
+% cmap = cm_balance(M)
 %
 % BALANCE colormap by Kristen Thyng.
 %
+% On Input:
+%
+%    M        Number of colors (integer, OPTIONAL)
+%
 % On Ouput:
 %
-%    cmap     256x3 colormap matrix
+%    cmap     Mx3 colormap matrix
 %
 % Usage:
 %
@@ -23,7 +27,18 @@ function cmap = cm_balance(varargin)
 % 
 
 % svn $Id$
-  
+
+% Initialize.
+
+switch numel(varargin)
+  case 0
+    M = 256;
+  case 1
+    M = varargin{1};
+end
+
+% Set 256 colormap.
+
 cmap = [[9.317630180115785143e-02, 1.111733294776027225e-01, 2.615123885530547532e-01],
         [9.697151501690241815e-02, 1.168702109792841837e-01, 2.730963071061036085e-01],
         [1.009688451686782534e-01, 1.223931506799195018e-01, 2.849103610759459171e-01],
@@ -280,5 +295,13 @@ cmap = [[9.317630180115785143e-02, 1.111733294776027225e-01, 2.61512388553054753
         [2.558840557281191197e-01, 3.990046570244704105e-02, 7.972236454569985031e-02],
         [2.459622220783502511e-01, 3.762595141506584057e-02, 7.461913567560218841e-02],
         [2.360563646646140490e-01, 3.529747994604028744e-02, 6.943744239412558139e-02]];
+
+% Interpolate to requested number of colors.
+
+P = size(cmap,1);
+
+if (P ~= M)
+  cmap = interp1(1:size(cmap,1), cmap, linspace(1,P,M), 'linear');
+end
 
 return

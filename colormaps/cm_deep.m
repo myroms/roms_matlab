@@ -2,13 +2,17 @@ function cmap = cm_deep(varargin)
 
 % CM_DEEP: 256 color palette from CMOCEAN
 %
-% cmap = cm_deep()
+% cmap = cm_deep(M)
 %
 % DEEP colormap by Kristen Thyng.
 %
+% On Input:
+%
+%    M        Number of colors (integer, OPTIONAL)
+%
 % On Ouput:
 %
-%    cmap     256x3 colormap matrix
+%    cmap     Mx3 colormap matrix
 %
 % Usage:
 %
@@ -23,6 +27,17 @@ function cmap = cm_deep(varargin)
 % 
 
 % svn $Id$
+
+% Initialize.
+
+switch numel(varargin)
+  case 0
+    M = 256;
+  case 1
+    M = varargin{1};
+end
+
+% Set 256 colormap.
   
 cmap = [[9.928371765383620096e-01, 9.943734553013935384e-01, 8.001361955494933342e-01],
         [9.849374457410008388e-01, 9.913545172197536504e-01, 7.953271573982337861e-01],
@@ -280,5 +295,13 @@ cmap = [[9.928371765383620096e-01, 9.943734553013935384e-01, 8.00136195549493334
         [1.614878059346168959e-01, 1.086331782717616379e-01, 1.834416540200605461e-01],
         [1.587995102818766935e-01, 1.056281331759973130e-01, 1.780821476813713722e-01],
         [1.561019746507273376e-01, 1.026082525875711138e-01, 1.727215696232307918e-01]];
+
+% Interpolate to requested number of colors.
+
+P = size(cmap,1);
+
+if (P ~= M)
+  cmap = interp1(1:size(cmap,1), cmap, linspace(1,P,M), 'linear');
+end
 
 return

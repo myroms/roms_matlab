@@ -30,9 +30,9 @@ function cmap = cmocean(ColormapName,varargin)
 %          'dense'                    OTHERS:
 %          'algae'                    'inferno'
 %          'matter'                   'magma'
-%          'turbid'                   'plasma'
-%          'speed'                    'viridis'
-%          'amp'
+%          'turbid'                   'parula'    (Matlab default)
+%          'speed'                    'plasma'
+%          'amp'                      'viridis'
 %          'tempo'
 %
 % cmap = cmocean('-ColormapName') a minus sign preceeding any ColormapName flips the
@@ -106,7 +106,7 @@ function cmap = cmocean(ColormapName,varargin)
 %          cm_algae,  cm_amp,   cm_balance, cm_curl,  cm_deep,    cm_delta,
 %          cm_dense,  cm_gray,  cm_haline,  cm_ice,   cm_matter,  cm_oxy
 %          cm_phase,  cm_solar, cm_speed,   cm_tempo, cm_thermal, cm_turbid,
-%          inferno,   magma,    plasma,     viridis.
+%          inferno,   magma,    parula,     plasma,   viridis.
   
 % svn $Id$
 
@@ -212,6 +212,8 @@ switch lower(ColormapName(1:3))
       cmap = cm_matter;
    case 'oxy' 
       cmap = cm_oxy;
+   case 'par' 
+      cmap = parula;          % Matlab default
    case 'pha' 
       cmap = cm_phase;
    case 'pla' 

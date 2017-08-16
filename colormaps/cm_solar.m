@@ -2,13 +2,17 @@ function cmap = cm_solar(varargin)
 
 % CM_SOLAR: 256 color palette from CMOCEAN
 %
-% cmap = cm_solar()
+% cmap = cm_solar(M)
 %
 % SOLAR colormap by Kristen Thyng.
 %
+% On Input:
+%
+%    M        Number of colors (integer, OPTIONAL)
+%
 % On Ouput:
 %
-%    cmap     256x3 colormap matrix
+%    cmap     Mx3 colormap matrix
 %
 % Usage:
 %
@@ -23,6 +27,17 @@ function cmap = cm_solar(varargin)
 % 
 
 % svn $Id$
+
+% Initialize.
+
+switch numel(varargin)
+  case 0
+    M = 256;
+  case 1
+    M = varargin{1};
+end
+
+% Set 256 colormap.
 
 cmap = [[2.014250997833959556e-01, 7.730778455372402935e-02, 9.342024025258441333e-02],
         [2.062319592710875060e-01, 7.906207768979725548e-02, 9.541606071998920413e-02],
@@ -280,5 +295,13 @@ cmap = [[2.014250997833959556e-01, 7.730778455372402935e-02, 9.34202402525844133
         [8.802811281654138176e-01, 9.829160047653974219e-01, 2.882122575277183407e-01],
         [8.804129372223431504e-01, 9.884419266545670935e-01, 2.909276978215925569e-01],
         [8.805080058500511786e-01, 9.939881188401472611e-01, 2.936474048368232226e-01]];
+
+% Interpolate to requested number of colors.
+
+P = size(cmap,1);
+
+if (P ~= M)
+  cmap = interp1(1:size(cmap,1), cmap, linspace(1,P,M), 'linear');
+end
 
 return

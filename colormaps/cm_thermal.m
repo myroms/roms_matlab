@@ -2,13 +2,17 @@ function cmap = cm_thermal(varargin)
 
 % CM_THERMAL: 256 color palette from CMOCEAN
 %
-% cmap = cm_thermal()
+% cmap = cm_thermal(M)
 %
 % THERMAL colormap by Kristen Thyng.
 %
+% On Input:
+%
+%    M        Number of colors (integer, OPTIONAL)
+%
 % On Ouput:
 %
-%    cmap     256x3 colormap matrix
+%    cmap     Mx3 colormap matrix
 %
 % Usage:
 %
@@ -23,6 +27,17 @@ function cmap = cm_thermal(varargin)
 % 
 
 % svn $Id$
+
+% Initialize.
+
+switch numel(varargin)
+  case 0
+    M = 256;
+  case 1
+    M = varargin{1};
+end
+
+% Set 256 colormap.
 
 cmap = [[1.555601333154079877e-02, 1.382442454646408414e-01, 2.018108864558305071e-01],
         [1.620183633850513089e-02, 1.410507428866217272e-01, 2.089765125440807836e-01],
@@ -280,5 +295,13 @@ cmap = [[1.555601333154079877e-02, 1.382442454646408414e-01, 2.01810886455830507
         [9.156931782520092433e-01, 9.685354904254356301e-01, 3.482056900726151483e-01],
         [9.124490701578419349e-01, 9.753266872784461805e-01, 3.518533597970244786e-01],
         [9.090418416674036495e-01, 9.821574063216705897e-01, 3.555078064299531104e-01]];
+
+% Interpolate to requested number of colors.
+
+P = size(cmap,1);
+
+if (P ~= M)
+  cmap = interp1(1:size(cmap,1), cmap, linspace(1,P,M), 'linear');
+end
 
 return

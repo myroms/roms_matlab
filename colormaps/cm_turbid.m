@@ -2,13 +2,17 @@ function cmap = cm_turbid(varargin)
 
 % CM_TURBID: 256 color palette from CMOCEAN
 %
-% cmap = cm_turbid()
+% cmap = cm_turbid(M)
 %
 % TURBID colormap by Kristen Thyng.
 %
+% On Input:
+%
+%    M        Number of colors (integer, OPTIONAL)
+%
 % On Ouput:
 %
-%    cmap     256x3 colormap matrix
+%    cmap     Mx3 colormap matrix
 %
 % Usage:
 %
@@ -24,6 +28,16 @@ function cmap = cm_turbid(varargin)
 
 % svn $Id$
   
+% Initialize.
+
+switch numel(varargin)
+  case 0
+    M = 256;
+  case 1
+    M = varargin{1};
+end
+
+% Set 256 colormap.
 
 cmap = [[9.128247827303703765e-01, 9.639053479101408195e-01, 6.723488894068933019e-01],
         [9.105541439463002984e-01, 9.592872094872512134e-01, 6.663907644186453094e-01],
@@ -281,5 +295,13 @@ cmap = [[9.128247827303703765e-01, 9.639053479101408195e-01, 6.72348889406893301
         [1.417824484273444985e-01, 1.250035003675231404e-01, 1.101417246101454861e-01],
         [1.378861632611661503e-01, 1.223645204774909678e-01, 1.081750159008208478e-01],
         [1.339921324751868759e-01, 1.197113766395997425e-01, 1.061926684632616136e-01]];
+
+% Interpolate to requested number of colors.
+
+P = size(cmap,1);
+
+if (P ~= M)
+  cmap = interp1(1:size(cmap,1), cmap, linspace(1,P,M), 'linear');
+end
 
 return

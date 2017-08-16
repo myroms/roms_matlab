@@ -2,13 +2,17 @@ function cmap = cm_phase(varargin)
 
 % CM_PHASE: 256 color palette from CMOCEAN
 %
-% cmap = cm_phase()
+% cmap = cm_phase(M)
 %
 % PHASE colormap by Kristen Thyng.
 %
+% On Input:
+%
+%    M        Number of colors (integer, OPTIONAL)
+%
 % On Ouput:
 %
-%    cmap     256x3 colormap matrix
+%    cmap     Mx3 colormap matrix
 %
 % Usage:
 %
@@ -23,6 +27,17 @@ function cmap = cm_phase(varargin)
 % 
 
 % svn $Id$
+
+% Initialize.
+
+switch numel(varargin)
+  case 0
+    M = 256;
+  case 1
+    M = varargin{1};
+end
+
+% Set 256 colormap.
 
 cmap = [[6.583083928922510708e-01, 4.699391690315133929e-01, 4.941288203988051381e-02],
         [6.643374189373471017e-01, 4.662019008569991407e-01, 5.766473450402211792e-02],
@@ -280,5 +295,13 @@ cmap = [[6.583083928922510708e-01, 4.699391690315133929e-01, 4.94128820398805138
         [6.440757220432393737e-01, 4.781157049081125598e-01, 5.119960076823739520e-02],
         [6.512128893528150719e-01, 4.740624350126631525e-01, 5.044367478760234530e-02],
         [6.583083928921535932e-01, 4.699391690315524728e-01, 4.941288204103298082e-02]];
+
+% Interpolate to requested number of colors.
+
+P = size(cmap,1);
+
+if (P ~= M)
+  cmap = interp1(1:size(cmap,1), cmap, linspace(1,P,M), 'linear');
+end
 
 return

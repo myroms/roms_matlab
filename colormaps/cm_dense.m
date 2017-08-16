@@ -2,13 +2,17 @@ function cmap = cm_dense(varargin)
 
 % CM_DENSE: 256 color palette from CMOCEAN
 %
-% cmap = cm_dense()
+% cmap = cm_dense(M)
 %
 % DENSE colormap by Kristen Thyng.
 %
+% On Input:
+%
+%    M        Number of colors (integer, OPTIONAL)
+%
 % On Ouput:
 %
-%    cmap     256x3 colormap matrix
+%    cmap     Mx3 colormap matrix
 %
 % Usage:
 %
@@ -23,6 +27,17 @@ function cmap = cm_dense(varargin)
 % 
 
 % svn $Id$
+
+% Initialize.
+
+switch numel(varargin)
+  case 0
+    M = 256;
+  case 1
+    M = varargin{1};
+end
+
+% Set 256 colormap.
 
 cmap = [[9.022021640633741679e-01, 9.441797977915000750e-01, 9.438027309131502562e-01],
         [8.954445384876381642e-01, 9.409578903665054561e-01, 9.410648759794842944e-01],
@@ -280,5 +295,13 @@ cmap = [[9.022021640633741679e-01, 9.441797977915000750e-01, 9.43802730913150256
         [2.226121431237116921e-01, 5.808842465569693386e-02, 1.511590815358170026e-01],
         [2.178074381899826051e-01, 5.700049790743180050e-02, 1.466558187034970040e-01],
         [2.129839422000848193e-01, 5.589168645699472276e-02, 1.422095068240733784e-01]];
+
+% Interpolate to requested number of colors.
+
+P = size(cmap,1);
+
+if (P ~= M)
+  cmap = interp1(1:size(cmap,1), cmap, linspace(1,P,M), 'linear');
+end
 
 return

@@ -2,13 +2,18 @@ function cmap = cm_ice(varargin)
 
 % CM_ICE: 256 color palette from CMOCEAN
 %
-% cmap = cm_ice()
+% cmap = cm_ice(M)
 %
 % ICE colormap by Kristen Thyng.
 %
+%
+% On Input:
+%
+%    M        Number of colors (integer, OPTIONAL)
+%
 % On Ouput:
 %
-%    cmap     256x3 colormap matrix
+%    cmap     Mx3 colormap matrix
 %
 % Usage:
 %
@@ -23,6 +28,17 @@ function cmap = cm_ice(varargin)
 % 
 
 % svn $Id$
+
+% Initialize.
+
+switch numel(varargin)
+  case 0
+    M = 256;
+  case 1
+    M = varargin{1};
+end
+
+% Set 256 colormap.
 
 cmap = [[1.531167435543729846e-02, 2.252059388699531942e-02, 7.272873735907764425e-02],
         [1.800549591959003243e-02, 2.544551608389769570e-02, 7.841879116825511975e-02],
@@ -280,5 +296,13 @@ cmap = [[1.531167435543729846e-02, 2.252059388699531942e-02, 7.27287373590776442
         [9.045013427138774986e-01, 9.831399005223971921e-01, 9.860005773650694083e-01],
         [9.113300542301955298e-01, 9.874449459956177177e-01, 9.894442642623689776e-01],
         [9.180592960081255249e-01, 9.918135358838490179e-01, 9.928328638314803944e-01]];
+
+% Interpolate to requested number of colors.
+
+P = size(cmap,1);
+
+if (P ~= M)
+  cmap = interp1(1:size(cmap,1), cmap, linspace(1,P,M), 'linear');
+end
 
 return
