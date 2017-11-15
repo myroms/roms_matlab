@@ -36,6 +36,7 @@ function [z,s,C]=scoord(h, x, y, Vtransform, Vstretching, ...
 %                    Vstretching = 2,  A. Shchepetkin (UCLA-ROMS, 2005)
 %                    Vstretching = 3,  R. Geyer BBL refinement
 %                    Vstretching = 4,  A. Shchepetkin (UCLA-ROMS, 2010)
+%                    Vstretching = 5,  Quadractic (Souza et al., 2015)
 %    theta_s       S-coordinate surface control parameter (scalar)
 %    theta_b       S-coordinate bottom control parameter (scalar)
 %    hc            Width (m) of surface or bottom boundary layer in which
@@ -100,7 +101,7 @@ if (Vtransform < 1 | Vtransform > 2),
   return
 end,
 
-if (Vstretching < 1 | Vstretching > 4),
+if (Vstretching < 1 | Vstretching > 5),
   disp(' ');
   disp([setstr(7),'*** Error:  SCOORD - Illegal parameter Vstretching = ' ...
         num2str(Vstretching), setstr(7)]);
