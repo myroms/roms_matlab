@@ -55,103 +55,103 @@ inorth = 4;           % northern edge
 
 % If compact extraction, determine the size of the IorJ dimension.
 
-if (compact),
+if (compact)
   D = nc_dinfo(ncfile);
 
-  for n=1:length(D),
+  for n=1:length(D)
     name = char(D(n).Name);
     switch name
-      case 'xi_rho',
+      case 'xi_rho'
         Lr = D(n).Length;
-      case 'xi_u',
+      case 'xi_u'
         Lu = D(n).Length;
-      case 'xi_v',
+      case 'xi_v'
         Lv = D(n).Length;
-      case 'eta_rho',
+      case 'eta_rho'
         Mr = D(n).Length;
-      case 'eta_u',
+      case 'eta_u'
         Mu = D(n).Length;
-      case 'eta_v',
+      case 'eta_v'
         Mv = D(n).Length;
-      case 's_rho',
+      case 's_rho'
         Nr = D(n).Length;
-      case 's_w',
+      case 's_w'
         Nw = D(n).Length;
-    end,
-  end,
+    end
+  end
   IorJ = max(Lr, Mr);      %  maximum RHO-points value of X- or Y-direction
-end,  
+end  
 
 %----------------------------------------------------------------------------
 %  Extract boundary edges into a compact array, used in 4D-Var.
 %----------------------------------------------------------------------------
 
-if (compact),
+if (compact)
 
   F = nc_read(ncfile, vname, rec);
   
-  if (size(F) == 2),                                           % 2D fields
+  if (size(F) == 2)                                            % 2D fields
     [Im, Jm] = size(F);
     B = zeros(IorJ, 4);
-    if ((Im == Lu) && (Jm == Mu)),                             % U-points
+    if ((Im == Lu) && (Jm == Mu))                              % U-points
       B(1:Jm  ,iwest ) = squeeze(F(1   ,1:Jm));
       B(2:Im+1,isouth) = squeeze(F(1:Im,1   ));
       B(1:Jm  ,ieast ) = squeeze(F(Im  ,1:Jm));
       B(2:Im+1,inorth) = squeeze(F(1:Im,Jm  ));
-    elseif ((Im == Lv) && (Jm == Mv)),                         % V-points
+    elseif ((Im == Lv) && (Jm == Mv))                          % V-points
       B(2:Jm+1,iwest ) = squeeze(F(1   ,1:Jm));
       B(1:Im  ,isouth) = squeeze(F(1:Im,1   ));
       B(2:Jm+1,ieast ) = squeeze(F(Im  ,1:Jm));
       B(1:Im  ,inorth) = squeeze(F(1:Im,Jm  ));
-    else,                                                      % RHO-points
+    else                                                       % RHO-points
       B(1:Jm  ,iwest ) = squeeze(F(1   ,1:Jm));
       B(1:Im  ,isouth) = squeeze(F(1:Im,1   ));
       B(1:Jm  ,ieast ) = squeeze(F(Im  ,1:Jm));
       B(1:Im  ,inorth) = squeeze(F(1:Im,Jm  ));
-    end,
-  else,                                                        % 3D fields
+    end
+  else                                                         % 3D fields
     [Im, Jm, Km] = size(F);
     B = zeros(IorJ, Km, 4);
-    if ((Im == Lu) && (Jm == Mu)),                             % U-points
+    if ((Im == Lu) && (Jm == Mu))                              % U-points
       B(1:Jm  ,1:Km,iwest ) = squeeze(F(1   ,1:Jm,1:Km));
       B(2:Im+1,1:Km,isouth) = squeeze(F(1:Im,1   ,1:Km));
       B(1:Jm  ,1:Km,ieast ) = squeeze(F(Im  ,1:Jm,1:Km));
       B(2:Im+1,1:Km,inorth) = squeeze(F(1:Im,Jm  ,1:Km));
-    elseif ((Im == Lv) && (Jm == Mv)),                         % V-points
+    elseif ((Im == Lv) && (Jm == Mv))                          % V-points
       B(2:Jm+1,1:Km,iwest ) = squeeze(F(1   ,1:Jm,1:Km));
       B(1:Im  ,1:Km,isouth) = squeeze(F(1:Im,1   ,1:Km));
       B(2:Jm+1,1:Km,ieast ) = squeeze(F(Im  ,1:Jm,1:Km));
       B(1:Im  ,1:Km,inorth) = squeeze(F(1:Im,Jm  ,1:Km));
-    else,                                                      % RHO-points
+    else                                                       % RHO-points
       B(1:Jm  ,1:Km,iwest ) = squeeze(F(1   ,1:Jm,1:Km));
       B(1:Im  ,1:Km,isouth) = squeeze(F(1:Im,1   ,1:Km));
       B(1:Jm  ,1:Km,ieast ) = squeeze(F(Im  ,1:Jm,1:Km));
       B(1:Im  ,1:Km,inorth) = squeeze(F(1:Im,Jm  ,1:Km));
-    end,
-  end,
+    end
+  end
     
-end,
+end
 
 %----------------------------------------------------------------------------
 %  Extract boundary edges into a compact array, used in open boundary
 %  conditions.
 %----------------------------------------------------------------------------
 
-if (~compact),
+if (~compact)
 
   F = nc_read(ncfile, vname, rec);
 
-  if (size(F) == 2),                                           % 2D fields
+  if (size(F) == 2)                                            % 2D fields
     B.west  = squeeze(F(1  ,:  ));
     B.south = squeeze(F(:  ,1  ));
     B.east  = squeeze(F(end,:  ));
     B.north = squeeze(F(:  ,end));
-  else,                                                        % 3D fields
+  else                                                         % 3D fields
     B.west  = squeeze(F(1  ,:  ,:));
     B.south = squeeze(F(:  ,1  ,:));
     B.east  = squeeze(F(end,:  ,:));
     B.north = squeeze(F(:  ,end,:));
-  end,
-end,
+  end
+end
 
 return

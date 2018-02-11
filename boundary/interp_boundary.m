@@ -8,13 +8,13 @@ function B = interp_boundary(I,varargin)
 % This function interpolates lateral boundary conditions for a ROMS
 % generic 2D or 3D state variable from a Donor to Receiver.
 %  
-% The horizontal interpolation is done with 'TriScatteredInterp'. If the
+% The horizontal interpolation is done with 'scatteredInterpolant'. If the
 % 'RemoveNaN' switch is activated (true), a second interpolation pass is
-% carried out with 'TriScatteredInterp' using the nearest-neighbor method
+% carried out with 'scatteredInterpolant' using the nearest-neighbor method
 % to remove unbounded (NaN) values.
 %  
 % If 3D (vertical) interpolation, the Donor Grid data is interpolated first
-% to the Receiver Grid horizontal locations using 'TriScatteredInterp' at
+% to the Receiver Grid horizontal locations using 'scatteredInterpolant' at
 % each of the Donor Grid vertical levels.  Then,  'interp1'  is used to
 % interpolate to Receiver Grid vertical locations.
 %  
@@ -58,7 +58,7 @@ function B = interp_boundary(I,varargin)
 %                    I.Zsur      shallowest depth for extracpolation (scalar)
 %                    I.Zbot      deepest depth for extracpolation (scalar)
 %                     
-%    Hmethod       Horizontal interpolation method for 'TriScatteredInterp'
+%    Hmethod       Horizontal interpolation method for 'scatteredInterpolant'
 %                    (string):
 %
 %                    'natural'   natural neighbor interpolation
@@ -117,18 +117,18 @@ hvar_list = {'Vname', 'nvdims', 'boundary',                             ...
 
 zvar_list = {'ZD', 'ZR', 'Zsur', 'Zbot'};
 
-for var = hvar_list,
+for var = hvar_list
   field = char(var);
-  if (~isfield(I, field)),
+  if (~isfield(I, field))
     error(['INTERP_BOUNDARY: unable to find field: "',field,'" in ',    ...
            'input structure,  I']);
   end
 end
 
-if (I.nvdims > 2),
-  for var = zvar_list,
+if (I.nvdims > 2)
+  for var = zvar_list
     field = char(var);
-    if (~isfield(I, field)),
+    if (~isfield(I, field))
       error(['INTERP_BOUNDARY: unable to find field: "',field,'" in ',  ...
              'input structure,  I']);
     end
@@ -138,9 +138,9 @@ end
 %  Set report format for all state boundary variables to allow easy
 %  read of reported information
 
-if (isfield(I,'VarList')),
+if (isfield(I,'VarList'))
   lstr = 0;
-  for var = I.VarList,
+  for var = I.VarList
     lstr = max(lstr, length(char(var)));
   end
   frmt = strcat('%',num2str(lstr+6),'s');
@@ -152,18 +152,18 @@ end
 %  Interpolate field variable from Donor to Receiver Grid.
 %--------------------------------------------------------------------------
 
-switch (I.nvdims),
+switch (I.nvdims)
  
   case 2                                % 2D field variable
 
     Ncount = 0;
 
-    x = I.XD(:);                        % TriScatteredInterp wants 1-D
+    x = I.XD(:);                        % scatteredInterpolant wants 1-D
     y = I.YD(:);                        % vectors as inputs
     v = I.VD(:);
 
     Dind = find(I.Dmask < 0.5);    
-    if (~isempty(Dind)),
+    if (~isempty(Dind))
       x(Dind) = [];                     % remove land points, if any
       y(Dind) = [];
       v(Dind) = [];
@@ -171,23 +171,23 @@ switch (I.nvdims),
     Dmin = min(v);
     Dmax = max(v);
    
-    F = TriScatteredInterp(x,y,v,Hmethod);
-    if (RemoveNaN),
-      FN = TriScatteredInterp(x,y,v,'nearest');
+    F = scatteredInterpolant(x,y,v,Hmethod);
+    if (RemoveNaN)
+      FN = scatteredInterpolant(x,y,v,'nearest');
     end
-
-    for side = {'west','east','south','north'},
+    
+    for side = {'west','east','south','north'}
 
       edge = char(side);
       field = strcat(char(I.Vname),'_',edge);
 
-      if (I.boundary.(edge)),
+      if (I.boundary.(edge))
         B.(field) = F(I.XR.(edge), I.YR.(edge));
         Rmin = min(B.(field)(:));
         Rmax = max(B.(field)(:));
     
         Rind = find(I.Rmask.(edge) < 0.5);
-        if (~isempty(Rind)),
+        if (~isempty(Rind))
           B.(field)(Rind) = 0;
         end
 
@@ -196,14 +196,14 @@ switch (I.nvdims),
 
         ind = find(isnan(B.(field)));
 
-        if (~isempty(ind)),
-          if (RemoveNaN),
+        if (~isempty(ind))
+          if (RemoveNaN)
             B.(field)(ind) = FN(I.XR.(edge)(ind), I.YR.(edge)(ind));
             Rmin = min(Rmin, min(B.(field)(ind)));
             Rmax = max(Rmax, max(B.(field)(ind)));
 
             ind = find(isnan(B.(field)));
-            if (~isempty(ind)),
+            if (~isempty(ind))
               Ncount = length(ind);
             end       
           else
@@ -227,10 +227,10 @@ switch (I.nvdims),
   
     KmD = size(I.ZD,3);
 
-%  First, perform horizontal interpolation using 'TriScatteredInterp'
+%  First, perform horizontal interpolation using 'scatteredInterpolant'
 %  at each Donor grid level.
    
-    x = I.XD(:);                       % TriScatteredInterp wants 1-D
+    x = I.XD(:);                       % scatteredInterpolant wants 1-D
     y = I.YD(:);                       % vectors as inputs
 
     Dind = find(I.Dmask < 0.5);
@@ -239,11 +239,11 @@ switch (I.nvdims),
       y(Dind) = [];
     end  
 
-%  Initialize 'TriScatteredInterp objects' for null data (ones).
+%  Initialize 'interpolation objects' for null data (ones).
    
-    F  = TriScatteredInterp(x,y,ones(size(x)),Hmethod);
-    FN = TriScatteredInterp(x,y,ones(size(x)),'nearest');
-   
+    F  = scatteredInterpolant(x,y,ones(size(x)),Hmethod);
+    FN = scatteredInterpolant(x,y,ones(size(x)),'nearest');
+    
 %  Horizontal interpolation at Donor Grid vertical levels
 
     Dmin = Inf;
@@ -257,33 +257,33 @@ switch (I.nvdims),
       zk = I.ZD(:,:,k);                % Donor Grid depths for level k
       zk = zk(:);
      
-      if (~isempty(Dind)),
+      if (~isempty(Dind))
         vk(Dind) = [];
         zk(Dind) = [];
       end
       Dmin = min(Dmin,min(vk));
       Dmax = max(Dmax,max(vk));
      
-      F.V  = vk;                       % place boundary data to interpolate
-      FN.V = vk;                       % for level k in TriScatteredInterp
+      F.Values  = vk;                  % place boundary data to interpolate
+      FN.Values = vk;                  % level k in scatteredInterpolant
                                        % object
 
       for side = {'north','south','east','west'}
 
         edge = char(side);             % interpolate boundary data at
                                        % Receiver Grid horizontal            
-        if (I.boundary.(edge)),        % locations but Donor levels
+        if (I.boundary.(edge))         % locations but Donor levels
           XR = I.XR.(edge);
           YR = I.YR.(edge);
           Vk = F(XR, YR);
                                        
           ind = find(isnan(Vk));
-          if (~isempty(ind)),
-            if (RemoveNaN),
+          if (~isempty(ind))
+            if (RemoveNaN)
               Vk(ind) = FN(XR(ind), YR(ind));
 
               ind = find(isnan(Vk));
-              if (~isempty(ind)),
+              if (~isempty(ind))
                 Kcount = Kcount+length(ind);
               end       
             else
@@ -294,21 +294,21 @@ switch (I.nvdims),
         end
       end
 
-      F.V  = zk;                       % place depths to interpolate for
-      FN.V = zk;                       % level k in TriScatteredInterp
+      F.Values  = zk;                  % place depths to interpolate for
+      FN.Values = zk;                  % level k in scatteredInterpolant
                                        % object
 
       for side = {'north','south','east','west'}
 
         edge = char(side);             % interpolate Donor Grid depths
                                        % at Receiver Grid horizontal          
-        if (I.boundary.(edge)),        % locations but Donor levels
+        if (I.boundary.(edge))         % locations but Donor levels
           XR = I.XR.(edge);
           YR = I.YR.(edge);
           Zk = F(XR, YR);
                                        
           ind = find(isnan(Zk));
-          if (~isempty(ind)),
+          if (~isempty(ind))
             if RemoveNaN
               Zk(ind) = FN(XR(ind), YR(ind));
             end
@@ -325,7 +325,7 @@ switch (I.nvdims),
       edge = char(side);
       field = strcat(I.Vname,'_',edge);
 
-      if (I.boundary.(edge)),
+      if (I.boundary.(edge))
 
         Ncount = 0;
         dsize = size(I.ZR.(edge));
@@ -356,12 +356,12 @@ switch (I.nvdims),
         Rmax = max(VR(:));
 
         Rind = find(repmat(I.Rmask.(edge),[1,1,KmR]) < 0.5);
-        if (~isempty(Rind)),
+        if (~isempty(Rind))
           B.(field)(Rind) = 0;
         end
 	  
         ind = find(isnan(VR));
-        if (~isempty(ind)),
+        if (~isempty(ind))
           Ncount = length(ind);
         end
 

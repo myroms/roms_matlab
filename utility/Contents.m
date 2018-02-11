@@ -68,7 +68,11 @@
 %   date_stamp   - Sets current date string.
 %   day_code     - Computes day of the week for a given date.
 %   daynum       - Calculates date number from date (ROMS Version).
+%   daynum360    - Calculates date number from a 360-day calendar date
+%                    (ROMS Version).
 %   dayvec       - Calculates date from a date number (ROMS Version).
+%   dayvec360    - Calculates date from a date number of the 360-day
+%                    calendar (ROMS Version).
 %   gregorian    - Converts Julian day number to Gregorian calendar date.
 %   greg2str     - Converts Gregorian date array to string.
 %   hms2h        - Converts hours, minutes, and seconds to decimal hours.

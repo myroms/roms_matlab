@@ -447,11 +447,21 @@ if is2d
 
   % Adjoint of interpolation.
 
-  ad_f.field(index1) = ad_f.field(index1) + W1 .* ad_F(:);
-  ad_f.field(index2) = ad_f.field(index2) + W2 .* ad_F(:);
-  ad_f.field(index3) = ad_f.field(index3) + W3 .* ad_F(:);
-  ad_f.field(index4) = ad_f.field(index4) + W4 .* ad_F(:);
-  ad_F = 0;
+  for ii=1:size(index1,1)
+    ad_f.field(index1(ii)) = ad_f.field(index1(ii)) + W1(ii)*ad_F(ii);
+  end
+  for ii=1:size(index2,1)
+    ad_f.field(index2(ii)) = ad_f.field(index2(ii)) + W2(ii)*ad_F(ii);
+  end
+  for ii=1:size(index3,1)
+    ad_f.field(index3(ii)) = ad_f.field(index3(ii)) + W3(ii)*ad_F(ii);
+  end
+  for ii=1:size(index4,1)
+    ad_f.field(index4(ii)) = ad_f.field(index4(ii)) + W4(ii)*ad_F(ii);
+  end
+  for ii=1:size(ad_F,1)
+    ad_F(ii)=0;
+  end
 
 else
 
@@ -474,10 +484,21 @@ else
       ad_Fk = squeeze(ad_F(:,k));
     end
 
-    ad_vartmp(index1) = ad_vartmp(index1) + W1 .* ad_Fk(:);
-    ad_vartmp(index2) = ad_vartmp(index2) + W2 .* ad_Fk(:);
-    ad_vartmp(index3) = ad_vartmp(index3) + W3 .* ad_Fk(:);
-    ad_vartmp(index4) = ad_vartmp(index4) + W4 .* ad_Fk(:);
+    for ii=1:size(index1,1)
+       ad_vartmp(index1(ii)) = ad_vartmp(index1(ii)) + W1(ii) * ad_Fk(ii);
+    end
+    for ii=1:size(index2,1)
+       ad_vartmp(index2(ii)) = ad_vartmp(index2(ii)) + W2(ii) * ad_Fk(ii);
+    end
+    for ii=1:size(index3,1)
+       ad_vartmp(index3(ii)) = ad_vartmp(index3(ii)) + W3(ii) * ad_Fk(ii);
+    end
+    for ii=1:size(index4,1)
+       ad_vartmp(index4(ii)) = ad_vartmp(index4(ii)) + W4(ii) * ad_Fk(ii);
+    end
+    for ii=1:size(ad_Fk,1)
+       ad_Fk(ii)=0;
+    end
 
     if (ndims(ad_F) == 3),
       ad_F(:,:,k) = 0;

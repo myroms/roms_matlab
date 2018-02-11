@@ -6,7 +6,8 @@ function [V]=dayvec(dnum)
 %
 % Converts a given date number as computed by "daynum" to a date vector
 % (year, month, day, hour, minutes, seconds).  It is the inverse function
-% to "daynum".  It is equivalent the native "datevec" function.
+% to "daynum". It is equivalent the native "datevec" function but computed
+% from different equations.
 %                                     
 % On Input:
 %
@@ -36,11 +37,26 @@ function [V]=dayvec(dnum)
 %    See License_ROMS.txt                           Hernan G. Arango      %
 %=========================================================================%
 
+% Set offset to get the same value as Matlat "datenum" function. Matlab
+% origin is 0000-00-00 00:00:00 while for the equations below the origin
+% is 0000-03-01 00:00:00.  The difference is 61 days.
+  
+%offset=0;
+ offset=61;
+
 % Use variable precision arithmetic (vpa).
 
 dfrac=vpa(dnum-fix(dnum));
-d=fix(dnum);
-  
+
+% Substract offset to match Matlab "datestr" values with origin at
+% 0000-00-00 00:00:00
+
+if (dnum < offset)
+  d=fix(dnum-offset+1);
+else
+  d=fix(dnum-offset);
+end
+
 year = fix((10000*d + 14780)/3652425);
 ddd = d - (365*year + fix(year/4) - fix(year/100) + fix(year/400));
 if (ddd < 0)
@@ -68,9 +84,18 @@ else
 end
 yday = fix((275.0*month)/9) - fac*fix((month+9)/12) + day - 30;
 
-string = [num2str(year,  '%4.4i'), '-',                                 ...
-          num2str(month, '%2.2i'), '-',                                 ...
-          num2str(day  , '%2.2i'), ' ',                                 ...
+if (dnum == 0)
+  year=0;               % Fix to match Matlab "datestr" values
+  month=1;              % with origin at 0000-00-00 00:00:00
+  day=0;
+end
+
+mstr = {'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',                       ...
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'};
+
+string = [num2str(day, '%2.2i'), '-',                                   ...
+          char(mstr(month)), '-',                                       ...
+          num2str(year, '%4.4i'), ' ',                                  ...
           num2str(double(Hour), '%2.2i'), ':',                          ...
           num2str(double(Minutes), '%2.2i'), ':',                       ...
           num2str(double(Seconds), '%5.2f')];

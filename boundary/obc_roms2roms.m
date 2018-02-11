@@ -78,12 +78,12 @@ RemoveNaN = false;
 
 switch numel(varargin)
   case 1
-    method = varargin{1};
+    Hmethod = varargin{1};
   case 2
-    method = varargin{1};
+    Hmethod = varargin{1};
     offset = varargin{2};
   case 3
-    method = varargin{1};
+    Hmethod = varargin{1};
     offset = varargin{2};
     RemoveNaN = varargin{3};
 end
@@ -93,8 +93,8 @@ end
 %  processing.
 
 if (~isfield(D,'vector_rotation'))
-  if (isfield(D,'angle')),
-    if (min(D.angle(:)) == 0 && max(D.angle(:)) == 0),
+  if (isfield(D,'angle'))
+    if (min(D.angle(:)) == 0 && max(D.angle(:)) == 0)
       D.vector_rotation = false;
     else
       D.vector_rotation = true;
@@ -105,8 +105,8 @@ if (~isfield(D,'vector_rotation'))
 end
 
 if (~isfield(R,'vector_rotation'))
-  if (isfield(R,'angle')),
-    if (min(R.angle(:)) == 0 && max(R.angle(:)) == 0),
+  if (isfield(R,'angle'))
+    if (min(R.angle(:)) == 0 && max(R.angle(:)) == 0)
       R.vector_rotation = false;
     else
       R.vector_rotation = true;
@@ -125,7 +125,7 @@ Vcomponent = false;
 
 icount = 0;
 
-for var = VarList,
+for var = VarList
 
   Vname  = char(var);
   icount = icount+1;
@@ -152,8 +152,8 @@ for var = VarList,
 %  Check variable dimensions and determine horizontal/vertical
 %  coordinates and Land/Sea mask arrays.
 
-  if (nvdims > 0),
-    for n=1:nvdims,
+  if (nvdims > 0)
+    for n=1:nvdims
       dimnam = char(Info.Dimensions(n).Name);
       switch dimnam
         case 's_rho'
@@ -163,8 +163,8 @@ for var = VarList,
         case {'xi_rho','eta_rho'}
           Mname = 'mask_rho';
           got.Mname = true;
-          if (~(got.Xname || got.Yname)),
-            if (D.spherical),
+          if (~(got.Xname || got.Yname))
+            if (D.spherical)
               Xname = 'lon_rho';
               Yname = 'lat_rho';
             else
@@ -179,8 +179,8 @@ for var = VarList,
         case {'xi_psi','eta_psi'}
           Mname = 'mask_psi';
           got.Mname = true;
-          if (~(got.Xname || got.Yname)),
-            if (D.spherical),
+          if (~(got.Xname || got.Yname))
+            if (D.spherical)
               Xname = 'lon_psi';
               Yname = 'lat_psi';
             else
@@ -194,8 +194,8 @@ for var = VarList,
           Mname = 'mask_u';
           got.Mname = true;
           Ucomponent = true;
-          if (~(got.Xname || got.Yname)),
-            if (D.spherical),
+          if (~(got.Xname || got.Yname))
+            if (D.spherical)
               Xname = 'lon_u';
               Yname = 'lat_u';
             else
@@ -212,8 +212,8 @@ for var = VarList,
           Mname = 'mask_v';
           got.Mname = true;
           Vcomponent = true;
-          if (~(got.Xname || got.Yname)),
-            if (D.spherical),
+          if (~(got.Xname || got.Yname))
+            if (D.spherical)
               Xname = 'lon_v';
               Yname = 'lat_v';
             else
@@ -228,7 +228,7 @@ for var = VarList,
           isvec = true;
       end
     end
-    if (isw3d),
+    if (isw3d)
       Zname = 'z_w';
     end  
   end
@@ -241,7 +241,7 @@ for var = VarList,
 
 %  Donor grid.
 
-  if (isfield(D,Xname)),
+  if (isfield(D,Xname))
     if (~isempty(D.(Xname)))
       XD = D.(Xname);
     else
@@ -253,7 +253,7 @@ for var = VarList,
            ' in donor grid structure: D']);
   end
 
-  if (isfield(D,Yname)),
+  if (isfield(D,Yname))
     if (~isempty(D.(Yname)))
       YD = D.(Yname);
     else
@@ -265,8 +265,8 @@ for var = VarList,
            ' in donor grid structure: D']);
   end
 
-  if (is3d),
-    if (isfield(D,Zname)),
+  if (is3d)
+    if (isfield(D,Zname))
       if (~isempty(D.(Zname)))
         ZD = D.(Zname);
       else
@@ -279,7 +279,7 @@ for var = VarList,
     end
   end
 
-  if (isfield(D,Mname)),
+  if (isfield(D,Mname))
     if (~isempty(D.(Mname)))
       Dmask = D.(Mname);
     else
@@ -293,8 +293,8 @@ for var = VarList,
 
 %  Receiver grid.
 
-  if (isvec && R.vector_rotation),
-    if (D.spherical),
+  if (isvec && R.vector_rotation)
+    if (D.spherical)
       Xname = 'lon_rho';           % If requested, interpolate
       Yname = 'lat_rho';           % U- and V-points variables
     else                           % to RHO-points instead to
@@ -302,12 +302,12 @@ for var = VarList,
       Yname = 'y_rho';             % rotation to true East and
     end                            % North.  This rotation is
     Mname = 'mask_rho';            % done somewhere else.
-    if (is3d),
+    if (is3d)
       Zname = 'z_r';
     end
   end
 
-  if (isfield(R,Xname)),
+  if (isfield(R,Xname))
     if (~isempty(R.(Xname)))  
       XR = R.(Xname);
     else
@@ -319,7 +319,7 @@ for var = VarList,
            ' in receiver grid structure: R']);
   end
 
-  if (isfield(R,Yname)),
+  if (isfield(R,Yname))
     if (~isempty(R.(Yname)))
       YR = R.(Yname);
     else
@@ -331,8 +331,8 @@ for var = VarList,
            ' in receiver grid structure: R']);
   end
 
-  if (is3d),
-    if (isfield(R,Zname)),
+  if (is3d)
+    if (isfield(R,Zname))
       if (~isempty(R.(Zname)))
         ZR = R.(Zname);
       else
@@ -345,7 +345,7 @@ for var = VarList,
     end
   end
   
-  if (isfield(R,Mname)),
+  if (isfield(R,Mname))
     if (~isempty(R.(Mname)))
       Rmask = R.(Mname);
     else
@@ -383,7 +383,7 @@ for var = VarList,
 %  receiver grids are curvilinear, extract two 
 %--------------------------------------------------------------------------
 
-  if (isvec && (D.vector_rotation || R.vector_rotation)),
+  if (isvec && (D.vector_rotation || R.vector_rotation))
     RX.west  = XR(1:2,:);
     RY.west  = YR(1:2,:);
     RM.west  = Rmask(1:2,:);
@@ -400,7 +400,7 @@ for var = VarList,
     RY.north = YR(:,end-1:end);
     RM.north = Rmask(:,end-1:end);
 
-    if (is3d),
+    if (is3d)
       RZ.west  = ZR(1:2,:,:);
       RZ.east  = ZR(end-1:end,:,:);
       RZ.south = ZR(:,1:2,:);
@@ -423,7 +423,7 @@ for var = VarList,
     RY.north = YR(:,end);
     RM.north = Rmask(:,end);
 
-    if (is3d),
+    if (is3d)
       RZ.west  = squeeze(ZR(1,:,:));
       RZ.east  = squeeze(ZR(end,:,:));
       RZ.south = squeeze(ZR(:,1,:));
@@ -443,7 +443,7 @@ for var = VarList,
 
 %  Determine if processing 2D or 3D ROMS state variables.
 
-  switch (nvdims-1),
+  switch (nvdims-1)
  
     case 2
 
@@ -506,7 +506,7 @@ for var = VarList,
 
 %  Concatenate structures.
 
-  if (icount == 1),
+  if (icount == 1)
     B = S;
   else
     B = cell2struct(cat(1, struct2cell(B), struct2cell(S)),             ...
@@ -530,7 +530,7 @@ end
 %  location.
 
 if ((Ucomponent && Vcomponent) &&                                       ...
-    (D.vector_rotation || R.vector_rotation)),
+    (D.vector_rotation || R.vector_rotation))
   B = rotate_vectors(B,D,R,VarList,boundary);
 end
 
@@ -586,23 +586,23 @@ N  = R.N;
 %  Rotate 2D momentum vector components.
 %--------------------------------------------------------------------------
 
-if (max(strcmp(VarList,'ubar')) && max(strcmp(VarList,'vbar'))),
+if (max(strcmp(VarList,'ubar')) && max(strcmp(VarList,'vbar')))
 
 %  Donor Grid Orientation: rotate from (XI,ETA) coordinates to
 %                           TRUE East/North.
 
-  if (D.vector_rotation),
+  if (D.vector_rotation)
     angle.west  = R.parent_angle(1:2,:);
     angle.east  = R.parent_angle(end-1:end,:);
     angle.south = R.parent_angle(:,1:2);
     angle.north = R.parent_angle(:,end-1:end);
 
-    for var = {'west','east','south','north'},
+    for var = {'west','east','south','north'}
       edge = char(var);
       ufield = strcat('ubar','_',edge);
       vfield = strcat('vbar','_',edge);
-      if (boundary.(edge)),
-        if (isfield(B,ufield) && isfield(B,vfield)),
+      if (boundary.(edge))
+        if (isfield(B,ufield) && isfield(B,vfield))
           ubar = B.(ufield);
           vbar = B.(vfield);
 
@@ -621,18 +621,18 @@ if (max(strcmp(VarList,'ubar')) && max(strcmp(VarList,'vbar'))),
 %  Receiver Grid Orientation: rotate from TRUE East/North to
 %                           (XI,ETA) coordinates.
 
-  if (R.vector_rotation),
+  if (R.vector_rotation)
     angle.west  = R.angle(1:2,:);
     angle.east  = R.angle(end-1:end,:);
     angle.south = R.angle(:,1:2);
     angle.north = R.angle(:,end-1:end);
 
-    for var = {'west','east','south','north'},
+    for var = {'west','east','south','north'}
       edge = char(var);
       ufield = strcat('ubar','_',edge);
       vfield = strcat('vbar','_',edge);
-      if (boundary.(edge)),
-        if (isfield(B,ufield) && isfield(B,vfield)),
+      if (boundary.(edge))
+        if (isfield(B,ufield) && isfield(B,vfield))
           ubar = B.(ufield);
           vbar = B.(vfield);
 
@@ -651,7 +651,7 @@ if (max(strcmp(VarList,'ubar')) && max(strcmp(VarList,'vbar'))),
 %  Average vector components to U-point and V-points locations and
 %  apply Lan/Sea mask.
 
-  if (D.vector_rotation || R.vector_rotation),
+  if (D.vector_rotation || R.vector_rotation)
     umask.west  = R.mask_u(1,:);
     umask.east  = R.mask_u(end,:);
     umask.south = R.mask_u(:,1);
@@ -662,11 +662,11 @@ if (max(strcmp(VarList,'ubar')) && max(strcmp(VarList,'vbar'))),
     vmask.south = R.mask_v(:,1);
     vmask.north = R.mask_v(:,end);
     
-    for var = {'west','east','south','north'},
+    for var = {'west','east','south','north'}
       edge = char(var);
       ufield = strcat('ubar','_',edge);
       vfield = strcat('vbar','_',edge);
-      if (boundary.(edge)),
+      if (boundary.(edge))
         ubar = B.(ufield);
         vbar = B.(vfield);
         switch edge
@@ -696,24 +696,24 @@ end
 %  Rotate 3D momentum vector components.
 %--------------------------------------------------------------------------
 
-if (max(strcmp(VarList,'u')) && max(strcmp(VarList,'v'))),
+if (max(strcmp(VarList,'u')) && max(strcmp(VarList,'v')))
 
 
 %  Donor Grid Orientation: rotate from (XI,ETA) coordinates to
 %                           TRUE East/North.
 
-  if (D.vector_rotation),
+  if (D.vector_rotation)
     angle.west  = repmat(R.parent_angle(1:2,:), [1,1,N]);
     angle.east  = repmat(R.parent_angle(end-1:end,:), [1,1,N]);
     angle.south = repmat(R.parent_angle(:,1:2), [1,1,N]);
     angle.north = repmat(R.parent_angle(:,end-1:end), [1,1,N]);
 
-    for var = {'west','east','south','north'},
+    for var = {'west','east','south','north'}
       edge = char(var);
       ufield = strcat('u','_',edge);
       vfield = strcat('v','_',edge);
-      if (boundary.(edge)),
-        if (isfield(B,ufield) && isfield(B,vfield)),
+      if (boundary.(edge))
+        if (isfield(B,ufield) && isfield(B,vfield))
           u = B.(ufield);
           v = B.(vfield);
 
@@ -732,18 +732,18 @@ if (max(strcmp(VarList,'u')) && max(strcmp(VarList,'v'))),
 %  Receiver Grid Orientation: rotate from TRUE East/North to
 %                             (XI,ETA) coordinates.
 
-  if (R.vector_rotation),
+  if (R.vector_rotation)
     angle.west  = repmat(R.angle(1:2,:), [1,1,N]);
     angle.east  = repmat(R.angle(end-1:end,:), [1,1,N]);
     angle.south = repmat(R.angle(:,1:2), [1,1,N]);
     angle.north = repmat(R.angle(:,end-1:end), [1,1,N]);
 
-    for var = {'west','east','south','north'},
+    for var = {'west','east','south','north'}
       edge = char(var);
       ufield = strcat('u','_',edge);
       vfield = strcat('v','_',edge);
-      if (boundary.(edge)),
-        if (isfield(B,ufield) && isfield(B,vfield)),
+      if (boundary.(edge))
+        if (isfield(B,ufield) && isfield(B,vfield))
           u = B.(ufield);
           v = B.(vfield);
 
@@ -762,7 +762,7 @@ if (max(strcmp(VarList,'u')) && max(strcmp(VarList,'v'))),
 %  Average vector components to U-point and V-points locations and
 %  apply Land/Sea mask.
 
-  if (D.vector_rotation || R.vector_rotation),
+  if (D.vector_rotation || R.vector_rotation)
     umask.west  = squeeze(repmat(R.mask_u(1,:), [1,1,N]));
     umask.east  = squeeze(repmat(R.mask_u(end,:), [1,1,N]));
     umask.south = squeeze(repmat(R.mask_u(:,1), [1,1,N]));
@@ -773,11 +773,11 @@ if (max(strcmp(VarList,'u')) && max(strcmp(VarList,'v'))),
     vmask.south = squeeze(repmat(R.mask_v(:,1), [1,1,N]));
     vmask.north = squeeze(repmat(R.mask_v(:,end), [1,1,N]));
     
-    for var = {'west','east','south','north'},
+    for var = {'west','east','south','north'}
       edge = char(var);
       ufield = strcat('u','_',edge);
       vfield = strcat('v','_',edge);
-      if (boundary.(edge)),
+      if (boundary.(edge))
         u = B.(ufield);
         v = B.(vfield);
         switch edge
