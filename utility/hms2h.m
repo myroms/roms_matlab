@@ -22,7 +22,7 @@ function [hours]=hms2h(h,m,s);
 
 % svn $Id$
 %===========================================================================%
-%  Copyright (c) 2002-2017 The ROMS/TOMS Group                              %
+%  Copyright (c) 2002-2018 The ROMS/TOMS Group                              %
 %    Licensed under a MIT/X style license                                   %
 %    See License_ROMS.txt                               Rich Signell        %
 %===========================================================================%

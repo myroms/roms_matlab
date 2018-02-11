@@ -48,7 +48,7 @@ function [S]=obs_merge(files, dt);
 
 % svn $Id$
 %===========================================================================%
-%  Copyright (c) 2002-2017 The ROMS/TOMS Group                              %
+%  Copyright (c) 2002-2018 The ROMS/TOMS Group                              %
 %    Licensed under a MIT/X style license           Brian Powell            %
 %    See License_ROMS.txt                           Hernan G. Arango        %
 %===========================================================================%

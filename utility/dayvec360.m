@@ -1,12 +1,12 @@
 function [V]=dayvec360(d360)
 
-% DAYVEC360: Calculates date from a date number 360-day calendar.
+% DAYVEC360: Calculates date from a date number of the 360-day calendar.
 %
 % [V]=dayvec360(dnum)
 %
 % Convert 360_day calendar date number to date vector.  The
 % perpetual 360_day calendar has a year length of 360 days and
-% every month has 30 days.
+% every month have 30 days.
 %
 % On Input:
 %
