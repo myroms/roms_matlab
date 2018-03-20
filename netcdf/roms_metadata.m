@@ -664,7 +664,32 @@ switch Vname
     V.Cgridtype.Value         = 4;
     V.Datatype                = 'double';
     V.ncType                  = nc_constant('nc_double');
-  case 'mask_rho'
+  case 'mask'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'land-sea mask';
+    V.Attributes(2).Name      = 'flag_values';
+    V.Attributes(2).Value     = [double(0) double(1)];
+    V.Attributes(3).Name      = 'flag_meanings';
+    V.Attributes(3).Value     = 'land water';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon lat';
+    else
+      V.Attributes(4).Value   = 'x_rho y_rho';
+    end      
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+ case 'mask_rho'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_rho';
     V.Dimensions(1).Length    = [];

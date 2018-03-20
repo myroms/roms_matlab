@@ -85,6 +85,12 @@
 %                      'ncinfo'. This can be used elsewhere to create
 %                      NetCDF a file in a compact way.
 %
+% Miscelaneous:
+%
+%   check_records  - Checks multi-file records for monotonicity.
+%
+%   remove_record  - Removes specified record in a NetCDF file.
+%
 
 % svn $Id$
 %=========================================================================%

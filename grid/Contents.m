@@ -4,6 +4,13 @@
 %
 % These functions are used for preparing ROMS Grid NetCDF file.
 %
+%   add_coords        - Adds horizontal (Cartesian or spherical) coordinates
+%                          to a NetCDF file.
+%
+%   add_mask          - Adds generic land/maks to a non ROMS NetCDF file.
+%
+%   add_masks         - Adds ROMS land/sea mask arrays to a NetCDF file.
+%
 %   add_sponge        - Adds enhanced viscosity and diffusion scaling
 %                         variables (visc_factor and diff_factor) to an
 %                         existing ROMS Grid NetCDF file.
