@@ -305,7 +305,7 @@ end
 if isvector(Xpath)
   
   if G.spherical
-    dis = cumsum([0; sw_dist(Xpath(:),Ypath(:),'km')]);
+    dis = cumsum([0; sw_dist(Ypath(:),Xpath(:),'km')]);
     
     if is3d
       F.dis = repmat(dis,[1 Km]);
