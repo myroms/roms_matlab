@@ -5,7 +5,9 @@ function add_mask(ncfile, spherical, mask)
 %
 % add_mask(ncfile, spherical, mask)
 %
-% Adds land/sea masking array to specified NetCDF file.
+% Adds land/sea masking array to specified NetCDF file that it is not a
+% ROMS grid NetCDF file.  It primarily used to add mask field to datasets
+% to aid on spatial interpolations.
 %
 % On Input:
 %
@@ -53,7 +55,7 @@ for var = Masks
   end
 end
 
-if (append_vars),
+if (append_vars)
   check_metadata(S);
   nc_append(ncfile, S);
 end
@@ -64,8 +66,7 @@ end
 
 for var = Masks
   field = char(var);
-  f = nc_read(gname, field);
-  status = nc_write(ncfile, field, f)
+  nc_write(ncfile, field, mask)
 end
 
 return

@@ -48,6 +48,8 @@
 %
 %   c_contact         - Creates ROMS nesting Contact Points NetCDF file.
 %
+%   check_refine      - Checks a ROMS nested refinement grid structure.
+%
 %   coarse2fine       - Given a coarse resolution ROMS grid NetCDF file,
 %                         it creates a finer resolution grid in the
 %                         specified region.
@@ -71,6 +73,13 @@
 %
 %   plot_contact      - Plots various ROMS Nested Grids Contact Points
 %                         figures.
+%
+%   qc_interp         - Quadratic conservative interpolation for ROMS
+%                         refinement.
+%
+%   refine_gridvar    - Computes requested refined variable from ROMS
+%                        coarse grid using quadratic conservative
+%                        interpolation.
 %
 %   sponge            - Sets and writes diffusion and viscosity sponge
 %                         coefficients into Grid NetCDF file.
