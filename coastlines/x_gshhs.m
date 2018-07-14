@@ -1,4 +1,4 @@
-function [C]=x_gshhs(Llon, Rlon, Blat, Tlat, C, cliptype);
+function [C]=x_gshhs(Llon, Rlon, Blat, Tlat, C, cliptype)
 
 %
 % X_GSHHS:  Process extracted GSHHS coastline data
@@ -38,21 +38,21 @@ function [C]=x_gshhs(Llon, Rlon, Blat, Tlat, C, cliptype);
 %
 
 % svn $Id$
-%===========================================================================%
-%  Copyright (c) 2002-2018 The ROMS/TOMS Group                              %
-%    Licensed under a MIT/X style license                                   %
-%    See License_ROMS.txt                           Hernan G. Arango        %
-%===========================================================================%
+%=========================================================================%
+%  Copyright (c) 2002-2018 The ROMS/TOMS Group                            %
+%    Licensed under a MIT/X style license                                 %
+%    See License_ROMS.txt                           Hernan G. Arango      %
+%=========================================================================%
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Handle wrap-arounds.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
-if (Rlon < -180),
+if (Rlon < -180)
   C.lon=C.lon-360;
-elseif (Llon > 180),
+elseif (Llon > 180)
   C.lon=C.lon+360;
-elseif (Llon < -180),
+elseif (Llon < -180)
   C.area=[C.area; C.area];
   C.lon=[C.lon; C.lon(2:end)-360];
   C.lat=[C.lat; C.lat(2:end)];
@@ -66,18 +66,18 @@ elseif (Llon < -180),
 
   nn=C.lon < Llon;
   C.lon(nn)=(C.lon(nn)-Llon)/100 + Llon;
-elseif (Rlon > 180),
+elseif (Rlon > 180)
   C.area=[C.area; C.area];
   C.lon=[C.lon; C.lon(2:end)+360];
   C.lat=[C.lat; C.lat(2:end)];
 
   nn=C.lon > Rlon;
   C.lon(nn)=(C.lon(nn)-Rlon)/100 + Rlon;
-end,
+end
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Clip out-of-range values.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 lon=C.lon;
 lat=C.lat;
@@ -90,37 +90,37 @@ type=-2.*ones(size(lon));
 [lat,lon,type]=m_clip(cliptype,lat,Blat,lat<Blat,lon,type);
 [lat,lon,type]=m_clip(cliptype,lat,Tlat,lat>Tlat,lon,type);
 
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Remove redundant NaNs.
-%---------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
-switch cliptype,
+switch cliptype
   case 'on'
     ind1=find(isnan(lon));
     ic=0;
-    for i=2:length(ind1),
-      if ((ind1(i)-ind1(i-1)) == 1),
+    for i=2:length(ind1)
+      if ((ind1(i)-ind1(i-1)) == 1)
         ic=ic+1;
         ind2(ic)=ind1(i);
-      end,
-    end,
-    if (~isempty(ind2)),
+      end
+    end
+    if (~isempty(ind2))
       ind2=ind2';
       lon(ind2)=[];
       lat(ind2)=[];
       type(ind2)=[];
-    end,
+    end
     ind=find(type == -2);
     type(ind)=[];
     C.type=type;
-end,
+end
 
 C.lon=lon;
 C.lat=lat;
 
 return
 
-function [Xc,Yc,type]=m_clip(cliptype, X, Xedge, index, Y, type);
+function [Xc,Yc,type]=m_clip(cliptype, X, Xedge, index, Y, type)
 
 %
 % M_CLIP:  Clip extrated coastline data
@@ -151,14 +151,14 @@ function [Xc,Yc,type]=m_clip(cliptype, X, Xedge, index, Y, type);
 Xc=X;
 Yc=Y;
 
-if (~strcmp(cliptype,'point')),
+if (~strcmp(cliptype,'point'))
 
 %  Find regions where we suddenly come into the area
 %  (indices go from 1 to 0)
 
   [i,j]=find(diff(index)==-1);
 
-  if (any(i)),
+  if (any(i))
 
     I=i+(j-1)*size(X,1);                 % 1-d addressing
 
@@ -169,23 +169,23 @@ if (~strcmp(cliptype,'point')),
 
 % In these cases the delta(Y) also=0, so we just want to avoid /0 warnings.
 
-    if (any(ibt)),
+    if (any(ibt))
       bt(ibt)=1*eps;
-    end; 
+    end 
 
     Yc(I)=Y(I)+(Xedge-X(I)).*(Y(I+1)-Y(I))./bt;
     Yc(I(ibt))=(Y(I(ibt))+Y(I(ibt)+1))/2;
     Xc(I)=Xedge;
     index(I(isfinite(Yc(I))))=0;
 
-  end,
+  end
 
 %  Find regions where we suddenly come out of the area
 %  (indices go from 0 to 1)
 
   [i,j]=find(diff(index)==1);
 
-  if any(i),
+  if any(i)
 
     I=i+(j-1)*size(X,1);
 
@@ -194,25 +194,25 @@ if (~strcmp(cliptype,'point')),
 
 % In these cases the delta(Y) also=0, so we just want to avoid /0 warnings.
 
-    if (any(ibt)),
+    if (any(ibt))
       bt(ibt)=eps;
-    end;
+    end
   
     Yc(I+1)=Y(I)+(Xedge-X(I)).*(Y(I+1)-Y(I))./bt;
     Yc(I(ibt)+1)=(Y(I(ibt))+Y(I(ibt)+1))/2;
     Xc(I+1)=Xedge;
     index(I(isfinite(Yc(I+1)))+1)=0;
-  end;
+  end
 
-end;
+end
 
-switch cliptype,
+switch cliptype
   case {'on','point'}
     Xc(index)=NaN;
     Yc(index)=NaN;
     type(index)=-1;
-  case 'patch',
+  case 'patch'
     Xc(index)=Xedge;
-end;
+end
 
 return

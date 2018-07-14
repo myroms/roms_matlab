@@ -99,6 +99,10 @@ end
 ncid  = netcdf.open(Fname, 'nc_write');
 varid = netcdf.inqVarID(ncid, Vname_old);
 
+% Put file into define mode.
+
+netcdf.reDef(ncid);
+
 % Rename variable.
 
 netcdf.renameVar(ncid, varid, Vname_new);
