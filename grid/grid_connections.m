@@ -82,7 +82,7 @@ B(1:4) = struct('ind', []);      % boundary structure
 adjacent  = [ieast, inorth, iwest, isouth];   % Receiver grid boundary
 spherical = S.spherical;                      % spherical grid switch
 
-debugging = true;
+debugging = false;
 
 % Compute grid maximum spacing.  In refinement, the donor grid is
 % coarser than receiver grid so the grid spacing is larger.
