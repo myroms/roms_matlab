@@ -77,14 +77,126 @@ isouth = S.southern_edge;        % southern boundary edge index
 ieast  = S.eastern_edge;         % eastern  boundary edge index
 inorth = S.northern_edge;        % northern boundary edge index
 
-adjacent = [ieast, inorth, iwest, isouth];    % Receiver grid boundary
+B(1:4) = struct('ind', []);      % boundary structure
+
+adjacent  = [ieast, inorth, iwest, isouth];   % Receiver grid boundary
 spherical = S.spherical;                      % spherical grid switch
 
-% Compute mean grid cell area.  In refinement the donor and receiver have
-% different mean grid cell area.
+debugging = true;
+
+% Compute grid maximum spacing.  In refinement, the donor grid is
+% coarser than receiver grid so the grid spacing is larger.
+
+DXmax = zeros([1 S.Ngrids]);
+DYmax = zeros([1 S.Ngrids]);
 
 for ng=1:S.Ngrids
-  AreaAvg(ng)=mean(mean((1./G(ng).pm) .* (1./G(ng).pn)));
+  DXmax(ng) = max(1./G(ng).pm(:));
+  DYmax(ng) = max(1./G(ng).pn(:));
+end
+
+% Determine which grids are inside of others but itself.  The structure
+% C stores the direct and indirect connections between grids.
+
+C(1:S.Ngrids) = struct('ToGrid', [], 'count', 0);
+
+IsInside = false([S.Ngrids S.Ngrids]);
+
+for dg=1:S.Ngrids
+  for rg=1:S.Ngrids
+
+    if (dg ~= rg)
+
+      if (spherical)    
+        [IN,~] = inpolygon(G(dg).lon_psi, G(dg).lat_psi,                ...
+                           S.grid(rg).perimeter.X_psi,                  ...
+                           S.grid(rg).perimeter.Y_psi);    
+        if (debugging)
+          figure;
+          plot(G(dg).lon_psi(:),                                        ...
+               G(dg).lat_psi(:),           'b+',                        ...
+               S.grid(rg).perimeter.X_psi,                              ...
+               S.grid(rg).perimeter.Y_psi, 'ro');
+        end
+      else    
+        [IN,~] = inpolygon(G(dg).x_psi, G(dg).y_psi,                    ...
+                           S.grid(rg).perimeter.X_psi,                  ...
+                           S.grid(rg).perimeter.Y_psi);
+        if (debugging)
+          figure;
+          plot(G(dg).x_psi(:),                                          ...
+               G(dg).y_psi(:),             'b+',                        ...
+               S.grid(rg).perimeter.X_psi,                              ...
+               S.grid(rg).perimeter.Y_psi, 'ro');
+        end
+      end
+
+      if any(IN)
+        IsInside(rg,dg) = true;
+        C(dg).ToGrid = [C(dg).ToGrid rg];      
+        C(dg).count  = C(dg).count + 1;      
+      end
+    
+      if (debugging)
+        str = {'F', 'T'};
+        title(['dg = ', num2str(dg), '  (blue)', blanks(4),             ...
+               'rg = ', num2str(rg), '  (red)' , blanks(4),             ...
+               'IsInside(rg,dg) = ', char(str(1+IsInside(rg,dg)))]);
+      end
+    
+    end
+  end
+end
+
+% If telescoping grids, there is more than one connection between grids.
+% Reject indirect connections.
+
+for dg = 1:S.Ngrids
+  if (C(dg).count > 1)
+    rg = max(C(dg).ToGrid);             % direct connection
+    for i = 1: C(dg).count
+      ng = C(dg).ToGrid(i);
+      if (ng ~= rg)
+        IsInside(ng,dg) = false;        % reject indirect connection
+      end
+    end
+  end
+end
+
+% Determine if telescoping grids exist. In ROMS, a telescoping grid
+% is a refined grid (refine_factor > 0) containing a finer grid
+% inside. Notice that under this definition the coarser grid (ng=1,
+% refine_factor=0) is not considered a telescoping grid. The last
+% cascading grid is not considered a telescoping grid since it does
+% not contains a finer grid inside.  The telescoping definition is
+% a technical one, and it facilitates the algorithm design.
+
+CoarserDonor = zeros([1 S.Ngrids]);           % finer grid coarser donor
+FinerDonor   = zeros([1 S.Ngrids]);           % coarser grid finer donor
+RefinedGrid  = [S.grid.refine_factor] > 0;    % refinement grid switch
+Telescoping  = false([1 S.Ngrids]);           % telescoping grid switch
+
+if any(RefinedGrid)
+  RefinedGrid(1) = true;
+end
+
+for dg=1:S.Ngrids
+  for rg=1:S.Ngrids
+
+    if (dg ~= rg)
+      if (RefinedGrid(rg) && IsInside(dg,rg) &&                         ...
+          S.grid(rg).refine_factor &&                                   ...
+          DXmax(dg) > DXmax(rg) && DYmax(dg) > DYmax(rg))
+        CoarserDonor(rg) = dg;
+        FinerDonor(dg) = rg;
+      end
+
+      if (CoarserDonor(rg) == dg && S.grid(dg).refine_factor > 0)
+        Telescoping(dg)=true;
+      end
+    end
+  
+  end
 end
 
 %--------------------------------------------------------------------------
@@ -122,9 +234,6 @@ for dg=1:S.Ngrids
       else
         contact.refinement = false;
       end  
-
-      AreaAvg_dg = mean(mean((1./G(dg).pm) .* (1./G(dg).pn)));
-      AreaAvg_rg = mean(mean((1./G(rg).pm) .* (1./G(rg).pn)));
 
 % Determine which points from donor grid are inside the reciever grid.
 % If the receiver is a refinment grid, consider only donor RHO-points
@@ -220,12 +329,16 @@ for dg=1:S.Ngrids
         contact.corners.Jdg   = [];
       end
 
-% If receiver is a refinement grid from donor, determine which donor
-% grid points lay in the receiver grid perimeter.
+% If receiver (rg) is a refinement grid and donor (dg) is the course
+% source grid, determine which donor grid points lay in the receiver
+% grid perimeter.
 
-      if (S.grid(rg).refine_factor > 0 && contact.interior.okay)
+      if ((S.grid(rg).refine_factor > 0) &&                             ...
+          (CoarserDonor(rg) == dg || FinerDonor(rg) == dg) &&           ...
+          contact.interior.okay)
+
         set_boundary = true;
-	
+
         if (spherical)
           [~,ON] = inpolygon(G(dg).lon_psi, G(dg).lat_psi,              ...
                              S.grid(rg).perimeter.X_psi,                ...
@@ -245,7 +358,7 @@ for dg=1:S.Ngrids
 
 % If any of edge boundary vectors are empty, the refined receiver grid
 % is inside of more that one nested grid.  That is, the application has
-% more than two nesting layers with cascating refinement grids.
+% more than two nesting layers with telescoping refinement grids.
 % For example, a refined grid (layer 3) is inside of another refined
 % grid (layer 2), which in terms is inside of a coarser grid (layer 1).
 % In this case the refined grid in layer 3 is not connected directly
@@ -326,7 +439,7 @@ for dg=1:S.Ngrids
 
 % If any of edge boundary vectors are empty, the refined receiver grid
 % is inside of more that one nested grid.  That is, the application has
-% more than two nesting layers with cascating refinement grids.
+% more than two nesting layers with telescoping refinement grids.
 % For example, a refined grid (layer 3) is inside of another refined
 % grid (layer 2), which in terms is inside of a coarser grid (layer 1).
 % In this case the refined grid in layer 3 is not connected directly
