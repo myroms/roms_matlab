@@ -51,7 +51,9 @@ function [F]=landsea(ncfile, varargin)
 Tstart=tic;                         % time profile
 
 extract_coast=false;                % extract coastlines from GSHHS switch
-DIR='~/ocean/GSHHS/Version_1.2';    % GSHHS dataset directory path
+
+Cfile=which('gshhs_h.b','-ALL');    % select first directory found
+DIR=fileparts(Cfile{1});            % others are shadowed
 
 F.ncfile=ncfile;
 

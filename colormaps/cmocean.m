@@ -33,7 +33,7 @@ function cmap = cmocean(ColormapName,varargin)
 %          'turbid'                   'parula'    (Matlab default)
 %          'speed'                    'plasma'
 %          'amp'                      'viridis'
-%          'tempo'
+%          'tempo'                    'cividis'
 %
 % cmap = cmocean('-ColormapName') a minus sign preceeding any ColormapName flips the
 % order of the colormap. 
@@ -106,7 +106,7 @@ function cmap = cmocean(ColormapName,varargin)
 %          cm_algae,  cm_amp,   cm_balance, cm_curl,  cm_deep,    cm_delta,
 %          cm_dense,  cm_gray,  cm_haline,  cm_ice,   cm_matter,  cm_oxy
 %          cm_phase,  cm_solar, cm_speed,   cm_tempo, cm_thermal, cm_turbid,
-%          inferno,   magma,    parula,     plasma,   viridis.
+%          inferno,   magma,    parula,     plasma,   cividis,    viridis
   
 % svn $Id$
 
@@ -230,6 +230,8 @@ switch lower(ColormapName(1:3))
       cmap = cm_turbid;
    case 'vir' 
       cmap = viridis;
+   case 'civ' 
+      cmap = cividis;
    otherwise 
       error('Unrecognized colormap name.') 
 end

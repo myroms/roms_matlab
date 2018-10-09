@@ -328,10 +328,18 @@ end
 if (nvdims > 0)
   for n=1:nvdims
     dname = char(Info.Variables(ivar).Dimensions(n).Name);
-    if (Info.Variables(ivar).Dimensions(n).Unlimited ||                 ...
-        ~isempty(contains(dname,'time')))
-      got.RecDim = true;
-      TimeDimName = dname;
+    if (exist('contains'))
+      if (Info.Variables(ivar).Dimensions(n).Unlimited ||                 ...
+          ~isempty(contains(dname,'time')))
+        got.RecDim = true;
+        TimeDimName = dname;
+      end
+    else
+      if (Info.Variables(ivar).Dimensions(n).Unlimited ||                 ...
+          ~isempty(strfind(dname,'time')))
+        got.RecDim = true;
+        TimeDimName = dname;
+      end
     end
   end
 end
@@ -562,10 +570,18 @@ end
 if (nvdims > 0)
   for n=1:nvdims
     dname = char(Info.Variables(ivar).Dimensions(n).Name);
-    if (Info.Variables(ivar).Dimensions(n).Unlimited ||                 ...
-        ~isempty(contains(dname,'time')))
-      got.RecDim = true;
-      TimeDimName = dname;
+    if (exist('contains'))
+      if (Info.Variables(ivar).Dimensions(n).Unlimited ||                 ...
+          ~isempty(contains(dname,'time')))
+        got.RecDim = true;
+        TimeDimName = dname;
+      end
+    else
+      if (Info.Variables(ivar).Dimensions(n).Unlimited ||                 ...
+          ~isempty(strfind(dname,'time')))
+        got.RecDim = true;
+        TimeDimName = dname;
+      end
     end
   end
 end
@@ -890,8 +906,14 @@ for n=1:nvdims
     dimsiz(n) = dsize;
     start(n)  = 0;
     count(n)  = dsize;
-    if ((dimids(n) == recdim) || ~isempty(contains(name,'time')))
-      index = n;
+    if (exist('contains'))
+      if ((dimids(n) == recdim) || ~isempty(contains(name,'time')))
+        index = n;
+      end
+    else
+      if ((dimids(n) == recdim) || ~isempty(strfind(name,'time')))
+        index = n;
+      end
     end
   end
 end

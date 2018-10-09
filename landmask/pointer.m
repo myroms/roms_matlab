@@ -2,10 +2,12 @@ function pointer(shape)
 
 % POINTER:  Changes the mouse pointer.
 %
-%    POINTER(SHAPE) changes the pointer according to SHAPE.  If called
-%    without arguments, restores to normal arrow
+% POINTER(shape) 
 %
-%    Available shapes:
+% Changes the pointer according to SHAPE.  If called without arguments,
+% restores to normal arrow
+%
+% Available shapes:
 %
 %    AIM
 %    POINT
@@ -20,8 +22,6 @@ function pointer(shape)
 %    See License_ROMS.txt                            A. Shcherbina        %
 %=========================================================================%
 
-global GUI
-
 % Set default arrow pointer.
 
 if (nargin==0)
@@ -33,8 +33,8 @@ end
 
 switch lower(shape)
   case 'aim' 
-    ptr=[
-         'ooooo++*++oooooo'
+    hs=[8,8];
+    ptr=['ooooo++*++oooooo'
          'ooo++*****++oooo'
          'oo+**o+*+o**+ooo'
          'o+*ooo+*+ooo*+oo'
@@ -50,10 +50,9 @@ switch lower(shape)
          'ooo++*****++oooo'
          'ooooo++*++oooooo'
          'oooooooooooooooo'];
-    hs=[8,8];
   case 'zoom'
-    ptr=[
-         'oooo****oooooooo'
+    hs=[7,7];
+    ptr=['oooo****oooooooo'
          'oo**++++**oooooo'
          'o*++++++++*ooooo'
          'o*+++**+++*ooooo'
@@ -69,10 +68,9 @@ switch lower(shape)
          'ooooooooooooo***'
          'oooooooooooooo*o'
          'oooooooooooooooo'];
-    hs=[7,7];
   case 'rect'
-    ptr=[
-         'oooo*ooooooooooo'
+    hs=[5,5];
+    ptr=['oooo*ooooooooooo'
          'oooo*+oooooooooo'
          'oooo*+oooooooooo'
          'oooo*+oooooooooo'
@@ -88,10 +86,9 @@ switch lower(shape)
          'oooooooooooooooo'
          'oooooooooooooooo'
          'oooooooooooooooo'];
-    hs=[5,5];
   case 'point'
-    ptr=[
-         'oooooooooo*+oooo'
+    hs=[9,3];
+    ptr=['oooooooooo*+oooo'
          'ooooooooo*+ooooo'
          'oooooooo*+oooooo'
          'oo*+ooo*+ooooooo'
@@ -107,7 +104,6 @@ switch lower(shape)
          'oooooooooooooooo'
          'oooooooooooooooo'
          'oooooooooooooooo'];
-    hs=[9,3];
   otherwise
     set(gcf,'pointer',shape);
     return

@@ -2,10 +2,11 @@ function h=textbox(r, tit, texts, name)
 
 % TEXTBOX:  Creates a textbox in a frame
 %
-%    h=TEXTBOX(R,TIT,TEXTS,NAME) creates a frame at position R,
-%    title TIT, and places a set of boxes in it (one per cell
-%    in TEXTS). The global variable GUI will have a field NAME_h
-%    with the handles.
+% h=TEXTBOX(r,tit,texts,name)
+%  
+% Creates a frame at position R, title TIT, and places a set of boxes
+% in it (one per cell in TEXTS). The global variable GUI will have a
+% field NAME_h with the handles.
 %
 
 % svn $Id$
@@ -15,14 +16,16 @@ function h=textbox(r, tit, texts, name)
 %    See License_ROMS.txt                            A. Shcherbina        %
 %=========================================================================%
 
+global GUI
+
 xspace=.01;
 yspace=.01;
 dy=.04;
 L=length(texts);
 
-uicontrol('style','frame',                                              ...
-          'units','normalized',                                         ...
-          'position',r);
+a=uicontrol('style','frame',                                            ...
+           'units','normalized',                                        ...
+           'position',r);
 r=r+[xspace yspace -2*xspace -2*yspace];
 r(2)=r(2)+r(4)-dy;
 r(4)=dy;

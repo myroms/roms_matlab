@@ -11,19 +11,25 @@ function [C]=x_gshhs(Llon, Rlon, Blat, Tlat, C, cliptype)
 %
 %  On Input:
 %
-%     Llon      Left   corner longitude (West values are negative).
-%     Rlon      Right  corner longitude (West values are negative).
-%     Blat      Bottom corner latitude (South values are negative).
-%     Tlat      Top    corner latitude (South values are negative).
+%     Llon      Left   corner longitude (West values are negative)
+%
+%     Rlon      Right  corner longitude (West values are negative)
+%
+%     Blat      Bottom corner latitude (South values are negative)
+%
+%     Tlat      Top    corner latitude (South values are negative)
+%
 %     C         Read coastline data (structure array):
-%                 C.lon  => longitude of closed polygons separated by NaNs.
-%                 C.lat  => latitude  of closed polygons separated by NaNs.
+%                 C.lon  => longitude of closed polygons separated by NaNs
+%                 C.lat  => latitude  of closed polygons separated by NaNsa
 %                 C.area => polygon areas.
 %                 C.type => polygon type:
 %                           C.type=1 => land,
 %                           C.type=2 => lake,
 %                           C.type=3 => island_in_lake,
 %                           C.type=4 => pond_in_island_in_lake
+%                 C.k    => number of points in polygon
+%
 %     cliptype  Clip type:
 %                 'on'    - replaces points outside with NaN, but
 %                           interpolates to provide points right on the
