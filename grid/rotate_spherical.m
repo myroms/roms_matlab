@@ -97,7 +97,7 @@ function R = rotate_spherical(D,nx,ny,DX,DY,Rlon,Rlat,Alpha,Clat,plt)
 
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2018 The ROMS/TOMS Group                            %
+%  Copyright (c) 2002-2019 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.txt                        Alexander F. Shchepetkin %
 %=========================================================================%
