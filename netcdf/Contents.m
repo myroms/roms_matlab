@@ -56,9 +56,12 @@
 %                      interface (default), 'java' SNCTOOLS interface for
 %                      OpenDAP files (Matlab version < 2012a), or 'mexnc'
 %                      interface (Matlab Verison < 2008b).
+%   nc_stats       - Computes the statistics of NetCDF variable.
 %   nc_test        - Creates a NetCDF using data from the peaks(40)
 %                      function. Several datatype variables are created
 %                      to test the NetCDF interface in Matlab.
+%   nc_time        - Computes the elapsed time since the specified reference
+%                      date.
 %   nc_vdef        - Creates a ROMS variable in a NetCDF file.
 %   nc_vinfo       -  Inquires information about requested NetCDF variable.
 %   nc_vname       - Gets the names of all variables in a NetCDF file. This

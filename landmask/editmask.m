@@ -309,11 +309,11 @@ switch lower(grid_file)
     got_matfile=false;                 % coastline from provided .mat file
 
     Cfile=which('gshhs_h.b','-ALL');   % select first directory found
-    DIR=fileparts(Cfile{1});           % others are shadowed
 
     switch numel(varargin)
       case 0
-        if (~isempty(DIR))
+        if (~isempty(Cfile))
+          DIR=fileparts(Cfile{1});            % others are shadowed
           database='h';
           Cname=fullfile(DIR, 'gshhs_h.b');   % high resolution GSHHS
           extract_coast=true;                 % (default)
@@ -324,6 +324,7 @@ switch lower(grid_file)
         if (ischar(varargin{1}))
           if (strfind(varargin{1}, '.mat'))
             coast_file=varargin{1};
+            Cname=coast_file;
             if (~exist(coast_file,'file'))
               error(['Cannot file: ', coast_file]);
             end
@@ -344,7 +345,9 @@ switch lower(grid_file)
               otherwise
                 error(['illegal GSHHS dataset resolution, ',database])
             end
-            if (~isempty(DIR))
+%           if (~isempty(DIR))
+            if (~isempty(Cfile))
+              DIR=fileparts(Cfile{1});           % others are shadowed
               Cname=fullfile(DIR, name);      % selected GSHHS resolution
               extract_coast=true;
             else

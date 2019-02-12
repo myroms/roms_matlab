@@ -5,6 +5,9 @@
 % These functions are used for preparing ROMS forcing NetCDF files.
 %
 %
+%   add_heatflux  - Adds the heat flux components (shortwave, longwave,
+%                     latent, and sensible) variables to an existent
+%                     NetCdF file if not present.
 %   d_core2_frc   - Driver template script showing how to create ROMS
 %                     forcing NetCDF file(s) using ROMS metadata
 %                     structure. The data source is the CORE 2 Global
