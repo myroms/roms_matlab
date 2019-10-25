@@ -857,10 +857,10 @@ switch Vname
     V.ncType                  = nc_constant('nc_double');
   case 'mask'
     V.Name                    = Vname;
-    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Name      = 'lon';
     V.Dimensions(1).Length    = [];
     V.Dimensions(1).Unlimited = false;
-    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Name      = 'lat';
     V.Dimensions(2).Length    = [];
     V.Dimensions(2).Unlimited = false;
     V.Size                    = [];
