@@ -20,6 +20,10 @@ function W = coamps_weights (Cname, Rname, Oname, varargin)
 %
 % where Wroms(:,:) + Wdata(:,:) = 1.
 %
+% Both COAMPS and ROMS logitudes are wrapped to the interval [0 360]
+% using Matlab intrinsic function wrapTo360 for easy use in applications
+% with mixed conventions.
+%
 % On Input:
 %
 %    Cname       COAMPS history HDF5 filename (string)
@@ -90,6 +94,8 @@ W = struct('lon', [],                                                   ...
            'ocean_weight_smooth', []);
 
 % Get COAMPS grid longitude, latitude, masks, and perimeter.
+% If COAMPS longitudes is a module of 360 degrees, wrap angle in
+% degrees to [-180 180] as in ROMS.
 
 slon = 'longit_sfc_000000_000000_1';
 slat = 'latitu_sfc_000000_000000_1';
@@ -101,6 +107,7 @@ Vindex = strncmp({V.Variables.Name}, slon, length(slon));
 if (any(Vindex))
   Vname = V.Variables(Vindex).Name;
   W.lon = nc_read(Cname, Vname);
+  W.lon = wrapTo360(W.lon);
 else
   error(['Cannot find longitude variable ', slon, '...']);
 end
@@ -142,6 +149,8 @@ if (~isstruct(Rname)),
 else
   G = Gname;
 end
+G.lon_psi = wrapTo360(G.lon_psi);
+
 S = grid_perimeter(G);
 
 W.XboxR=S.grid.perimeter.X_psi;

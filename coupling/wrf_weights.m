@@ -135,7 +135,7 @@ W.mask = ones(size(wland));
 W.mask(wland == 1) = 0;           % zeroh out land
 W.mask(wlake == 1) = 0;           % zeroh out lakes
 
-% Find COAMP grid cells inside of ROMS perimeter.
+% Find WRF grid cells inside of ROMS perimeter.
 
 [IN,ON]=inpolygon(W.lon(:), W.lat(:), W.XboxR, W.YboxR);
 
