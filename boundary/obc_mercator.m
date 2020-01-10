@@ -45,7 +45,7 @@ function [Fout]=obc_mercator(Vname,S,Finp,lon,lat,mask,depth);
 
 % svn $Id$
 %===========================================================================%
-%  Copyright (c) 2002-2019 The ROMS/TOMS Group                              %
+%  Copyright (c) 2002-2020 The ROMS/TOMS Group                              %
 %    Licensed under a MIT/X style license                                   %
 %    See License_ROMS.txt                           Hernan G. Arango        %
 %===========================================================================%
