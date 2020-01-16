@@ -718,9 +718,9 @@ if (spherical)
 
   elseif (~isempty(G(dg).lon_rho) && ~isempty(G(dg).lat_rho))
 
-    FSr.Values = G(dg).angle(:);    R.angle = FCr(XrF, YrF); 
-    FSr.Values = G(dg).f(:);        R.f     = FCr(XrF, YrF); 
-    FSr.Values = G(dg).h(:);        R.h     = FCr(XrF, YrF); 
+    FSr.Values = G(dg).angle(:);    R.angle = FSr(XrF, YrF); 
+    FSr.Values = G(dg).f(:);        R.f     = FSr(XrF, YrF); 
+    FSr.Values = G(dg).h(:);        R.h     = FSr(XrF, YrF); 
   
   end
 
