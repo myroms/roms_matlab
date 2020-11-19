@@ -164,7 +164,7 @@ if (report),
             '   at horizontal V-points']);
     case 5
       disp(['   igrid    = ',num2str(igrid),                            ...
-            '   at horizontal RHO-points']);
+            '   at horizontal W-points']);
   end
 end
 
