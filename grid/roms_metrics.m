@@ -285,7 +285,7 @@ y_rho = zeros(size(dy));
 for i=1:Lp
   y_rho(i,1) = -dy(i,1);
   for j=1:M
-    y_rho(i,j+1) = x_rho(i,j) + dy(i,j+1);
+    y_rho(i,j+1) = y_rho(i,j) + dy(i,j+1);
   end
   y_rho(i,1 ) = y_rho(i,1 ) + 0.5*dy(i,1 );  
   y_rho(i,Mp) = y_rho(i,Mp) - 0.5*dy(i,Mp);

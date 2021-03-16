@@ -44,7 +44,7 @@
 %                         (Cartesian or Spherical) Grid NetCDF file
 %                         centered at provided coordinate and rotated by
 %                         specified angle. 
-
+%
 %   grids_structure   - Compute a nested grids structure array, say G(:),
 %                         containing all the grid variables associated
 %                         with the application's horizontal and vertical
@@ -52,6 +52,10 @@
 %
 %   get_roms_grid     - Builds or updates a ROMS grid structure for
 %                         a particular ROMS application.
+%
+%   roms_metrics      - Robust function to computes the several ROMS grid
+%                         metrics from the (lon,lat) coordinates. It
+%                         replaces "grid_metrics".
 %
 %   spherical_grid    - Given a larger donor grid, this function
 %                       extracts a rotated Spherical grid centered at
