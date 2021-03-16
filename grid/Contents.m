@@ -15,6 +15,10 @@
 %                         variables (visc_factor and diff_factor) to an
 %                         existing ROMS Grid NetCDF file.
 %
+%   cartesian_grid    - Given a larger donor grid, this function estracts
+%                         a rotated Cartesian grid centered at provided
+%                         coordinates and rotated by specified angle.
+%
 %   check_nest_masks  - Checks land/sea masks in nesting contact regions.
 %                         In particular, it can be used to examine the
 %                         nesting grids connectivity when there are land/sea
@@ -32,7 +36,15 @@
 %                         a larger input grid.
 %
 %   grid_metrics      - Computes ROMS Grid horizontal metrics.
+%                         This function is deprecated. Use "roms_metrics"
+%                         instead.
 %
+%   grid_rotated      - Given a larger Grid NetCDF file, this function
+%                         extracts and creates a rotated subdomain
+%                         (Cartesian or Spherical) Grid NetCDF file
+%                         centered at provided coordinate and rotated by
+%                         specified angle. 
+
 %   grids_structure   - Compute a nested grids structure array, say G(:),
 %                         containing all the grid variables associated
 %                         with the application's horizontal and vertical
@@ -40,6 +52,11 @@
 %
 %   get_roms_grid     - Builds or updates a ROMS grid structure for
 %                         a particular ROMS application.
+%
+%   spherical_grid    - Given a larger donor grid, this function
+%                       extracts a rotated Spherical grid centered at
+%                       provided coordinates and rotated by specified
+%                       angle. 
 %
 %   uniform_grid      - Sets a ROMS Cartesian grid uniform coordinates and
 %                         metrics.
