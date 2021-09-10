@@ -5,18 +5,18 @@ function startup
 %            variables in your workspace.
 
 % svn $Id$
-%===========================================================================%
-%  Copyright (c) 2002-2019 The ROMS/TOMS Group                              %
-%    Licensed under a MIT/X style license                                   %
-%    See License_ROMS.txt                           Hernan G. Arango        %
-%===========================================================================%
+%=========================================================================%
+%  Copyright (c) 2002-2019 The ROMS/TOMS Group                            %
+%    Licensed under a MIT/X style license                                 %
+%    See License_ROMS.txt                           Hernan G. Arango      %
+%=========================================================================%
 
 % Set miscelaneous parameters.
 
 global IPRINT
 IPRINT=0;
 
-format long g
+format longg
 
 % Change "my_root" to the appropriate path were these matlab scripts are
 % installed in your computer.
@@ -29,11 +29,13 @@ path(path, fullfile(my_root, 'matlab', 'bathymetry', ''))
 path(path, fullfile(my_root, 'matlab', 'boundary', ''))
 path(path, fullfile(my_root, 'matlab', 'coastlines', ''))
 path(path, fullfile(my_root, 'matlab', 'colormaps', ''))
+path(path, fullfile(my_root, 'matlab', 'coupling', ''))
 path(path, fullfile(my_root, 'matlab', 'forcing', ''))
 path(path, fullfile(my_root, 'matlab', 'grid', ''))
 path(path, fullfile(my_root, 'matlab', 'grid_gui', ''))
 path(path, fullfile(my_root, 'matlab', 'initial', ''))
 path(path, fullfile(my_root, 'matlab', 'landmask', ''))
+path(path, fullfile(my_root, 'matlab', 'm_map', ''))
 path(path, fullfile(my_root, 'matlab', 'mex', ''))
 path(path, fullfile(my_root, 'matlab', 'netcdf', ''))
 path(path, fullfile(my_root, 'matlab', 'seagrid', ''))
@@ -55,7 +57,7 @@ if ((vyear == 2008 && v(5:5) == 'a') || vyear >= 2012),
   load_toolbox = false;
 end
 
-if (load_toolbox),
+if (load_toolbox)
   addpath (strcat(my_home, '/ocean/matlab/snctools'), '-end');
   javaaddpath (strcat(my_home, '/ocean/matlab/classes/toolsUI-4.1.jar'), '-end');
   javaaddpath (strcat(my_home, '/ocean/matlab/classes/netcdfAll-4.2.jar'), '-end');

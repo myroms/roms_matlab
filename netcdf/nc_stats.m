@@ -59,7 +59,7 @@ S.avg = NaN;
 
 % Inquire about the NetCDF file.
 
-I = nc_inq(ncfile);
+I = nc_inq(ncfile); 
 
 % Check about requested variable.
 

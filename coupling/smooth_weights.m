@@ -123,19 +123,23 @@ if (Lplot)
   figure;
   
   hax(1) = subplot(2,2,1);
-  pcolorjw(W.lon, W.lat, W.ocean_weight_rigid); colorbar
+  pcolorjw(W.lon, W.lat, W.ocean_weight_rigid);
+  shading flat; colorbar;
   title('ocean\_weight\_rigid')
 
   hax(2) = subplot(2,2,2);
-  pcolorjw(W.lon, W.lat, ocean_weight_smooth); colorbar
+  pcolorjw(W.lon, W.lat, ocean_weight_smooth);
+  shading flat; colorbar;
   title(['ocean\_weight\_smooth, N = ', num2str(Nconv)]);
   
   hax(3) = subplot(2,2,3);
-  pcolorjw(W.lon, W.lat, W.data_weight_rigid); colorbar
+  pcolorjw(W.lon, W.lat, W.data_weight_rigid);
+  shading flat; colorbar;
   title('data\_weight\_rigid')
 
   hax(4) = subplot(2,2,4);
-  pcolorjw(W.lon, W.lat, data_weight_smooth); colorbar
+  pcolorjw(W.lon, W.lat, data_weight_smooth);
+  shading flat; colorbar;
   title(['data\_weight\_smooth, N = ', num2str(Nconv)]);
 
   linkaxes(hax)

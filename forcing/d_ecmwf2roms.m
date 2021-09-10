@@ -485,7 +485,7 @@ for n = doFields,
 % integration from previous accumulation.
 % At 3 hour step don't change anything
 
-      if (F(n).scale < 0),
+      if (F(n).scale < 0)
         step = rem(frc_time,0.5)*24;
         if step == 3
           fieldfinal = field;

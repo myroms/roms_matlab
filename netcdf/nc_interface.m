@@ -27,6 +27,7 @@ function [method,url,ftype] = nc_interface(varargin)
 %
 %                 'NetCDF'         Classic NetCDF-3 file
 %                 'NetCDF4'        NetCDF-4/HDF5 file
+%                 'PnetCDF'        PnetCDF
 %                 'OpenDAP'        OpenDAP file
 %
 % Notes:
@@ -90,6 +91,8 @@ if (~url),
         ftype = 'NetCDF';                           % NetCDF classic
       elseif (signature(4) == 2)
         ftype = 'NetCDF';                           % NetCDF 64bit offset
+      elseif (signature(4) == 5)
+        ftype = 'PnetCDF';                          % PnetCDF classic
       end         
     elseif (strcmp(char(signature(2:4))', 'HDF'))
       ftype = 'NetCDF4';                            % NetCDF4/HDF5
