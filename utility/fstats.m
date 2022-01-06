@@ -23,11 +23,14 @@ function S=fstats(field)
 %    See License_ROMS.txt                           Hernan G. Arango        %
 %===========================================================================%
 
-S.min    = min(field(:));
-S.max    = max(field(:));
-S.mean   = mean(field(:));
-S.median = median(field(:));
-S.std    = std(field(:));
-S.var    = var(field(:));
+ind = ~isnan(field);
+
+S.checksum = bitcount(field(ind));
+S.min      = min(field(ind));
+S.max      = max(field(ind));
+S.mean     = mean(field(ind));
+S.median   = median(field(ind));
+S.std      = std(field(ind));
+S.var      = var(field(ind));
 
 return
