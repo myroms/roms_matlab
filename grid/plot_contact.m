@@ -26,6 +26,18 @@ function plot_contact(G, S)
 %=========================================================================%
 
 %--------------------------------------------------------------------------
+% Check if the nested grid structure has the 'perimeter' field. If not,
+% determine the perimeter sub-structure.
+%--------------------------------------------------------------------------
+
+if (~isfield(S.grid, 'perimeter'))
+  P = grid_perimeter(G);
+  for ng=1:S.Ngrids
+    S.grid(ng).perimeter = P.grid(ng).perimeter;
+  end
+end
+
+%--------------------------------------------------------------------------
 % Plot perimeters and boundary edged conectivity.
 %--------------------------------------------------------------------------
   

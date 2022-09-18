@@ -24,11 +24,11 @@ function cmap = cmocean(ColormapName,varargin)
 %          'haline'                   'delta'
 %          'solar'                    'diff'
 %          'ice'                      'curl'
-%          'gray'                     'tarn'
-%          'oxy'
-%          'deep'                     CONSTANT LIGHTNESS:
-%          'dense'                    'phase'
-%          'algae'
+%          'gray'                     'redblue'
+%          'oxy'                      'tarn'
+%          'deep'
+%          'dense'                    CONSTANT LIGHTNESS:                    
+%          'algae'                    'phase'
 %          'matter'
 %          'turbid'
 %          'speed'
@@ -116,7 +116,8 @@ function cmap = cmocean(ColormapName,varargin)
 %          cm_algae,  cm_amp,   cm_balance, cm_curl,  cm_deep,    cm_delta,
 %          cm_dense,  cm_gray,  cm_haline,  cm_ice,   cm_matter,  cm_oxy
 %          cm_phase,  cm_solar, cm_speed,   cm_tempo, cm_thermal, cm_turbid,
-%          inferno,   magma,    parula,     plasma,   cividis,    viridis
+%          inferno,   magma,    parula,     plasma,   redblue,    cividis,
+%          viridis
   
 % svn $Id$
 
@@ -234,6 +235,8 @@ switch lower(ColormapName(1:3))
       cmap = plasma;
    case 'rai' 
       cmap = cm_rain;
+   case 'red' 
+      cmap = redblue;
    case 'sol' 
       cmap = cm_solar;
    case 'spe' 
