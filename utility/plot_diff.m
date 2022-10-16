@@ -140,7 +140,9 @@ if (nvdims > 0)
           F.X = G.x_rho./1000;
           F.Y = G.y_rho./1000;
         end
-        Z = G.z_r;     
+        if (isfield(G, 'z_r'))
+	  Z = G.z_r;
+	end
      case {'xi_u','lon_u'}
         mask = G.mask_u;
         if (G.spherical)
@@ -150,7 +152,9 @@ if (nvdims > 0)
           F.X = G.x_u./1000;
           F.Y = G.y_u./1000;
         end
-        Z = G.z_u;     
+        if (isfield(G, 'z_u'))
+          Z = G.z_u;     
+        end
      case {'xi_v','lon_v'}
         mask = G.mask_v;
         if (G.spherical)
@@ -160,7 +164,9 @@ if (nvdims > 0)
           F.X = G.x_v./1000;
           F.Y = G.y_v./1000;
         end
-        Z = G.z_v;     
+        if (isfield(G, 'z_v'))
+          Z = G.z_v;     
+        end
     end
   end
 end
@@ -246,7 +252,7 @@ if (is3d)
   else
     title(['File: ', untexlabel(ncname), blanks(4),                       ...
            'Var = ', vname,                                               ...
-           ',  Level = ', num2str(Km),                                    ...
+           ',  Level = ', num2str(Level),                                 ...
            ',  Rec = ', num2str(rec1),'/', num2str(rec2) ]);
   end  
 else

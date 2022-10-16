@@ -12,6 +12,16 @@ function F = coarse2fine(Ginp,Gout,Gfactor,varargin)
 % define the physical boundaries of the refined grid. The grid refinement
 % coefficient is specified with Gfactor.
 %
+% Users need to be aware of potential problems with spherical grids because
+% we do not know how the grid generation tool computed the ROMS metrics
+% (pm, pn, and angle) for the donor grid. Therefore, any procedure here
+% will not exactly conserve coarse-to-fine area because of inconsistent
+% (lon, lat) distance methodology. One possible solution is to recompute
+% the ROMS metrics for the donor using "roms_metrics.m" based only on its
+% (lon,lat) coordinates. Thus, we have an invariant way to compute the
+% metrics for the coarse and finer grids when calling this function.
+% See "roms_metrics" for methodology details.
+%
 % On Input:
 %
 %    Ginp       Input  coaser Grid NetCDF file name (character string)
@@ -35,7 +45,7 @@ function F = coarse2fine(Ginp,Gout,Gfactor,varargin)
 %=========================================================================%
 
 % Check refinement factor. The values below (1; 3:2:27) are somewhat
-% rediculous for an application in ROMS. However, these values are
+% ridiculous for an application in ROMS. However, these values are
 % possible if the strategy is extract the final grids to be used
 % in ROMS from an intermediate very fine resolution grid. It Also
 % allows Gfactor=1 to extract a small grid from a larger one.
@@ -83,7 +93,7 @@ end
 
 F.refine_factor = Gfactor;   % These values are needed in 'refined_gridvar'
 F.parent_Imin = Imin;        % for the 9-points quadratic conservative
-F.parent_Imax = Imax;        % interpolation
+F.parent_Imax = Imax;        % interpolation, if requested.
 F.parent_Jmin = Jmin;
 F.parent_Jmax = Jmax;
 
@@ -91,7 +101,7 @@ F.parent_Jmax = Jmax;
 
 spherical = C.spherical;
 
-if spherical
+if (spherical)
   F.spherical = 1;
 else
   F.spherical = 0;
@@ -109,7 +119,7 @@ end
 
 curvilinear = C.curvilinear;
 
-if curvilinear
+if (curvilinear)
   F.curvilinear = 1;
 else
   F.curvilinear = 0;
@@ -167,14 +177,14 @@ if got.x_v && got.y_v
   field_list = [field_list, 'x_v', 'y_v'];
 end
 
-if spherical
+if (spherical)
   field_list = [field_list, 'lon_rho', 'lat_rho',                       ...
                             'lon_psi', 'lat_psi',                       ...
                             'lon_u',   'lat_u',                         ...
                             'lon_v',   'lat_v'];
 end
 
-if got.mask_rho || got.mask_psi || got.mask_u || got.mask_v
+if (got.mask_rho || got.mask_psi || got.mask_u || got.mask_v)
   field_list = [field_list, 'mask_rho', 'mask_psi',                     ...
                             'mask_u',   'mask_v'];
 end
@@ -196,35 +206,35 @@ C.Mr = Mp;
 
 % Check refinement region.
 
-if Imin >= Imax
+if (Imin >= Imax)
   error([' COARSE2FINE: Imin >= Imax,    ',                             ...
          ' Imin = ', num2str(Imin), ',',                                ...
          ' Imax = ', num2str(Imax)]);
 end
 
-if Jmin >= Jmax
+if (Jmin >= Jmax)
   error([' COARSE2FINE: Jmin >= Jmax,    ',                             ...
          ' Jmin = ', num2str(Jmin), ','                                 ...
          ' Jmax = ', num2str(Jmax)]);
 end
 
-if Imin < 1
+if (Imin < 1)
   error([' COARSE2FINE: Imin < 1,   ',                                  ...
          ' Imin = ', num2str(Imax)]);
 end
 
-if Imax > L
+if (Imax > L)
   error([' COARSE2FINE: Imax > L,    ',                                 ...
          ' Imax = ', num2str(Imax), ',',                                ...
          ' L = ', num2str(Lp-half)]);
 end
 
-if Jmin < 1
+if (Jmin < 1)
   error([' COARSE2FINE: Jmin < 1,   ',                                  ...
          ' Jmin = ', num2str(Imax)]);
 end
 
-if Jmax > M
+if (Jmax > M)
   error([' COARSE2FINE: Jmax > M,    ',                                 ...
          ' Jmax = ', num2str(Jmax), ',',                                ...
          ' M = ', num2str(Mp-half)]);
@@ -267,13 +277,6 @@ else
   UseGriddedInterpolant = false;
 end
 
-% There are a couple of options for processing special grid variables:
-% 'h', 'f', 'angle', 'pm', 'pn', 'dmde', and 'dndx'.  We can either
-% use quadratic conservative interpolation or regular interpolation.
-
-Qconservative = false;        % quadratic conservative interpolation
-                              % off by default
-
 % Set method (linear or cubic spline) for regular interpolation of grid
 % coordinates (x,y) and/or (lon,lat) coordinates. The method is 'linear'
 % for idealized Cartesian coordinates applications or 'cubic' for
@@ -296,8 +299,8 @@ disp('Interpolating from coarse to fine ...');
 
 if (got.x_rho && got.y_rho) || (got.lon_rho && got.lat_rho)
 
-  if got.x_rho && got.y_rho
-    if UseGriddedInterpolant
+  if (got.x_rho && got.y_rho)
+    if (UseGriddedInterpolant)
       RCr = griddedInterpolant(XrC, YrC, C.x_rho, method);
 
                                 F.x_rho = RCr(XrF, YrF);
@@ -308,8 +311,8 @@ if (got.x_rho && got.y_rho) || (got.lon_rho && got.lat_rho)
     end
   end
 
-  if got.lon_rho && got.lat_rho
-    if UseGriddedInterpolant
+  if (got.lon_rho && got.lat_rho)
+    if (UseGriddedInterpolant)
       RCr = griddedInterpolant(XrC, YrC, C.lon_rho, method);
 
                                 F.lon_rho = RCr(XrF, YrF);
@@ -330,8 +333,8 @@ end
 
 if (got.x_psi && got.y_psi) || (got.lon_psi && got.lat_psi)
 
-  if got.x_psi && got.y_psi
-    if UseGriddedInterpolant
+  if (got.x_psi && got.y_psi)
+    if (UseGriddedInterpolant)
       RCp = griddedInterpolant(XpC, YpC, C.x_psi, method);
 
                                  F.x_psi = RCp(XpF, YpF);
@@ -342,8 +345,8 @@ if (got.x_psi && got.y_psi) || (got.lon_psi && got.lat_psi)
     end
   end
 
-  if got.lon_psi && got.lat_psi
-    if UseGriddedInterpolant
+  if (got.lon_psi && got.lat_psi)
+    if (UseGriddedInterpolant)
       RCp = griddedInterpolant(XpC, YpC, C.lon_psi, method);
 
                                  F.lon_psi = RCp(XpF, YpF);
@@ -364,8 +367,8 @@ end
 
 if (got.x_u && got.y_u) || (got.lon_u && got.lat_u)
 
-  if got.x_u && got.y_u
-    if UseGriddedInterpolant
+  if (got.x_u && got.y_u)
+    if (UseGriddedInterpolant)
       RCu = griddedInterpolant(XuC, YuC, C.x_u, method);
 
                                F.x_u = RCu(XuF, YuF);
@@ -376,8 +379,8 @@ if (got.x_u && got.y_u) || (got.lon_u && got.lat_u)
     end
   end
 
-  if got.lon_u && got.lat_u
-    if UseGriddedInterpolant
+  if (got.lon_u && got.lat_u)
+    if (UseGriddedInterpolant)
       RCu = griddedInterpolant(XuC, YuC, C.lon_u, method);
 
                                F.lon_u = RCu(XuF, YuF);
@@ -398,8 +401,8 @@ end
 
 if (got.x_v && got.y_v) || (got.lon_v && got.lat_v)
 
-  if got.x_v && got.y_v
-    if UseGriddedInterpolant
+  if (got.x_v && got.y_v)
+    if (UseGriddedInterpolant)
       RCv = griddedInterpolant(XvC, YvC, C.x_v, method);
 
                              F.x_v = RCv(XvF, YvF);
@@ -410,7 +413,7 @@ if (got.x_v && got.y_v) || (got.lon_v && got.lat_v)
     end
   end
 
-  if got.lon_v && got.lat_v
+  if (got.lon_v && got.lat_v)
     if UseGriddedInterpolant
       RCv = griddedInterpolant(XvC, YvC, C.lon_v, method);
 
@@ -430,7 +433,7 @@ end
 
 % Get grid lengths.
 
-if got.x_psi && got.y_psi
+if (got.x_psi && got.y_psi)
   F.xl = max(F.x_psi(:)) - min(F.x_psi(:));
   F.el = max(F.y_psi(:)) - min(F.y_psi(:));
 else
@@ -440,70 +443,45 @@ end
 
 %--------------------------------------------------------------------------
 % Important grid variables ('h', 'f', 'angle', 'pm', 'pn', 'dmde', and
-% 'dndx') may required special treatment. We can eiter use quadratic
-% conservative interpolation or regular interpolation.
-%
-% The quadratic conservative interopolation (Clark and Farley,1984;
-% equations 30-36) is done in function 'refined_gridvar'. The interpolation
-% is reversible between coarse-to-fine and fine-to-coarse:
-%
-%       AVG[F.field(:,:)_i , i=1,Gfactor**2] = C.field(Idg,Jdg)
-%
-% where (Idg,Jdg) are the indices of the coarse grid donor cell contatining
-% the finer grid.
-%
-% Clark, T.L. and R.D. Farley, 1984:  Severe Downslope Windstorm
-%   Calculations in Two and Three Spatial Dimensions Using Anelastic
-%   Interative Grid Nesting: A Possible Mechanism for Gustiness,
-%   J. Atmos. Sci., 329-350.
+% 'dndx') may required special treatment. We can use 'refined_gridvar' or
+% 'roms_metrics'.
 %--------------------------------------------------------------------------
+
+% If spherical grids, compute ROMS metrics using robust Shchepetkin grid
+% GUI approach from (lon, lat) coordinates.
+
+if (spherical)
+  FM = roms_metrics(F, false, false);    % (optimal algorithm)
+end
+
+% Set interpolation method for the 'refined_grivar' approach.
+
+  Fmethod = 'linear';        % C0 continuity
+% Fmethod = 'spline';        % C2 continuity: first and second derivatives
+% Fmethod = 'quadratic';     % Clark and Farley (1984)
 
 % Coriolis parameter.
 
-if Qconservative
-  F.f = refined_gridvar(C, F, 'f');
-else
-  if UseGriddedInterpolant
-    RCr.Values = C.f;
-    F.f = RCr(XrF, YrF);
-  else
-    F.f = interp2(XrC', YrC', C.f', XrF, YrF, method);
-  end
-end
+R.f = refined_gridvar(C, F, 'f', Fmethod);
 
 % Curvilinear angle.
 
-if got.angle
-  if Qconservative
-    F.angle = refined_gridvar(C, F, 'angle');
-  else
-    if UseGriddedInterpolant
-      RCr.Values = C.angle;
-      F.angle = RCr(XrF, YrF);
-    else
-      F.angle = interp2(XrC', YrC', C.angle', XrF, YrF, method);
-    end
-  end
+if (got.angle)
+  if (spherical)                         % use values from "roms_metrics"
+    F.angle = FM.angle;                  % (optimal algorithm)
+  else  
+    F.angle = refined_gridvar(C, F, 'angle', Fmethod);
+  end    
+else
+  R.angle = zeros(size(R.h));
 end
 
-% Bathymetry.
+% Bathymetry. If appropriate, clip bathymetry to donor grid minimum value.
 
+clip_bath = false;                       % turned off by default
 hmin = min(C.h(:));
 
-if Qconservative
-  F.h = refined_gridvar(C, F, 'h');
-else
-  if UseGriddedInterpolant
-    RCr.Values = C.h;
-    F.h = RCr(XrF, YrF);
-  else
-    F.h = interp2(XrC', YrC', C.h', XrF, YrF, method);
-  end
-end
-
-% If appropriate, clip bathymetry to donor grid minimum value.
-
-clip_bath = false;           % off by default
+F.h = refined_gridvar(C, F, 'h', Fmethod);
 
 if (clip_bath)
   ind = find(F.h < hmin);
@@ -514,59 +492,52 @@ end
   
 % Raw bathymetry.
 
-if got.hraw
+if (got.hraw)
   try
     C.hraw = nc_read(Ginp, 'hraw', 1);
-    if Qconservative
-      F.hraw = refined_gridvar(C, F, 'hraw');
-    else
-      if UseGriddedInterpolant
-        RCr.Values = C.hraw;
-        F.hraw = RCr(XrF, YrF);
-      else
-        F.hraw = interp2(XrC', YrC', C.hraw', XrF, YrF, method);
-      end
-    end
+    F.hraw = refined_gridvar(C, F, 'hraw', Fmethod);
   catch
     got.hraw = false;
   end
 end
 
-% Inverse grid spacing ('pm', 'pn') and curvilinear metric terms
-% d(n)/d(xi) and d(m)/d(eta).
+% Inverse grid spacing ('pm', 'pn'). Here, dx=1/pm and dy=1/pn.
 
-if Qconservative
-  DivideCoarse = true;      % The coarse value is divided by refinement
-                            % factor to guaranttee exact area conservation
-  
-  F.pm = refined_gridvar(C, F, 'pm', DivideCoarse);
-  F.pn = refined_gridvar(C, F, 'pn', DivideCoarse);
-
-  F.dndx = refined_gridvar(C, F, 'dndx');
-  F.dmde = refined_gridvar(C, F, 'dmde');
-else
-  if C.uniform              % Uniform grid distribution
-    dx = 1/unique(C.pm(:));
-    dy = 1/unique(C.pn(:));
-
-    F.pm = ones(size(F.h)) .* (Gfactor/dx);
-    F.pn = ones(size(F.h)) .* (Gfactor/dy);
-  
-    F.dndx = zeros(size(F.h));
-    F.dmde = zeros(size(F.h));
-  else
-    disp(' ');
-    if spherical
-      GreatCircle = true;
-      disp('Computing grid spacing: great circle distances');
-    else
-      GreatCircle = false;
-      disp('Computing grid spacing: Cartesian distances');
-    end
-    [F.pm, F.pn, F.dndx, F.dmde]=grid_metrics(F, GreatCircle); 
-  end
+if (spherical)                           % use values from "roms_metrics"
+  F.pm = FM.pm;                          % (optimal algorithm)
+  F.pn = FM.pn;
+  F.xl = FM.xl
+  F.el = FM.el
+else 
+  DivideCoarse = true;
+  F.pm = refined_gridvar(C, F, 'pm', Fmethod, DivideCoarse);
+  F.pn = refined_gridvar(C, F, 'pn', Fmethod, DivideCoarse);
 end
 
+% Curvilinear metric terms: d(n)/d(xi) and d(m)/d(eta).
+
+if (C.uniform)
+  R.dndx = zeros(size(R.h));
+  R.dmde = zeros(size(R.h));
+else
+  if (spherical)                         % use values from "roms_metrics"
+    F.dndx = FM.dndx;                    % (optimal algorithm)
+    F.dmde = FM.dmde;                    
+  else    
+    if (isfield(C,'dndx'))
+      F.dndx = refined_gridvar(C, F, 'dndx', Fmethod);
+    else
+      F.dndx = zeros(size(R.h));
+    end
+  
+    if (isfield(C,'dmde'))
+      F.dmde = refined_gridvar(C, F, 'dmde', Fmethod);
+    else
+      F.dmde = zeros(size(R.h));
+    end
+  end  
+end
+  
 % Land/sea masking: use nondimensional fractional coordinates. Use
 % nearest point interpolation.
 
@@ -697,7 +668,7 @@ end
 
 % If appropriate, write coastline data.
 
-if spherical && got.lon_coast && got.lat_coast
+if (spherical && got.lon_coast && got.lat_coast)
   add_coastline (Gout, C.lon_coast, C.lat_coast);
   if (status ~= 0), return, end
 end

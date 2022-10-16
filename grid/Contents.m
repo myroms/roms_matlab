@@ -35,10 +35,6 @@
 %   grid_extract      - Extracts a ROMS subdomain Grid NetCDF file for
 %                         a larger input grid.
 %
-%   grid_metrics      - Computes ROMS Grid horizontal metrics.
-%                         This function is deprecated. Use "roms_metrics"
-%                         instead.
-%
 %   grid_rotated      - Given a larger Grid NetCDF file, this function
 %                         extracts and creates a rotated subdomain
 %                         (Cartesian or Spherical) Grid NetCDF file
@@ -54,8 +50,7 @@
 %                         a particular ROMS application.
 %
 %   roms_metrics      - Robust function to computes the several ROMS grid
-%                         metrics from the (lon,lat) coordinates. It
-%                         replaces "grid_metrics".
+%                         metrics from the (lon,lat) coordinates.
 %
 %   spherical_grid    - Given a larger donor grid, this function
 %                       extracts a rotated Spherical grid centered at
