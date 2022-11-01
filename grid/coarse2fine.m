@@ -462,7 +462,7 @@ end
 
 % Coriolis parameter.
 
-R.f = refined_gridvar(C, F, 'f', Fmethod);
+F.f = refined_gridvar(C, F, 'f', Fmethod);
 
 % Curvilinear angle.
 
@@ -473,7 +473,11 @@ if (got.angle)
     F.angle = refined_gridvar(C, F, 'angle', Fmethod);
   end    
 else
-  R.angle = zeros(size(R.h));
+  if (spherical)
+    F.angle = zeros(size(F.lon_rho));
+  else
+    F.angle = zeros(size(F.x_rho));
+  end
 end
 
 % Bathymetry. If appropriate, clip bathymetry to donor grid minimum value.
@@ -506,8 +510,8 @@ end
 if (spherical)                           % use values from "roms_metrics"
   F.pm = FM.pm;                          % (optimal algorithm)
   F.pn = FM.pn;
-  F.xl = FM.xl
-  F.el = FM.el
+  F.xl = FM.xl;
+  F.el = FM.el;
 else 
   DivideCoarse = true;
   F.pm = refined_gridvar(C, F, 'pm', Fmethod, DivideCoarse);
@@ -517,8 +521,8 @@ end
 % Curvilinear metric terms: d(n)/d(xi) and d(m)/d(eta).
 
 if (C.uniform)
-  R.dndx = zeros(size(R.h));
-  R.dmde = zeros(size(R.h));
+  F.dndx = zeros(size(F.h));
+  F.dmde = zeros(size(F.h));
 else
   if (spherical)                         % use values from "roms_metrics"
     F.dndx = FM.dndx;                    % (optimal algorithm)
