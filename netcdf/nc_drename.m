@@ -99,6 +99,10 @@ end
 ncid  = netcdf.open(ncfile, 'nc_write');
 dimid = netcdf.inqDimID(ncid, Dname_old);
 
+% Put file into define mode.
+
+netcdf.reDef(ncid);
+
 % Rename dimension.
 
 netcdf.renameDim(ncid, dimid, Dname_new);
