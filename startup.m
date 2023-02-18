@@ -6,7 +6,7 @@ function startup
 
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2019 The ROMS/TOMS Group                            %
+%  Copyright (c) 2002-2023 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.txt                           Hernan G. Arango      %
 %=========================================================================%
@@ -34,6 +34,7 @@ path(path, fullfile(my_root, 'matlab', 'forcing', ''))
 path(path, fullfile(my_root, 'matlab', 'grid', ''))
 path(path, fullfile(my_root, 'matlab', 'grid_gui', ''))
 path(path, fullfile(my_root, 'matlab', 'initial', ''))
+path(path, fullfile(my_root, 'matlab', 'ioda', ''))
 path(path, fullfile(my_root, 'matlab', 'landmask', ''))
 path(path, fullfile(my_root, 'matlab', 'm_map', ''))
 path(path, fullfile(my_root, 'matlab', 'mex', ''))

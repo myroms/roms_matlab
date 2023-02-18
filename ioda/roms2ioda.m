@@ -23,8 +23,19 @@ function roms2ioda(ObsData, HisName, prefix, suffix)
 %    prefix      Output file prefix associated with application (string)
 %   
 %    suffix      Output file suffix associated with date and time, use
-%                  YYYYMMDD or YYYYMMDDhh (numeric or string)
-%  
+%                  YYYYMMDD or YYYYMMDDhh (numeric or string).
+%
+%                  NOTICE that the time of the output observations are
+%                  converted to 'seconds since' time of suffix.
+%
+%                  For example, if suffix =  20040103  or
+%                                  suffix = '20040103' then
+%
+%            int64 dateTime(Location);
+%                  dateTime:units = "seconds since 2004-01-03T00:00:00Z";
+%
+%                  Therefore, input and output time of the observations
+%                  may have different time references!
 %
 % Usage: Example to convert WC13 4D-Var observation file to create the
 %        following IODA-2 files:
@@ -47,7 +58,7 @@ function roms2ioda(ObsData, HisName, prefix, suffix)
 
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2022 The ROMS/TOMS Group                            %
+%  Copyright (c) 2002-2023 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.txt                           Hernan G. Arango      %
 %=========================================================================%
@@ -162,13 +173,12 @@ end
 if (got_ssh)
   if (~isempty(issh))
     has_depth  = false;
-    ioda_name  = 'absolute_dynamic_topography';
     Obs = extract_observations(S, issh, DateTimeIODA, has_depth);
     Obs.ncfile         = [prefix '_adt_' suffix '.nc4'];
-    Obs.nstring        = length(ioda_name);
     Obs.nvars          = 1;
     Obs.units          = {'meter'};
-    Obs.variable_names = {ioda_name};
+    Obs.ncvname        = {'absoluteDynamicTopography'};
+    Obs.variables_name = {'absolute_dynamic_topography'};
     Obs.datetime_ref   = DateTimeIODA;
     if (got_flagAtt)
       Obs.flag_values   = int32(P.flag_values(P.ssh));
@@ -185,13 +195,12 @@ if (got_temp)
   isst = find(S.type == 6 & S.Zgrid == G.N);
   if (~isempty(isst))
     has_depth = false;
-    ioda_name = 'sea_surface_temperature';
     Obs = extract_observations(S, isst, DateTimeIODA, has_depth);
     Obs.ncfile         = [prefix '_sst_' suffix '.nc4'];
-    Obs.nstring        = length(ioda_name);
     Obs.nvars          = 1;
     Obs.units          = {'C'};
-    Obs.variable_names = {ioda_name};
+    Obs.ncvname        = {'seaSurfaceTemperature'};
+    Obs.variables_name = {'sea_surface_temperature'};
     Obs.datetime_ref   = DateTimeIODA;
     if (got_flagAtt)
       sst_ind = contains(upper(P.flag_meanings), 'SST');
@@ -214,13 +223,12 @@ if (got_temp)
   ktemp = find(S.type == 6 & S.Zgrid ~= G.N);
   if (~isempty(ktemp))
     has_depth = true;
-    ioda_name = 'sea_water_temperature';
     Obs = extract_observations(S, ktemp, DateTimeIODA, has_depth);
     Obs.ncfile         = [prefix '_temp_' suffix '.nc4'];
-    Obs.nstring        = length(ioda_name);
     Obs.nvars          = 1;
     Obs.units          = {'C'};
-    Obs.variable_names = {ioda_name};
+    Obs.ncvname        = {'waterTemperature'};
+    Obs.variables_name = {'sea_water_temperature'};
     Obs.datetime_ref   = DateTimeIODA;
     if (got_flagAtt)
       sst_ind = contains(upper(P.flag_meanings(P.temp)), 'SST');
@@ -246,7 +254,6 @@ if (got_temp)
   ktemp = find(S.type == 6 & S.Zgrid ~= G.N);
   if (~isempty(ktemp))
     has_depth = true;
-    ioda_name = 'sea_water_potential_temperature';
     Obs = extract_observations(S, ktemp, DateTimeIODA, has_depth);
     
     p = sw_pres(abs(Obs.depth), Obs.latitude);      % decibars
@@ -256,10 +263,10 @@ if (got_temp)
     Obs.ObsValue = ptemp;
     
     Obs.ncfile         = [prefix '_ptemp_' suffix '.nc4'];
-    Obs.nstring        = length(ioda_name);
     Obs.nvars          = 1;
     Obs.units          = {'C'};
-    Obs.variable_names = {ioda_name};
+    Obs.ncvname        = {'waterPotentialTemperature'};
+    Obs.variables_name = {'sea_water_potential_temperature'};
     Obs.datetime_ref   = DateTimeIODA;
     if (got_flagAtt)
       sst_ind = contains(upper(P.flag_meanings(P.temp)), 'SST');
@@ -282,13 +289,12 @@ end
 if (got_salt)     
   if (~isempty(isalt))
     has_depth = true;
-    ioda_name = 'sea_water_practical_salinity';
     Obs = extract_observations(S, isalt, DateTimeIODA, has_depth);
     Obs.ncfile         = [prefix '_salt_' suffix '.nc4'];
-    Obs.nstring        = length(ioda_name);
     Obs.nvars          = 1;
     Obs.units          = {'dimensionless'};
-    Obs.variable_names = {ioda_name};
+    Obs.ncvname        = {'salinity'};
+    Obs.variables_name = {'sea_water_salinity'};
     Obs.datetime_ref   = DateTimeIODA;
     if (got_flagAtt)
       Obs.flag_values   = int32(P.flag_values(P.salt));
@@ -310,21 +316,21 @@ function [Obs] = extract_observations(S, ind, DateTimeIODA, has_depth);
 
 Obs = struct('ncfile'        , [],                                      ...
              'source'        , [],                                      ...
-             'ndatetime'     , [],                                      ...
              'nlocs'         , [],                                      ...
              'nobs'          , [],                                      ...
-             'nrecs'         , [],                                      ...
-             'nstring'       , [],                                      ...
              'nvars'         , [],                                      ...
              'units'         , [],                                      ...
+             'ncvname'       , [],                                      ...
              'variable_names', [],                                      ...
+             'TimeIODA'      , [],                                      ...
+	     'DateIODA'      , [],                                      ...
              'dateTime'      , [],                                      ...
              'date_time'     , [],                                      ...
              'depth'         , [],                                      ...
              'latitude'      , [],                                      ...
              'longitude'     , [],                                      ...
              'provenance'    , [],                                      ...
-             'record_number' , [],                                      ...
+             'sequenceNumber', [],                                      ...
              'ObsError'      , [],                                      ...
 	     'ObsValue'      , [],                                      ...
 	     'PreQC'         , []);
@@ -333,28 +339,36 @@ Obs = struct('ncfile'        , [],                                      ...
 
 Obs.source         = S.ncfile;
 
-Obs.ndatetime      = 20;
 Obs.nlocs          = length(ind);
-Obs.nobs           = length(ind);
-Obs.nrecs          = 1;
 Obs.nvars          = 1;
-Obs.date_time      = datestr(S.reference_time+S.time(ind),              ...
-                             'yyyy-mm-ddTHH:MM:SSZ');
+Obs.nobs           = Obs.nlocs * Obs.nvars;
 if (has_depth)
   Obs.depth        = S.depth(ind);
 end
 Obs.latitude       = S.lat(ind);
 Obs.longitude      = S.lon(ind);
 Obs.provenance     = S.provenance(ind);
-Obs.record_number  = int32(ones(size(Obs.longitude)));
+Obs.sequenceNumber = int32(1:Obs.nlocs);
 Obs.ObsError       = sqrt(S.error(ind));              % standard deviation
 Obs.ObsValue       = S.value(ind);
 Obs.PreQC          = int32(zeros(size(Obs.longitude)));
 
-% Compute dateTime seconds from reference time.
+% Compute dateTime seconds from IODA file reference time.
 
-ioda_epoch   = datenum(num2str(DateTimeIODA), 'yyyymmddHH');
-Obs.dateTime = int64(((S.reference_time+S.time(ind)) - ioda_epoch)*86400);
+ioda_epoch     = datenum(num2str(DateTimeIODA), 'yyyymmddHH');
+
+time_days      = S.reference_time + S.time(ind);
+ioda_time_days = time_days - ioda_epoch;        
+
+Obs.dateTime   = int64(ioda_time_days * 86400);        % seconds
+
+Obs.date_time  = cellstr(datestr(ioda_epoch + ioda_time_days,          ...
+                                 'yyyy-mm-ddTHH:MM:SSZ'));
+
+% Set IODA file time reference global attributes.
+
+Obs.TimeIODA = DateTimeIODA;
+Obs.DateIODA = datestr(ioda_epoch, 'yyyy-mm-ddTHH:MM:SSZ');
 
 return
 
@@ -368,7 +382,7 @@ disp(['*** Writing  observations file:  ', Obs.ncfile]);
 % Write out 'MetaData' Group variables.
 
 ncwrite(Obs.ncfile, 'MetaData/dateTime', int64(Obs.dateTime));
-ncwrite(Obs.ncfile, 'MetaData/date_time', transpose(Obs.date_time));
+ncwrite(Obs.ncfile, 'MetaData/date_time', Obs.date_time);
 if (~isempty(Obs.depth))
   ncwrite(Obs.ncfile, 'MetaData/depth', Obs.depth);
 end
@@ -377,26 +391,27 @@ ncwrite(Obs.ncfile, 'MetaData/longitude', Obs.longitude);
 if (~isempty(Obs.provenance))
   ncwrite(Obs.ncfile, 'MetaData/provenance', Obs.provenance);
 end
-ncwrite(Obs.ncfile, 'MetaData/record_number', Obs.record_number);
+ncwrite(Obs.ncfile, 'MetaData/sequenceNumber', Obs.sequenceNumber);
+ncwrite(Obs.ncfile, 'MetaData/variables_name', Obs.variables_name);
 
 % Write out 'ObsError' Group variables.
 
 for i = 1:Obs.nvars
-  Vname = ['/ObsError/' Obs.variable_names{i}];
-  ncwrite(Obs.ncfile, Vname, Obs.ObsError);
+  Vname = ['/ObsError/' Obs.ncvname{i}];
+  ncwrite(Obs.ncfile, Vname, Obs.ObsError{i});
 end
 
 % Write out 'ObsValue' Group variables.
 
 for i = 1:Obs.nvars
-  Vname = ['/ObsValue/' Obs.variable_names{i}];
+  Vname = ['/ObsValue/' Obs.ncvname{i}];
   ncwrite(Obs.ncfile, Vname, Obs.ObsValue);
 end
 
 % Write out 'ObsQC' Group variables.
 
 for i = 1:Obs.nvars
-  Vname = ['/PreQC/' Obs.variable_names{i}];
+  Vname = ['/PreQC/' Obs.ncvname{i}];
   ncwrite(Obs.ncfile, Vname, Obs.PreQC);
 end
 

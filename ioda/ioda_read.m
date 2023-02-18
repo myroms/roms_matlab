@@ -17,17 +17,15 @@ function [S]=ioda_read(ncfile)
 %    S       IODA Observations data (structure array):
 %
 %              S.ncfile           NetCDF file name (string)
-%              S.ndatetime        number of datetime
-%              S.nlocs            number of locations
-%              S.nobs             number of observations
-%              S.nrecs            number of records
-%              S.nstring          number of string
+%              S.souce            Native 4D-Var source file (string)
+%              S.nlocs            number of observations
 %              S.nvars            number of variables
-%              S.datetime_ref     IODA reference time YYYYMMDDHH
+%              S.epoch            IODA time reference YYYYMMDDHH
+%              S.datenum          epoch date number
+%              S.dateTimeRef      IODA time reference string     
 %              S.variable_names   UFO/IODA standard name
 %              S.dateTime         seconds since yyyy-mm-ddTHH:MM:SSZ
 %              S.date_time        date and time ISO 8601 UTC string
-%              S.datenum          date number
 %              S.depth            depth of observations
 %              S.longitude        longitude of observations
 %              S.latitude         latitude  of observations
@@ -40,54 +38,45 @@ function [S]=ioda_read(ncfile)
 
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2022 The ROMS/TOMS Group                            %
+%  Copyright (c) 2002-2023 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.txt                           Hernan G. Arango      %
 %=========================================================================%
   
 % Initialize.
 
-Obs = struct('ncfile'        , [],                                      ...
-             'ndatetime'     , [],                                      ...
-             'nlocs'         , [],                                      ...
-             'nobs'          , [],                                      ...
-             'nrecs'         , [],                                      ...
-             'nstring'       , [],                                      ...
-             'nvars'         , [],                                      ...
-             'datetime_ref'  , [],                                      ...
-             'source'        , [],                                      ...
-             'variable_names', [],                                      ...
-             'date_time'     , [],                                      ...
-             'depth'         , [],                                      ...
-             'latitude'      , [],                                      ...
-             'longitude'     , [],                                      ...
-             'provenance'    , [],                                      ...
-             'value'         , [],                                      ...
-             'units'         , [],                                      ...
-             'error'         , []);
+S = struct('ncfile'           , [],                                     ...
+           'source'           , [],                                     ...
+           'nlocs'            , [],                                     ...
+           'nvars'            , [],                                     ...
+           'epoch'            , [],                                     ...
+           'datenum'          , [],                                     ...
+           'datetimeRef'      , [],                                     ...
+           'iodaVarName'      , [],                                     ...
+           'variables_name'   , [],                                     ...
+           'shortname'        , [],                                     ...
+           'units'            , [],                                     ...
+           'dateTime'         , [],                                     ...
+           'date_time'        , [],                                     ...
+           'latitude'         , [],                                     ...
+           'longitude'        , [],                                     ...
+           'provenance'       , []);
 
 % Inquire NetCDF4 file.
 
 I = ncinfo(ncfile);
 
 S.ncfile = ncfile;
-S.ndatetime  = I.Dimensions(strcmp({I.Dimensions.Name}, 'ndatetime')).Length;
-S.nlocs      = I.Dimensions(strcmp({I.Dimensions.Name}, 'nlocs'    )).Length;
-S.nobs       = I.Dimensions(strcmp({I.Dimensions.Name}, 'nobs'     )).Length;
-S.nrecs      = I.Dimensions(strcmp({I.Dimensions.Name}, 'nrecs'    )).Length;
-S.nstring    = I.Dimensions(strcmp({I.Dimensions.Name}, 'nstring'  )).Length;
-S.nvars      = I.Dimensions(strcmp({I.Dimensions.Name}, 'nvars'    )).Length;
+S.nlocs  = I.Dimensions(strcmp({I.Dimensions.Name}, 'Location' )).Length;
+S.nvars  = I.Dimensions(strcmp({I.Dimensions.Name}, 'nvars'    )).Length;
 
 % Get IODA reference time YYYYMMDDHH global attribute.
 
-S.datetime_ref  = I.Attributes(strcmp({I.Attributes.Name}, 'date_time'  )).Value;
-S.source        = I.Attributes(strcmp({I.Attributes.Name}, 'source_file')).Value;
+S.epoch       = I.Attributes(strcmp({I.Attributes.Name}, 'date_time'  )).Value;
+S.datetimeRef = I.Attributes(strcmp({I.Attributes.Name}, 'datetimeReference'  )).Value;
+S.source      = I.Attributes(strcmp({I.Attributes.Name}, 'sourceFiles')).Value;
 
-% Read in 'VarMetaData' Group.
-
-Vnames = transpose(ncread(ncfile, '/VarMetaData/variable_names'));
-
-S.variable_names = {Vnames};
+S.datenum     = datenum(num2str(S.epoch), 'yyyymmddHH');
 
 % Read in 'MetaData' Group.
 
@@ -97,37 +86,95 @@ S.longitude = double(ncread(ncfile, '/MetaData/longitude'));
 S.latitude  = double(ncread(ncfile, '/MetaData/latitude'));
 
 if (any(strcmp({G.Variables.Name}, 'depth')))
-  S.depth   = double(ncread(ncfile, '/MetaData/depth'));
+  S.depth = double(ncread(ncfile, '/MetaData/depth'));
 end
 
-S.date_time = transpose(ncread(ncfile, '/MetaData/date_time'));
-S.datenum   = datenum(S.date_time, 'yyyy-mm-ddTHH:MM:SSZ');
+if (any(strcmp({G.Variables.Name}, 'provenance')))
+  S.provenance = double(ncread(ncfile, '/MetaData/provenance'));
+end
 
-S.timeDate = double(ncread(ncfile, '/MetaData/time'));
+S.variables_name = cellstr(ncread(ncfile, '/MetaData/variables_name'))';
+
+S.dateTime = double(ncread(ncfile, '/MetaData/dateTime'));
+
+S.date_time = ncread(ncfile, '/MetaData/date_time');
+
+% Set IODA NetCDF variables.
+
+for i = 1:S.nvars
+  string = I.Groups(2).Variables(i).Name;
+  S.iodaVarName{i} = string;
+end
+
+% Read in 'EffectiveError' Group.
+
+if (any(strcmp({I.Groups.Name}, 'EffectiveError')))
+  for i = 1:S.nvars
+    Vname = strcat('/EffectiveError/', S.iodaVarName{i});
+    field = double(ncread(ncfile, Vname));
+    S.EffectiveError{i} = field;
+  end
+end
+
+% Read in 'EffectiveQC' Group.
+
+if (any(strcmp({I.Groups.Name}, 'EffectiveQC')))
+  for i = 1:S.nvars
+    Vname = strcat('/EffectiveQC/', S.iodaVarName{i});
+    field = double(ncread(ncfile, Vname));
+    S.EffectiveQC{i} = field;
+  end
+end
+
+% Read in 'ObsBias' Group.
+
+if (any(strcmp({I.Groups.Name}, 'ObsBias')))
+  for i = 1:S.nvars
+    Vname = strcat('/ObsError/', S.iodaVarName{i});
+    field = double(ncread(ncfile, Vname));
+    S.ObsBias{i} = field;
+  end
+end
+
+% Read in 'ObsError' Group.
+
+if (any(strcmp({I.Groups.Name}, 'ObsError')))
+  for i = 1:S.nvars
+    Vname = strcat('/ObsError/', S.iodaVarName{i});
+    field = double(ncread(ncfile, Vname));
+    S.ObsError{i} = field;
+  end
+end
 
 % Read in 'ObsValue' Group.
 
-for i = 1:S.nvars
-  Vname = ['/ObsValue/' S.variable_names{i}];
-  values = double(ncread(ncfile, Vname));
-  S.values(i) = {values};
-  S.units(i) = {nc_getatt(ncfile, 'units', Vname)};
+if (any(strcmp({I.Groups.Name}, 'ObsValue')))
+  for i = 1:S.nvars
+    Vname = strcat('/ObsValue/', S.iodaVarName{i});
+    field = double(ncread(ncfile, Vname));
+    S.ObsValue{i} = field;
+    S.units{i}  = nc_getatt(ncfile, 'units', Vname);
+  end
 end
 
-% Read in 'ObsError' Group.
+% Read in 'PreQC' Group.
 
-for i = 1:S.nvars
-  Vname = ['/ObsError/' S.variable_names{i}];
-  errors = double(ncread(ncfile, Vname));
-  S.errors(i) = {errors};
+if (any(strcmp({I.Groups.Name}, 'PreQC')))
+  for i = 1:S.nvars
+    Vname = strcat('/PreQC/', S.iodaVarName{i});
+    field = double(ncread(ncfile, Vname));
+    S.PreQC{i} = field;
+  end
 end
 
-% Read in 'ObsError' Group.
+% Read in 'hofx' Group.
 
-for i = 1:S.nvars
-  Vname = ['/PreQC/' S.variable_names{i}];
-  preqc = double(ncread(ncfile, Vname));
-  S.PreQC(i) = {preqc};
+if (any(strcmp({I.Groups.Name}, 'hofx')))
+  for i = 1:S.nvars
+    Vname = strcat('/hofx/', S.iodaVarName{i});
+    field = double(ncread(ncfile, Vname));
+    S.hofx{i} = field;
+  end
 end
 
 return

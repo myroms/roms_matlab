@@ -41,7 +41,7 @@ function F = plot_diff (G, dir1, dir2, ncname, vname, rec1, varargin)
 
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2022 The ROMS/TOMS Group                            %
+%  Copyright (c) 2002-2023 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.txt                           Hernan G. Arango      %
 %=========================================================================%
@@ -141,8 +141,8 @@ if (nvdims > 0)
           F.Y = G.y_rho./1000;
         end
         if (isfield(G, 'z_r'))
-	  Z = G.z_r;
-	end
+          Z = G.z_r;
+        end
      case {'xi_u','lon_u'}
         mask = G.mask_u;
         if (G.spherical)
@@ -159,7 +159,7 @@ if (nvdims > 0)
         mask = G.mask_v;
         if (G.spherical)
           F.X = G.lon_v;
-          Y = G.lat_v;
+          F.Y = G.lat_v;
         else
           F.X = G.x_v./1000;
           F.Y = G.y_v./1000;
@@ -257,7 +257,7 @@ if (is3d)
   end  
 else
   title(['File: ', untexlabel(ncname), blanks(4),                         ...
-	 'Var = ', vname,                                                 ...
+         'Var = ', vname,                                                 ...
          ',  Rec = ', num2str(rec1),'/', num2str(rec2) ]);
 end
 xlabel(['Min = ', num2str(Dmin), blanks(4), 'Max = ', num2str(Dmax)]);
