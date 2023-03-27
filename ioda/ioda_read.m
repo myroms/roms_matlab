@@ -60,7 +60,8 @@ S = struct('ncfile'           , [],                                     ...
            'date_time'        , [],                                     ...
            'latitude'         , [],                                     ...
            'longitude'        , [],                                     ...
-           'provenance'       , []);
+           'provenance'       , [],                                     ...
+           'sequenceNumber'   , []);
 
 % Inquire NetCDF4 file.
 
@@ -91,6 +92,14 @@ end
 
 if (any(strcmp({G.Variables.Name}, 'provenance')))
   S.provenance = double(ncread(ncfile, '/MetaData/provenance'));
+else
+  S = rmfield(S, 'provenance');
+end
+
+if (any(strcmp({G.Variables.Name}, 'sequenceNumber')))
+  S.sequenceNumber = double(ncread(ncfile, '/MetaData/sequenceNumber'));
+else
+  S = rmfield(S, 'sequenceNumber');
 end
 
 S.variables_name = cellstr(ncread(ncfile, '/MetaData/variables_name'))';
@@ -167,13 +176,53 @@ if (any(strcmp({I.Groups.Name}, 'PreQC')))
   end
 end
 
-% Read in 'hofx' Group.
+% Read in 'hofx' Group: Model at observation locations, H(x).
 
 if (any(strcmp({I.Groups.Name}, 'hofx')))
   for i = 1:S.nvars
     Vname = strcat('/hofx/', S.iodaVarName{i});
     field = double(ncread(ncfile, Vname));
     S.hofx{i} = field;
+  end
+end
+
+% Read in 'hofx0' Group: Initial H(x).
+
+if (any(strcmp({I.Groups.Name}, 'hofx0')))
+  for i = 1:S.nvars
+    Vname = strcat('/hofx0/', S.iodaVarName{i});
+    field = double(ncread(ncfile, Vname));
+    S.hofx0{i} = field;
+  end
+end
+
+% Read in 'hofx1' Group: Final H(x).
+
+if (any(strcmp({I.Groups.Name}, 'hofx1')))
+  for i = 1:S.nvars
+    Vname = strcat('/hofx1/', S.iodaVarName{i});
+    field = double(ncread(ncfile, Vname));
+    S.hofx1{i} = field;
+  end
+end
+
+% Read in 'oman' Group: Observation minus analysis.
+
+if (any(strcmp({I.Groups.Name}, 'oman')))
+  for i = 1:S.nvars
+    Vname = strcat('/oman/', S.iodaVarName{i});
+    field = double(ncread(ncfile, Vname));
+    S.oman{i} = field;
+  end
+end
+
+% Read in 'ombg' Group: Observation minus background.
+
+if (any(strcmp({I.Groups.Name}, 'ombg')))
+  for i = 1:S.nvars
+    Vname = strcat('/ombg/', S.iodaVarName{i});
+    field = double(ncread(ncfile, Vname));
+    S.ombg{i} = field;
   end
 end
 

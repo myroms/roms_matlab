@@ -24,7 +24,8 @@ function P = hplot(G, F)
 %                    F.value        field values
 %                    F.Caxis        color axis
 %                    F.doMap        0: no, 1: m_map, 2: mapping toolbox
-%                    F.Contours     0: 'pcolor', 1: 'contourf'
+%                    F.ptype        0:  'pcolor',
+%                                   <0: 'contourf' with abs(ptype) contours
 %                    F.projection   map projection
 %                    F.gotCoast     coastline switch
 %                    F.lon_coast    coastline longitude
@@ -68,8 +69,6 @@ if (isfield(P, 'projection') & P.doMap > 0)
 end
 
 fill_land = true;                 % use patch (true) or draw coast (false)
-
-NC = 30;                          % number of contour levels
 
 Marks = false;                    % draw min/max marks
 
@@ -158,10 +157,11 @@ if (P.doMap == 1)                               % use m_map toolbox
                       'latitudes' ,[LatMin,LatMax]); 
   m_grid('tickdir','out','yaxisloc','left');
   hold on;
-  if (P.Contours)
-    [H,C]=m_contourf(P.X, P.Y, nanland(P.value,G), NC);
+  if (P.ptype)
+    NC = abs(P.ptype);
+    [C,H] = m_contourf(P.X, P.Y, nanland(P.value,G), NC);
   else
-    m_pcolor(P.X, P.Y, nanland(P.value,G));
+    H = m_pcolor(P.X, P.Y, nanland(P.value,G));
   end
 
 elseif (P.doMap == 2)                           % Matlab mapping toolbox
@@ -192,10 +192,11 @@ elseif (P.doMap == 2)                           % Matlab mapping toolbox
 
   geomap = defaultm(geomap);                    % adjust map structure
                                                 % set empty properties
-  if (P.Contours)
-    [H,C]=contourfm(P.Y, P.X, nanland(P.value,G), NC);
+  if (P.ptype)
+    NC = abs(P.ptype);
+    [C,H] = contourfm(P.Y, P.X, nanland(P.value,G), NC);
   else
-    pcolorm(P.Y, P.X, nanland(P.value,G));
+    H = pcolorm(P.Y, P.X, nanland(P.value,G));
   end   
   
   a = axis;                                     % coastline fill area
@@ -210,10 +211,11 @@ elseif (P.doMap == 2)                           % Matlab mapping toolbox
 
 else                                            % no map
 
-  if (P.Contours)
-    [H,C]=contourf(P.X, P.Y, nanland(P.value,G), NC);
+  if (P.ptype)
+    NC = abs(P.ptype);
+    [C,H] = contourf(P.X, P.Y, nanland(P.value,G), NC);
   else
-    pcolorjw(P.X, P.Y, nanland(P.value,G));
+    H = pcolorjw(P.X, P.Y, nanland(P.value,G));
   end
   hold on;
 
@@ -223,7 +225,8 @@ else                                            % no map
 
 end
 
-shading flat;
+%shading flat
+shading interp;
 colorbar;
 colormap(Cmap);
 if (P.Caxis(1) ~= P.Caxis(2)) 
@@ -239,6 +242,8 @@ if (P.doMap == 1)
     m_gshhs_i('color','k');
   end
 end
+
+P.pltHandle = H;
 
 %--------------------------------------------------------------------------
 % Set figure title and xlabel.

@@ -89,7 +89,8 @@ if (~isempty(strfind(Tattr, 'second')))
 end  
 iatt = strfind(Tattr, 'since');
 if (~isempty(iatt))
-  Torigin = Tattr(iatt+6:end);
+  iatt=iatt+6;
+  Torigin = Tattr(iatt:iatt+18);
   epoch   = datenum(Torigin,31);            % 'yyyy-mm-dd HH:MM:SS' 
   Tstring = datestr(epoch+Tvalue);
 else
@@ -111,7 +112,7 @@ F.diff      = F.value1 - F.value2;
 
 F.Caxis     = [-Inf Inf];
 F.doMap     = 0;
-F.Contours  = 0;
+F.ptype     = 0;
 F.gotCoast  = 0;
 F.wrtPNG    = false;
 

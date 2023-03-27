@@ -3,7 +3,8 @@ function F=plot_field(Gname, Hname, Vname, Tindex, varargin)
 %
 % PLOT_FIELD:  Plot requested ROMS variable from input NetCDF file
 %
-% F=plot_field(Gname, Hname, Vname, Tindex, Level, Caxis, Mmap, wrtPNG)
+% F=plot_field(Gname, Hname, Vname, Tindex, Level, Caxis, Mmap, ptype,
+%              wrtPNG)
 %
 % This function plots requested ROMS variable from input history
 % NetCDF file. This function is very useful when debugging a ROMS
@@ -39,6 +40,12 @@ function F=plot_field(Gname, Hname, Vname, Tindex, varargin)
 %    Mmap          Switch to use m_map utility (true or false)
 %                    (Optional, default: false)
 %
+%    ptype         Plot type (scalar)
+%                    (Optional, default: 0)
+%
+%                     ptype = 0     use pcolor
+%                     ptype < 0     use contourf with abs(ptype) colors
+%
 %    wrtPNG        Switch to write out PNG file (true or false)
 %                    (Optional, default: false)
 %
@@ -62,16 +69,15 @@ F = struct('ncname'     , [], 'Vname'     , [],                         ...
            'X'          , [], 'Y'         , [],                         ...
            'value'      , [], 'min'       , [], 'max'       , [],       ...
 	   'Caxis'      , [], 'doMap'     , [], 'projection', [],       ...
-           'Contours'   , [],                                           ...
+           'ptype'      , [],                                           ...
            'gotCoast'   , [], 'lon_coast' , [], 'lat_coast' , [],       ...
-           'wrtPNG'     , []);
+           'pltHandle'  , [], 'wrtPNG'    , []);
 
 F.projection = 'mercator';
 
 F.ncname = Hname;
 F.Vname = Vname;
 F.gotCoast = false;
-F.Contours = false;
 
 got.Mname = false;
 got.Xname = false;
@@ -96,6 +102,7 @@ switch numel(varargin)
     Level  = N;
     Caxis  = [-Inf Inf];
     Mmap   = false;
+    ptype  = 0;
     wrtPNG = false;
   case 1
     if (~isinf(varargin{1}))
@@ -105,6 +112,7 @@ switch numel(varargin)
     end
     Caxis  = [-Inf Inf];
     Mmap   = false;
+    ptype  = 0;
     wrtPNG = false;
   case 2
     if (~isinf(varargin{1}))
@@ -114,6 +122,7 @@ switch numel(varargin)
     end
     Caxis  = varargin{2};
     Mmap   = false;
+    ptype  = 0;
     wrtPNG = false;
   case 3
     if (~isinf(varargin{1}))
@@ -123,6 +132,7 @@ switch numel(varargin)
     end
     Caxis  = varargin{2};
     Mmap   = varargin{3};
+    ptype  = 0;
     wrtPNG = false;
   case 4
     if (~isinf(varargin{1}))
@@ -132,12 +142,24 @@ switch numel(varargin)
     end
     Caxis  = varargin{2};
     Mmap   = varargin{3};
-    wrtPNG = varargin{4};
+    ptype  = varargin{4};
+    wrtPNG = false;
+  case 5
+    if (~isinf(varargin{1}))
+      Level = varargin{1};
+    else
+      Level = N;
+    end
+    Caxis  = varargin{2};
+    Mmap   = varargin{3};
+    ptype  = varargin{4};
+    wrtPNG = varargin{5};
 end
 
 F.Level = Level;
 F.Caxis = Caxis;
 F.doMap = Mmap;
+F.ptype = ptype;
 F.wrtPNG = wrtPNG;
 
 % Set ROMS Grid structure.
@@ -299,7 +321,7 @@ if (isfield(G,Mname))
     mask = G.(Mname);
   else
     error([' PLOT_FIELD - field '', Mname, ''',                          ...
-           ' is empty in receiver grid structure: G']);
+          ' is empty in receiver grid structure: G']);
   end
 else
   error([' PLOT_FIELD - unable to find field '', Mname, ''',             ...

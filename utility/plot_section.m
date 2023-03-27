@@ -47,6 +47,9 @@ function F=plot_section(Gname, Hname, Vname, Tindex, orient, index,     ...
 %
 %    F             Requested 3D variable section (struc)
 %
+% To limit the depth axis to the upper 500m use:
+%
+%    axis([-Inf Inf -500 0)]
 
 % svn $Id$
 %=========================================================================%
@@ -384,7 +387,13 @@ switch orient
     V = nanland(V, M);
     s = squeeze(Y(index,:));
     Z = squeeze(Z(index,:,:));
-  case 'r'
+    if (G.spherical)                            % bathymetry
+      x = squeeze(G.lat_rho(index,:));
+    else
+      x = squeeze(G.y_rho(index,:));
+    end
+    z = -squeeze(G.h(index,:));
+ case 'r'
     V = squeeze(field(:,index,:)); [Im,Km]=size(V);
     m = squeeze(mask(:,index));
     M = repmat(m, [1 Km]);
@@ -392,6 +401,12 @@ switch orient
     s = squeeze(X(:,index));
     S = repmat(s, [1 Km]);
     Z = squeeze(Z(:,index,:));
+    if (G.spherical)                            % bathymetry
+      x = squeeze(G.lon_rho(:,index));
+    else
+      x = squeeze(G.x_rho(:,index));
+    end
+    z = -squeeze(G.h(:,index));
 end    
 
 V = V .* scale;
@@ -435,16 +450,22 @@ if (ptype ~= 0)
   figure;
 
   if (ptype < 0)
-    contourf(S,Z,V,abs(ptype));
+   [c,hp] = contourf(S,Z,V,abs(ptype));
   elseif (ptype == 1)
-    pcolor(S,Z,V);
+   hp = pcolor(S,Z,V);
   elseif (ptype == 1)
-    pcolorjw(S,Z,V);
+   hp = pcolorjw(S,Z,V);
   end
 
   shading interp;
   colorbar; colormap(Cmap); caxis(Caxis);
 
+  % plot bathymetry curve.
+
+  hold on;
+  area(x, z, min(z), 'FaceColor', Land, 'EdgeColor', Land);
+  hold off;
+  
   if (~isempty(Tname))
     ht = title([untexlabel(Vname), ':', blanks(4),                      ...
                 'Record = ', num2str(Tindex), ',', blanks(4),           ...
