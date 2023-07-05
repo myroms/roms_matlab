@@ -1,6 +1,6 @@
 # **ROMS Matlab Processing Scripts**
 
-![roms-jedi logo](https://www.myroms.org/trac/roms_src_600px.png)
+![roms_matlab](https://github.com/myroms/roms_matlab/assets/23062912/3e553ebc-84d4-4c5f-b332-81877c31d74b)
 
 The Regional Ocean Modeling System (**ROMS**) framework is intended for users
 interested in ocean modeling. Please check https://github.com/myroms for
