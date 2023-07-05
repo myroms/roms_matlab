@@ -2,17 +2,22 @@
 
 ![roms_matlab](https://github.com/myroms/roms_matlab/assets/23062912/3e553ebc-84d4-4c5f-b332-81877c31d74b)
 
+# **License**
+
+**Copyright (c) 2002-2023 The ROMS/TOMS Group**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+# Overview
+
 The Regional Ocean Modeling System (**ROMS**) framework is intended for users
 interested in ocean modeling. Please check https://github.com/myroms for
 instructions on registering into the **ROMS** community and downloading its source
 code and test repositories.
 
 This repository contains useful Matlab scripts that can be used for configuring
-**ROMS** applications and pre-and post-processing input and output data. Use the
-following command to download the **ROMS** Matlab repository:
-```
-git clone https://github.com/myroms/roms_matlab.git
-```
+**ROMS** applications and pre-and post-processing input and output data.
+
 | Tools   |  Description |
 | ------------- | -------------  |
 | **4dvar**         | **ROMS** 4D-Var data assimilation observations processing |
@@ -42,6 +47,12 @@ select the ones more appropriate for their applications. However, some **grid**
 and **utility** sub-directories scripts are the official version of **ROMS** for
 computing numerical kernel configurations and fields.
 
+# Instructions
+
+Use the following command to download the **ROMS** Matlab repository:
+```
+git clone https://github.com/myroms/roms_matlab.git
+```
 The **doxygen** version of **ROMS** is available at:
 ```
 https://www.myroms.org/doxygen
