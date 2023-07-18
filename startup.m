@@ -21,30 +21,29 @@ format longg
 % Change "my_root" to the appropriate path were these matlab scripts are
 % installed in your computer.
 
-my_home = getenv('HOME');
-my_root = strcat(my_home, '/ocean/repository');
+my_root = getenv('ROMS_ROOT_DIR');
 
-path(path, fullfile(my_root, 'matlab', '4dvar', ''))
-path(path, fullfile(my_root, 'matlab', 'bathymetry', ''))
-path(path, fullfile(my_root, 'matlab', 'boundary', ''))
-path(path, fullfile(my_root, 'matlab', 'coastlines', ''))
-path(path, fullfile(my_root, 'matlab', 'colormaps', ''))
-path(path, fullfile(my_root, 'matlab', 'coupling', ''))
-path(path, fullfile(my_root, 'matlab', 'forcing', ''))
-path(path, fullfile(my_root, 'matlab', 'grid', ''))
-path(path, fullfile(my_root, 'matlab', 'grid_gui', ''))
-path(path, fullfile(my_root, 'matlab', 'initial', ''))
-path(path, fullfile(my_root, 'matlab', 'ioda', ''))
-path(path, fullfile(my_root, 'matlab', 'landmask', ''))
-path(path, fullfile(my_root, 'matlab', 'm_map', ''))
-path(path, fullfile(my_root, 'matlab', 'mex', ''))
-path(path, fullfile(my_root, 'matlab', 'netcdf', ''))
-path(path, fullfile(my_root, 'matlab', 'seagrid', ''))
-path(path, fullfile(my_root, 'matlab', 'seagrid', 'presto', ''))
-path(path, fullfile(my_root, 'matlab', 'seawater', ''))
-path(path, fullfile(my_root, 'matlab', 't_tide', ''))
-path(path, fullfile(my_root, 'matlab', 'tidal_ellipse', ''))
-path(path, fullfile(my_root, 'matlab', 'utility', ''))
+path(path, fullfile(my_root, 'roms_matlab', '4dvar', ''))
+path(path, fullfile(my_root, 'roms_matlab', 'bathymetry', ''))
+path(path, fullfile(my_root, 'roms_matlab', 'boundary', ''))
+path(path, fullfile(my_root, 'roms_matlab', 'coastlines', ''))
+path(path, fullfile(my_root, 'roms_matlab', 'colormaps', ''))
+path(path, fullfile(my_root, 'roms_matlab', 'coupling', ''))
+path(path, fullfile(my_root, 'roms_matlab', 'forcing', ''))
+path(path, fullfile(my_root, 'roms_matlab', 'grid', ''))
+path(path, fullfile(my_root, 'roms_matlab', 'grid_gui', ''))
+path(path, fullfile(my_root, 'roms_matlab', 'initial', ''))
+path(path, fullfile(my_root, 'roms_matlab', 'ioda', ''))
+path(path, fullfile(my_root, 'roms_matlab', 'landmask', ''))
+path(path, fullfile(my_root, 'roms_matlab', 'm_map', ''))
+path(path, fullfile(my_root, 'roms_matlab', 'mex', ''))
+path(path, fullfile(my_root, 'roms_matlab', 'netcdf', ''))
+path(path, fullfile(my_root, 'roms_matlab', 'seagrid', ''))
+path(path, fullfile(my_root, 'roms_matlab', 'seagrid', 'presto', ''))
+path(path, fullfile(my_root, 'roms_matlab', 'seawater', ''))
+path(path, fullfile(my_root, 'roms_matlab', 't_tide', ''))
+path(path, fullfile(my_root, 'roms_matlab', 'tidal_ellipse', ''))
+path(path, fullfile(my_root, 'roms_matlab', 'utility', ''))
 
 % Load NetCDF Toolbox for OpenDAP support for versions 2008b or higher. 
 % However, this is not needed if version 2012a or higher since Matlab
