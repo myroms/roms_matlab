@@ -1,29 +1,25 @@
-function F = plot_diff (G, dir1, dir2, ncname, vname, rec1, varargin)
+function F = plot_diff_files (G, ncname1, ncname2, vname, rec, varargin)
   
 % PLOT_DIFF:  Plots field difference between two records or files
 %
-% F = plot_diff (G, dir1, dir2, ncname, vname, rec1, rec2, index, orient)
+% F=plot_diff_files (G, ncname1, ncname2, vname, rec, index, orient)
 %
-% This function plots the field difference between specified time records
-% in the same NetCDF file or between specified files with the same record.
+% This function plots the field difference between two files at the
+% specified time records.
+%
 % The plot can be a horizontal or vertical section.
 %
 % On Input:
 %
 %    G             A existing ROMS grid structure (struct array)
 %
-%    dir1          1st directory of ROMS NetCDF file (string)
-%
-%    dir1          2nd directory of ROMS NetCDF file (string)
-%
-%    ncname        ROMS NetCDF filename (string)
+%    ncname1       ROMS 1st NetCDF filename (string)
+%  
+%    ncname2       ROMS 2nd NetCDF filename (string)
 %  
 %    Vname         ROMS NetCDF variable name to process (string)
 %
-%    rec1          1st field/file time record to process (scalar)
-%
-%    rec2          2nd field/file time record to process (optional; scalar)
-%                    (default rec1 = rec2 for comparing files)
+%    rec           Field/file time record to process (scalar)
 %
 %    index         horizontal or vertical section index (optional; integer)
 %                    if horizontal, then   1 <= index <= N  
@@ -52,31 +48,24 @@ doSection = false;
 
 switch numel(varargin)
   case 0
-    rec2      = rec1;
     index     = [];
     orient    = [];
   case 1
-    rec2      = varargin{1};
-    index     = [];
+    index     = varargin{1};
     orient    = [];
   case 2
-    rec2      = varargin{1};
-    index     = varargin{2};
-    orient    = [];
-  case 3
-    rec2      = varargin{1};
-    index     = varargin{2};
-    orient    = varargin{3};
+    index     = varargin{1};
+    orient    = varargin{2};
     doSection = true;
 end
 
-F.ncname1 = strcat(dir1,'/',ncname);
-F.ncname2 = strcat(dir2,'/',ncname);
+F.ncname1 = ncname1;
+F.ncname2 = ncname2;
 F.Vname   = vname;
 F.Tname   = 'ocean_time';
-F.Tindex  = rec1;
-F.rec1    = rec1;
-F.rec2    = rec2;
+F.Tindex  = rec;
+F.rec1    = rec;
+F.rec2    = rec;
 
 % Get time string.
 
@@ -100,11 +89,11 @@ F.Tstring = Tstring;
 
 % Process field difference.
 
-F.value1    = nc_read(F.ncname1, vname, rec1);
+F.value1    = nc_read(F.ncname1, vname, F.rec1);
 F.min1      = min(F.value1(:));
 F.max1      = max(F.value1(:));
 F.checkval1 = bitcount(F.value1(:));
-F.value2    = nc_read(F.ncname2, vname, rec2);
+F.value2    = nc_read(F.ncname2, vname, F.rec2);
 F.min2      = min(F.value2(:));
 F.max2      = max(F.value2(:));
 F.checkval2 = bitcount(F.value2(:));
@@ -243,26 +232,27 @@ if (doSection)
 else
   P = hplot(G, F);
 end
-  
+
+[~,name1,~] = fileparts(ncname1);
+[~,name2,~] = fileparts(ncname2);
+
 if (is3d)
   if (doSection)
-    title(['File: ', untexlabel(ncname), blanks(4),                       ...
+    title(['File1: ', untexlabel(name1), blanks(4),                       ...
            'Var = ', vname,                                               ...
            ',  Along ', sec_index,                                        ...
-           ',  Rec = ', num2str(rec1),'/', num2str(rec2) ]);
+           ',  Rec = ', num2str(F.rec1),'/', num2str(F.rec2) ]);
   else
-    title(['File: ', untexlabel(ncname), blanks(4),                       ...
+    title(['File1: ', untexlabel(name1), blanks(4),                       ...
            'Var = ', vname,                                               ...
            ',  Level = ', num2str(Level),                                 ...
-           ',  Rec = ', num2str(rec1),'/', num2str(rec2) ]);
+           ',  Rec = ', num2str(F.rec1),'/', num2str(F.rec2) ]);
   end  
 else
-  title(['File: ', untexlabel(ncname), blanks(4),                         ...
+  title(['File1: ', untexlabel(name1), blanks(4),                         ...
          'Var = ', vname,                                                 ...
-         ',  Rec = ', num2str(rec1),'/', num2str(rec2) ]);
+         ',  Rec = ', num2str(F.rec1),'/', num2str(F.rec2) ]);
 end
 xlabel(['Min = ', num2str(Dmin), blanks(4), 'Max = ', num2str(Dmax)]);
 
 return
-
-
