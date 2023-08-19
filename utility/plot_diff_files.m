@@ -19,7 +19,9 @@ function F = plot_diff_files (G, ncname1, ncname2, vname, rec, varargin)
 %  
 %    Vname         ROMS NetCDF variable name to process (string)
 %
-%    rec           Field/file time record to process (scalar)
+%    rec           Field/file time record to process (scalar or vector)
+%                    if vector, rec(1) is used in ncname1
+%                               rec(2) is used in ncname2
 %
 %    index         horizontal or vertical section index (optional; integer)
 %                    if horizontal, then   1 <= index <= N  
@@ -63,9 +65,13 @@ F.ncname1 = ncname1;
 F.ncname2 = ncname2;
 F.Vname   = vname;
 F.Tname   = 'ocean_time';
-F.Tindex  = rec;
-F.rec1    = rec;
-F.rec2    = rec;
+F.Tindex  = rec(1);
+F.rec1    = rec(1);
+if (length(rec) > 1)
+  F.rec2  = rec(2);
+else
+  F.rec2  = rec(1);
+end
 
 % Get time string.
 
@@ -166,6 +172,10 @@ if (isw3d)
   Z = G.z_w;
 end
 
+if (~is3d)
+  doSection = false;
+end
+
 %--------------------------------------------------------------------------
 %  Extract horizontal or vertical section of the field difference.
 %--------------------------------------------------------------------------
@@ -198,7 +208,7 @@ if (is3d)
   else
     F.is3d  = false;
     if (isempty(index))
-      Level = Km
+      Level = Km;
     else
       Level = min(Km,index);
     end      
