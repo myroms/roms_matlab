@@ -129,7 +129,7 @@ function [Fvalues,S]=qc_interp(Cinp, Finp, Cvalues, Lmask)
 %=========================================================================%
 %  Copyright (c) 2002-2023 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license                                 %
-%    See License_ROMS.txt                           Hernan G. Arango      %
+%    See License_ROMS.md                            Hernan G. Arango      %
 %=========================================================================%
 
 % Set coarse and fine grid structures.

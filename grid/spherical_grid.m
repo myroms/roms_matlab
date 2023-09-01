@@ -94,7 +94,7 @@ function R = spherical_grid (D,nx,ny,DX,DY,Clat,Rlon,Rlat,Alpha,Lplt)
 %=========================================================================%
 %  Copyright (c) 2002-2023 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license                                 %
-%    See License_ROMS.txt                        Alexander F. Shchepetkin %
+%    See License_ROMS.md                         Alexander F. Shchepetkin %
 %=========================================================================%
 
 % Set switch to plot rotated grid.

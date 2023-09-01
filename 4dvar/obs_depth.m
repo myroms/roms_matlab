@@ -65,7 +65,7 @@ function [S]=obs_depth(ncfile, S, zflag);
 %===========================================================================%
 %  Copyright (c) 2002-2023 The ROMS/TOMS Group                              %
 %    Licensed under a MIT/X style license                                   %
-%    See License_ROMS.txt                           Hernan G. Arango        %
+%    See License_ROMS.md                            Hernan G. Arango        %
 %===========================================================================%
 
 %  Read in observation if S is a 4D-Var observation NetCDF file.

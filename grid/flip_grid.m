@@ -44,7 +44,7 @@ function G = flip_grid (Ginp, Gout)
 %=========================================================================%
 %  Copyright (c) 2002-2023 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license                                 %
-%    See License_ROMS.txt                           Hernan G. Arango      %
+%    See License_ROMS.md                            Hernan G. Arango      %
 %=========================================================================%
   
 % Inquire about the contents of the NetCDF file.

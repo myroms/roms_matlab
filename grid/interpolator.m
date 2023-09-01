@@ -89,7 +89,7 @@ function F = interpolator(Ginp, field, Xpath, Ypath, ad_F, varargin)
 %=========================================================================%
 %  Copyright (c) 2002-2023 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license           John L. Wilkin        %
-%    See License_ROMS.txt                           Hernan G. Arango      %
+%    See License_ROMS.md                            Hernan G. Arango      %
 %=========================================================================%
 
 % The input variable ad_F is not used here but it is added

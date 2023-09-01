@@ -46,7 +46,7 @@ function f = nc_read(ncfile, Vname, Tindex, ReplaceValue, PreserveType)
 %=========================================================================%
 %  Copyright (c) 2002-2023 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license                                 %
-%    See License_ROMS.txt                           Hernan G. Arango      %
+%    See License_ROMS.md                            Hernan G. Arango      %
 %=========================================================================%
 
 % If the PreserveType switch is not provided, set default to convert data

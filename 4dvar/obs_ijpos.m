@@ -45,7 +45,7 @@ function [Xgrid, Ygrid]=obs_ijpos(GRDname, obs_lon, obs_lat, ...
 %===========================================================================%
 %  Copyright (c) 2002-2023 The ROMS/TOMS Group                              %
 %    Licensed under a MIT/X style license                                   %
-%    See License_ROMS.txt                           Hernan G. Arango        %
+%    See License_ROMS.md                            Hernan G. Arango        %
 %===========================================================================%
 
 IPLOT=0;          % switch for plotting during debugging
@@ -290,7 +290,7 @@ function [X,Y] = correction(rlon, rlat, angle, obs_lon, obs_lat, bounded, X, Y);
 %===========================================================================%
 %  Copyright (c) 2002-2023 The ROMS/TOMS Group                              %
 %    Licensed under a MIT/X style license                                   %
-%    See License_ROMS.txt                           Hernan G. Arango        %
+%    See License_ROMS.md                            Hernan G. Arango        %
 %===========================================================================%
 
 debugging = false;                  % debugging switch

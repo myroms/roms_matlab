@@ -28,7 +28,7 @@ function [Fout]=shapiro1(Finp,order,scheme);
 %===========================================================================%
 %  Copyright (c) 2002-2023 The ROMS/TOMS Group                              %
 %    Licensed under a MIT/X style license                                   %
-%    See License_ROMS.txt                           Hernan G. Arango        %
+%    See License_ROMS.md                            Hernan G. Arango        %
 %===========================================================================%
 
 fourk=[2.500000D-1   6.250000D-2    1.562500D-2    3.906250D-3     ...

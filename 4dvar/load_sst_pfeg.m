@@ -61,7 +61,7 @@ function [data]=load_sst_pfeg(GRDfile, StartDay, EndDay, varargin)
 %=========================================================================%
 %  Copyright (c) 2002-2023 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license           Hernan G. Arango      %
-%    See License_ROMS.txt                           John Wilkin           %
+%    See License_ROMS.md                            John Wilkin           %
 %=========================================================================%
 
 %  Set optional arguments: Use the 5-day composite experimental product

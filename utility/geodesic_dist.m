@@ -38,7 +38,7 @@ function [gdist,galpha]=geodesic_dist(lon1,lat1,lon2,lat2,flag);
 %===========================================================================%
 %  Copyright (c) 2002-2023 The ROMS/TOMS Group                              %
 %    Licensed under a MIT/X style license                                   %
-%    See License_ROMS.txt                           Hernan G. Arango        %
+%    See License_ROMS.md                            Hernan G. Arango        %
 %===========================================================================%
 
 %  Determine output distance units.
