@@ -34,7 +34,7 @@ function [V]=dayvec(dnum)
 %=========================================================================%
 %  Copyright (c) 2002-2023 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license                                 %
-%    See License_ROMS.txt                           Hernan G. Arango      %
+%    See License_ROMS.md                            Hernan G. Arango      %
 %=========================================================================%
 
 % Set offset to get the same value as Matlat "datenum" function. Matlab

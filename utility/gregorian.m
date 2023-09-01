@@ -46,7 +46,7 @@ function [V] = gregorian(Jday, varargin)
 %=========================================================================%
 %  Copyright (c) 2002-2023 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license               Hernan G. Arango  %
-%    See License_ROMS.txt                               Rich Signell      %
+%    See License_ROMS.md                                Rich Signell      %
 %=========================================================================%
 
 % If requested set Julian Days to start and end at noon.

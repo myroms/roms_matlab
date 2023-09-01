@@ -47,7 +47,7 @@ function [dot0, dot1] = tlad_dotproduct(TLname, ADname)
 %===========================================================================%
 %  Copyright (c) 2002-2023 The ROMS/TOMS Group                              %
 %    Licensed under a MIT/X style license           Hernan G. Arango        %
-%    See License_ROMS.txt                           Andrew M. Moore         %
+%    See License_ROMS.md                            Andrew M. Moore         %
 %===========================================================================%  
   
 % Read solution time and set number of TL/AD records.

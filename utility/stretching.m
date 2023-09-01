@@ -44,7 +44,7 @@ function [s,C]=stretching(Vstretching, theta_s, theta_b, hc, N, kgrid,  ...
 %=========================================================================%
 %  Copyright (c) 2002-2023 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license                                 %
-%    See License_ROMS.txt                           Hernan G. Arango      %
+%    See License_ROMS.md                            Hernan G. Arango      %
 %=========================================================================%
 
 s=[];

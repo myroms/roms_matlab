@@ -28,7 +28,7 @@
 %=========================================================================%
 %  Copyright (c) 2002-2023 The ROMS/TOMS Group      Hernan G. Arango      %
 %    Licensed under a MIT/X style license           John Wilkin           %
-%    See License_ROMS.txt                                                 %
+%    See License_ROMS.md                                                  %
 %=========================================================================%
 %
 % Set file names. Input ERA-Interim input data file names.  The data

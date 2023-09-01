@@ -161,7 +161,7 @@ function [K]=balance_4dvar(A);
 %===========================================================================%
 %  Copyright (c) 2002-2023 The ROMS/TOMS Group                              %
 %    Licensed under a MIT/X style license           Hernan G. Arango        %
-%    See License_ROMS.txt                           Andrew M. Moore         %
+%    See License_ROMS.md                            Andrew M. Moore         %
 %===========================================================================%
 
 % Check if required variables are present in input structure array.

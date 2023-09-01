@@ -59,7 +59,7 @@ function [Sout]=super_obs(Sinp);
 %===========================================================================%
 %  Copyright (c) 2002-2023 The ROMS/TOMS Group                              %
 %    Licensed under a MIT/X style license           Hernan G. Arango        %
-%    See License_ROMS.txt                           John L. Wilkin          %
+%    See License_ROMS.md                            John L. Wilkin          %
 %===========================================================================%
 
 %  Read observations if 'Sinp' is a 4D-Var observation NetCDF file.

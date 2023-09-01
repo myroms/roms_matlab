@@ -22,7 +22,7 @@ function [str]=greg2str(gtime)
 %===========================================================================%
 %  Copyright (c) 2002-2023 The ROMS/TOMS Group                              %
 %    Licensed under a MIT/X style license                                   %
-%    See License_ROMS.txt                               Rich Signell        %
+%    See License_ROMS.md                                Rich Signell        %
 %===========================================================================%
 
 str=sprintf('%4.4d/%2.2d/%2.2d %2.2d:%2.2d',gtime(1:5));

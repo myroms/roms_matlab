@@ -23,7 +23,7 @@ function [hour,min,sec]=s2hms(secs);
 %===========================================================================%
 %  Copyright (c) 2002-2023 The ROMS/TOMS Group                              %
 %    Licensed under a MIT/X style license                                   %
-%    See License_ROMS.txt                               Rich Signell        %
+%    See License_ROMS.md                                Rich Signell        %
 %===========================================================================%
 
 %sec=round(secs);

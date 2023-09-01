@@ -27,7 +27,7 @@ function I = nc_check(Info)
 %=========================================================================%
 %  Copyright (c) 2002-2023 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license                                 %
-%    See License_ROMS.txt                           Hernan G. Arango      %
+%    See License_ROMS.md                            Hernan G. Arango      %
 %=========================================================================%
 
 % Note: A easy way to delete all attributes for a variable is to set its

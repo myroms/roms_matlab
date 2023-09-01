@@ -64,7 +64,7 @@ function [ssh,err]=biconj(K,rhs_r2d,ssh_guess,Niter);
 %===========================================================================%
 %  Copyright (c) 2002-2023 The ROMS/TOMS Group                              %
 %    Licensed under a MIT/X style license           Andrew M. Moore         %
-%    See License_ROMS.txt                           Hernan G. Arango        %
+%    See License_ROMS.md                            Hernan G. Arango        %
 %===========================================================================%
 
 %  Initialize internal parameters.

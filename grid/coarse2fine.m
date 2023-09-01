@@ -41,7 +41,7 @@ function F = coarse2fine(Ginp,Gout,Gfactor,varargin)
 %=========================================================================%
 %  Copyright (c) 2002-2023 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license                                 %
-%    See License_ROMS.txt                           Hernan G. Arango      %
+%    See License_ROMS.md                            Hernan G. Arango      %
 %=========================================================================%
 
 % Check refinement factor. The values below (1; 3:2:27) are somewhat

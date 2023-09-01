@@ -64,7 +64,7 @@ function [D]=load_ssh_aviso(GRDfile, StartDay, EndDay, ssh_URL)
 %=========================================================================%
 %  Copyright (c) 2002-2023 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license           Hernan G. Arango      %
-%    See License_ROMS.txt                           Brian Powell          %
+%    See License_ROMS.md                            Brian Powell          %
 %=========================================================================%
 
 %  Check arguments.
