@@ -42,7 +42,7 @@ function F = plot_diff_dirs (G, dir1, dir2, ncname, vname, rec1, varargin)
 
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2023 The ROMS/TOMS Group                            %
+%  Copyright (c) 2002-2024 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.md                            Hernan G. Arango      %
 %=========================================================================%
