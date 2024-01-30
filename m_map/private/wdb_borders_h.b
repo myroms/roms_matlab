@@ -1,1 +1,0 @@
-/home/arango/ocean/GSHHS/Version_2.3.6/wdb_borders_h.b
