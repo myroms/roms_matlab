@@ -60,7 +60,7 @@ function R = rotate_cartesian (D, Im, Jm, dx, dy, Xc, Yc, theta, plt)
 
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2024 The ROMS/TOMS Group                            %
+%  Copyright (c) 2002-2023 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.md                            Hernan G. Arango      %
 %=========================================================================%
@@ -193,7 +193,7 @@ if (Lplot)
           'theta = ', num2str(theta), blanks(4),                        ...
           'Im = ', num2str(Im), blanks(4),                              ...
           'Jm = ', num2str(Jm)]);
-x  
+  
 end
 
 return

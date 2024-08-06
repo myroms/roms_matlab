@@ -1,6 +1,6 @@
 function [Xgrid, Ygrid]=obs_ijpos(GRDname, obs_lon, obs_lat, ...
                                   Correction, obc_edge, ...
-                                  Ioffset, Joffset);
+                                  Ioffset, Joffset)
 
 %
 % OBS_IJPOS:  Computes observation locations in ROMS fractional coordinates
@@ -42,47 +42,47 @@ function [Xgrid, Ygrid]=obs_ijpos(GRDname, obs_lon, obs_lat, ...
 %
   
 % svn $Id$
-%===========================================================================%
-%  Copyright (c) 2002-2024 The ROMS/TOMS Group                              %
-%    Licensed under a MIT/X style license                                   %
-%    See License_ROMS.md                            Hernan G. Arango        %
-%===========================================================================%
+%=========================================================================%
+%  Copyright (c) 2002-2024 The ROMS/TOMS Group                            %
+%    Licensed under a MIT/X style license                                 %
+%    See License_ROMS.md                            Hernan G. Arango      %
+%=========================================================================%
 
 IPLOT=0;          % switch for plotting during debugging
 
 % If appropriate, transpose input vectors so they are of size: [length 1].
 
 lsize=size(obs_lon);
-if (lsize(1) < lsize(2)),
+if (lsize(1) < lsize(2))
   obs_lon = obs_lon';
-end,
+end
 
 lsize=size(obs_lat);
-if (lsize(1) < lsize(2)),
+if (lsize(1) < lsize(2))
   obs_lat = obs_lat';
-end,
+end
 
-if (nargin < 4),
+if (nargin < 4)
   Correction = false;
-end,
+end
 
-if (nargin < 5),
+if (nargin < 5)
   obc_edge = false;
-end,
+end
 
-if (nargin < 6),
+if (nargin < 6)
   Ioffset(1)=0;
   Ioffset(2)=0;
-end,
+end
 
-if (nargin < 7),
+if (nargin < 7)
   Joffset(1)=0;
   Joffset(2)=0;
-end,
+end
 
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 % Read in model grid variables.
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 V = nc_vnames(GRDname);
 nvars = length(V.Variables);
@@ -111,49 +111,49 @@ for n=1:nvars
       got.coast     = true;
       clon = nc_read(GRDname, 'lon_coast');
       clat = nc_read(GRDname, 'lat_coast');
-  end,
-end,
+  end
+end
 
-if (got.spherical),
+if (got.spherical)
   spherical=nc_read(GRDname,'spherical');
-  if (ischar(spherical)),
-    if (spherical == 'T' || spherical == 't'),
+  if (ischar(spherical))
+    if (spherical == 'T' || spherical == 't')
       spherical = true;
-    else,
+    else
       spherical = false;
-    end,
-  end,
-else,
+    end
+  end
+else
   spherical = true;
-end,
+end
 
-if (got.lon_rho),
+if (got.lon_rho)
   rlon = nc_read(GRDname, 'lon_rho');
-else,
+else
   error('OBS_IJPOS - cannot find variable: lon_rho');
-end,
+end
 
-if (got.lat_rho),
+if (got.lat_rho)
   rlat = nc_read(GRDname, 'lat_rho');
-else,
+else
   error('OBS_IJPOS - cannot find variable: lat_rho');
-end,
+end
 
-if (got.angle),
+if (got.angle)
   angle = nc_read(GRDname,'angle');
 else
   angle = zeros(size(rlon));
-end,
+end
 
-if (got.mask_rho),
+if (got.mask_rho)
   rmask = nc_read(GRDname,'mask_rho');
 else
   rmask = ones(size(rlon));
-end,
+end
 
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Extract polygon defining application grid box.
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 %  Set grid application polygon.
 
@@ -185,19 +185,19 @@ Ybox=[squeeze(rlat(Istr:Iend,Jstr)); ...
 bounded=false(size(obs_lon));
 
 bounded(IN) = true;
-if (obc_edge),                 % process observations on boundary edges
+if (obc_edge)                  % process observations on boundary edges
   bounded(ON) = true;
-end,
+end
 
 % Plot observations in the application grid.
 
-if (IPLOT),
+if (IPLOT)
   pcolor(rlon,rlat,ones(size(rlon)));
   hold on;
   set(gca, 'fontsize', 14, 'fontweight', 'bold');
-  if (got.coast),
+  if (got.coast)
     plot(clon, clat, 'k-');
-  end,
+  end
   plot(Xbox, Ybox, 'b-', ...
        obs_lon(IN), obs_lat(IN), 'b.', ...
        obs_lon(ON), obs_lat(ON), 'r.', ...
@@ -207,25 +207,25 @@ if (IPLOT),
          'Magenta Points (outliers)'], ...
          'fontsize', 14, 'fontweight', 'bold');
   hold off;
-end,
+end
 
 clear IN ON Xbox Ybox
 
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 % Compute model grid fractional (I,J) locations at observation locations
 % via interpolation.
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 Igrid=repmat([0:1:Im-1]', [1 Jm]);
 Jgrid=repmat([0:1:Jm-1] , [Im 1]);
 
-if (got.mask_rho),
+if (got.mask_rho)
   ind = find(rmask < 1);
-  if (~isempty(ind)),
+  if (~isempty(ind))
     Igrid(ind) = NaN;
     Jgrid(ind) = NaN;
-  end,
-end,
+  end
+end
 
 Xgrid = ones(size(obs_lon)) .* NaN;    % initialize unbounded observations
 Ygrid = ones(size(obs_lon)) .* NaN;    % to NaN
@@ -238,25 +238,25 @@ clear Igrid Jgrid
 %  If land/sea masking, find the observation in land (Xgrid=Ygrid=NaN);
 
 ind = find(isnan(Xgrid) | isnan(Ygrid));
-if (~isempty(ind)),
+if (~isempty(ind))
   bounded(ind) = false;
-end,
+end
 
 clear ind
 
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Spherical/Curvilinear corrections.
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
-if (Correction),
+if (Correction)
   [Xgrid, Ygrid] = correction(rlon, rlat, angle, obs_lon, obs_lat, ...
                               bounded, Xgrid, Ygrid);
-end,
+end
 
 return
 
 
-function [X,Y] = correction(rlon, rlat, angle, obs_lon, obs_lat, bounded, X, Y);
+function [X,Y] = correction(rlon, rlat, angle, obs_lon, obs_lat, bounded, X, Y)
 
 %
 % CORRECTION:  Apply curvilinear coordinates correction to observations
@@ -287,11 +287,11 @@ function [X,Y] = correction(rlon, rlat, angle, obs_lon, obs_lat, bounded, X, Y);
 %    Y             Adjusted observation fractional y-grid location
 %
 
-%===========================================================================%
-%  Copyright (c) 2002-2024 The ROMS/TOMS Group                              %
-%    Licensed under a MIT/X style license                                   %
-%    See License_ROMS.md                            Hernan G. Arango        %
-%===========================================================================%
+%=========================================================================%
+%  Copyright (c) 2002-2024 The ROMS/TOMS Group                            %
+%    Licensed under a MIT/X style license                                 %
+%    See License_ROMS.md                            Hernan G. Arango      %
+%=========================================================================%
 
 debugging = false;                  % debugging switch
 
@@ -307,24 +307,24 @@ deg2rad = pi/180;                   % degrees to radians factor
 Lm = Lr - 1;
 Mm = Mr - 1;
 
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  Set (I,J) coordinates of the grid cell containing the observation
 %  need to add 1 because zero lower bound in ROMS "rlon"
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 I = fix(X);
 ind = find((0 <= I) & (I < Lm));
-if (~isempty(ind)),
+if (~isempty(ind))
   I(ind) = I(ind) + 1;
-end,
+end
 
 J = fix(Y);
 ind = find((0 <= J) & (J < Mm));
-if (~isempty(ind)),
+if (~isempty(ind))
   J(ind) = J(ind) + 1;
-end,
+end
 
-if (debugging),
+if (debugging)
   disp(' ');
   disp(['  Xmin = ', num2str(min(X),'%6.2f'), ...
         '  Xmax = ', num2str(max(X),'%6.2f'), ...
@@ -338,43 +338,43 @@ if (debugging),
         '  Jmax = ', num2str(max(J),'%3.3i'), ...
         '  Mr = ',   num2str(Mr,'%3.3i')]);
   disp(' ');
-end,
+end
 
 clear ind
 
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 %  It is possible that we are processing a large number of observations.
 %  Therefore, the observation vector is processed by blocks to reduce
 %  the memory requirements.
-%----------------------------------------------------------------------------
+%--------------------------------------------------------------------------
 
 N  = ceil(Nobs / block_length);
 n1 = 0;
 n2 = 0;
 
-while (n2 < Nobs),
+while (n2 < Nobs)
 
   n1 = n2 + 1;
   n2 = n1 + block_length;
   if (n2 > Nobs)
     n2 = Nobs;
-  end,
+  end
 
   iobs = n1:n2;
   ind  = find(~bounded(n1:n2));
-  if (~isempty(ind)),             % remove unbouded observations, if any
+  if (~isempty(ind))              % remove unbouded observations, if any
     iobs(ind) = [];
-  end,
+  end
 
   i_j   = sub2ind(size(rlon), I(iobs)  , J(iobs)  );
   ip1_j = sub2ind(size(rlon), I(iobs)+1, J(iobs)  );
   i_jp1 = sub2ind(size(rlon), I(iobs)  , J(iobs)+1);
 
-  if (debugging),
+  if (debugging)
     disp(['  Processing observation vector, n1:n2 = ' ...
           num2str(n1,'%7.7i'), ' - ', num2str(n2,'%7.7i') ...
           '  size = ', num2str(length(iobs))]);
-  end,
+  end
 
 %  Convert all positions to meters first.  
 
@@ -414,32 +414,32 @@ while (n2 < Nobs),
   dx = dx ./ sqrt(aa2) ./ xfac;
 
   ind = find(dx < 0);
-  if (~isempty(ind)),
+  if (~isempty(ind))
     dx(ind) = 0;
-  end,
+  end
 
   ind = find(dx > 1);
-  if (~isempty(ind)),
+  if (~isempty(ind))
     dx(ind) = 1;
-  end,
+  end
 
   dy = dy ./ sqrt(bb2) ./ yfac;
 
   ind = find(dy < 0);
-  if (~isempty(ind)),
+  if (~isempty(ind))
     dy(ind) = 0;
-  end,
+  end
 
   ind = find(dy > 1);
-  if (~isempty(ind)),
+  if (~isempty(ind))
     dy(ind) = 1;
-  end,
+  end
 
   X(iobs) = fix(X(iobs)) + dx;
   Y(iobs) = fix(Y(iobs)) + dy;
 
   clear aa2 bb2 diag2 dx dy ind iobs i_j ip1_j i_jp1 phi xfac xpp ypp
 
-end,
+end
 
 return

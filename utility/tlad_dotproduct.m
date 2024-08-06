@@ -1,9 +1,9 @@
-function [dot0, dot1] = tlad_dotproduct(TLname, ADname)
+function [dot0, dot1] = tlad_dotproduct(TLname, ADname, varargin)
 
 %
 % TLAD_DOTPRODUCT: Computes initial and final times TL/AD dot products.
 %
-% [dot0, dot1] = tlad_dotproduct(TLname, ADname)
+% [dot0, dot1] = tlad_dotproduct(TLname, ADname, rmbry)
 %
 % This function is used to check the symmetry of ROMS tangent linear (TL)
 % and adjoint (AD) operators by computing the initial and final dot product
@@ -29,7 +29,8 @@ function [dot0, dot1] = tlad_dotproduct(TLname, ADname)
 %
 %    TLname    TL ROMS history NetCDF filename (string)
 %    ADname    AD ROMS history NetCDF filename (string)
-%
+%    rmbry     Switch to remove lateral boundary points (OPTIONAL)
+		 %
 % On Output:
 %
 %    dot0      Initial TL/AD dot product at time t=Ti
@@ -49,7 +50,14 @@ function [dot0, dot1] = tlad_dotproduct(TLname, ADname)
 %    Licensed under a MIT/X style license           Hernan G. Arango        %
 %    See License_ROMS.md                            Andrew M. Moore         %
 %===========================================================================%  
-  
+
+switch numel(varargin)
+  case 0
+    rmbry = false;
+  case 1
+    rmbry = varargin{1};
+end
+
 % Read solution time and set number of TL/AD records.
 
 tl_time = nc_read(TLname, 'ocean_time');
@@ -74,8 +82,10 @@ end
 
 disp(blanks(2));
 
-for tlrec = 1:NrecTL
-  adrec = NrecTL - tlrec + 1;
+Nrecs = min(NrecAD, NrecTL);
+
+for tlrec = 1:Nrecs
+  adrec = Nrecs - tlrec + 1;
   
   tldate = datestr(epoch+tl_time(tlrec)/86400, 'mm-dd HH:MM:SS');
   addate = datestr(epoch+tl_time(adrec)/86400, 'mm-dd HH:MM:SS');
@@ -88,6 +98,33 @@ for tlrec = 1:NrecTL
     tl_f = nc_read(TLname, field, tlrec, NaN);
     ad_f = nc_read(ADname, field, adrec, NaN);
   
+    if (rmbry)
+      if (length(size(tl_f)) == 2)
+        tl_f(:,1)   = NaN;
+        tl_f(:,end) = NaN;
+        tl_f(1,:)   = NaN;
+        tl_f(end,:) = NaN;
+
+        ad_f(:,1)   = NaN;
+        ad_f(:,end) = NaN;
+        ad_f(1,:)   = NaN;
+        ad_f(end,:) = NaN;
+      elseif (length(size(tl_f)) == 3)
+        [Im,Jm,Km] = size(tl_f);
+        for k=1:Km
+          tl_f(:,1,k)   = NaN;
+          tl_f(:,end,k) = NaN;
+          tl_f(1,:,k)   = NaN;
+          tl_f(end,:,k) = NaN;	
+
+          ad_f(:,1,k)   = NaN;
+          ad_f(:,end,k) = NaN;
+          ad_f(1,:,k)   = NaN;
+          ad_f(end,:,k) = NaN;	
+        end
+      end
+    end      
+
     ind = ~isnan(tl_f);
 
     dot = dot + sum(transpose(tl_f(ind)) * ad_f(ind));
@@ -100,7 +137,7 @@ for tlrec = 1:NrecTL
 
   if (tlrec == 1)
     dot0 = dot;
-  elseif (tlrec == NrecTL)
+  elseif (tlrec == Nrecs)
     dot1 = dot;
   end
 

@@ -34,24 +34,25 @@ function F=plot_field(Gname, Hname, Vname, Tindex, varargin)
 %                     Level > 0,    terrain-following level
 %                     Level < 0,    depth (field interpolation)
 %
-%    Caxis         Color axis (vector)
-%                    (Optional, default: [Inf Inf], choosen internally)
+%    Caxis         Color axis range (optional; vector)
+%                    (default: [-Inf Inf])
 %
-%    Mmap          Switch to use m_map utility (true or false)
-%                    (Optional, default: false)
+%    Mmap          Switch to use m_map utility (optional; integer)
+%                    Mmap = 0,  no map projection (default)
+%                    Mmap = 1,  'm_map' utility
+%                    Mmap = 2,  native Matlab toolbox
 %
-%    ptype         Plot type (scalar)
-%                    (Optional, default: 0)
+%    ptype         Plot type (optional; integer)
+%                    ptype < 0     use 'contourf' with abs(ptype) colors
+%                    ptype = 1     use 'pcolor'
+%                    ptype = 2     use 'pcolorjw'
 %
-%                     ptype = 0     use pcolor
-%                     ptype < 0     use contourf with abs(ptype) colors
-%
-%    wrtPNG        Switch to write out PNG file (true or false)
-%                    (Optional, default: false)
+%    wrtPNG        Switch to write out PNG file (optional; switch)
+%                    (default: false)
 %
 % On Output:
 %
-%    F             Requested 2D or 3D variable (array)
+%    F             Requested 2D or 3D variable (structure)
 %
 
 % svn $Id$
@@ -65,13 +66,13 @@ function F=plot_field(Gname, Hname, Vname, Tindex, varargin)
 
 F = struct('ncname'     , [], 'Vname'     , [],                         ...
            'Tindex'     , [], 'Tname'     , [], 'Tstring'   , [],       ...
-	   'Level'      , [], 'is3d'      , [],                         ...
+           'Level'      , [], 'is3d'      , [],                         ...
            'X'          , [], 'Y'         , [],                         ...
            'value'      , [], 'min'       , [], 'max'       , [],       ...
-	   'Caxis'      , [], 'doMap'     , [], 'projection', [],       ...
+           'Caxis'      , [], 'doMap'     , [], 'projection', [],       ...
            'ptype'      , [],                                           ...
            'gotCoast'   , [], 'lon_coast' , [], 'lat_coast' , [],       ...
-           'pltHandle'  , [], 'wrtPNG'    , []);
+           'shading'    , [], 'pltHandle' , [], 'wrtPNG'    , []);
 
 F.projection = 'mercator';
 
@@ -156,11 +157,12 @@ switch numel(varargin)
     wrtPNG = varargin{5};
 end
 
-F.Level = Level;
-F.Caxis = Caxis;
-F.doMap = Mmap;
-F.ptype = ptype;
-F.wrtPNG = wrtPNG;
+F.Level   = Level;
+F.Caxis   = Caxis;
+F.doMap   = Mmap;
+F.ptype   = ptype;
+F.shading = 'flat';
+F.wrtPNG  = wrtPNG;
 
 % Set ROMS Grid structure.
   
@@ -185,11 +187,11 @@ if (nvdims > 0)
   for n=1:nvdims
     dimnam = char(I.Dimensions(n).Name);
     switch dimnam
-      case {'s_rho', 'level'}
+      case {'s_rho'}
         isr3d = true;
       case 's_w'
         isw3d = true;
-      case {'xi_rho','lon_rho', 'lon'}
+      case {'xi_rho','eta_rho'}
         Mname = 'mask_rho';
         got.Mname = true;
         if (~(got.Xname || got.Yname))
@@ -205,7 +207,7 @@ if (nvdims > 0)
           got.Yname = true;
           got.Zname = true;
         end
-      case {'xi_psi','lon_psi'}
+      case {'xi_psi','eta_psi'}
         Mname = 'mask_psi';
         got.Mname = true;
         if (~(got.Xname || got.Yname))
@@ -221,7 +223,7 @@ if (nvdims > 0)
           got.Yname = true;       
           got.Zname = true;
         end
-      case {'xi_u','lon_u'}
+      case {'xi_u','eta_u'}
         Mname = 'mask_u';
         got.Mname = true;
         if (~(got.Xname || got.Yname))
@@ -237,7 +239,7 @@ if (nvdims > 0)
           got.Yname = true;        
           got.Zname = true;
         end
-      case {'xi_v','lon_v'}
+      case {'xi_v','eta_v'}
         Mname = 'mask_v';
         got.Mname = true;
         if (~(got.Xname || got.Yname))

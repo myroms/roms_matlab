@@ -13,3 +13,9 @@ Colormaps Information:
   colormap(cmap('R1'));      % for Rainbow     color maps 'R1' - 'R4'
   colormap(cmap('I1'));      % for Isoliminant color maps 'I1' - 'I3'
 
+* To use ODV palettes, use:
+
+  cmap_odv('list')           % Prints a list of available palettes
+
+  colormap(cmap_odv('Odv_437'));
+  colormap(cmap_odv('Odv_465'));

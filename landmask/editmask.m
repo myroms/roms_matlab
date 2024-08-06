@@ -63,7 +63,7 @@ function editmask(grid_file, varargin)
 
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2024 The ROMS/TOMS Group                            %
+%  Copyright (c) 2002-2023 The ROMS/TOMS Group                            %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.md                             A. Shcherbina        %
 %=========================================================================%
@@ -373,8 +373,13 @@ switch lower(grid_file)
     got_coast=all(isfield(G,{'lon_coast','lat_coast'}));  % GRID NetCDF has
                                                           % coastline data
     spherical=G.spherical;
-    rlon=G.lon_rho;
-    rlat=G.lat_rho;
+    if (spherical)
+      rlon=G.lon_rho;
+      rlat=G.lat_rho;
+    else
+      rlon=G.x_rho./1000;                 % Cartesian (km)
+      rlat=G.y_rho./1000;                 % Cartesian (km)
+    end
     mask=G.mask_rho;
     rmask=mask;
 
@@ -568,8 +573,14 @@ switch lower(grid_file)
             'tickdir','out');
     colormap(CMAP);
     hold on;
-    hline=plot(xcst,ycst,LineColor);
-    set(hline,'LineWidth',LineWidth);
+    if (spherical)
+      hline=plot(xcst,ycst,LineColor);
+      set(hline,'LineWidth',LineWidth);
+    else
+      hmin=min(G.h(:))+0.1;
+      [c,hline]=contour(rlon, rlat, G.h, [hmin hmin]);
+      set(hline,'LineWidth',LineWidth,'Color','r');
+    end
     xl=xlim;
     yl=ylim;
     changed=0;

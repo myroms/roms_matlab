@@ -2,7 +2,8 @@ function F = plot_diff_dirs (G, dir1, dir2, ncname, vname, rec1, varargin)
   
 % PLOT_DIFF:  Plots field difference between two directories
 %
-% F = plot_diff (G, dir1, dir2, ncname, vname, rec1, rec2, index, orient)
+% F = plot_diff (G, dir1, dir2, ncname, vname, rec1, rec2, index, orient,
+%                Caxis, Mmap, ptype, wrtPNG);  
 %
 % This function plots the field difference between two directories having
 % the same NetCDF filename at the specified time records.
@@ -15,7 +16,7 @@ function F = plot_diff_dirs (G, dir1, dir2, ncname, vname, rec1, varargin)
 %
 %    dir1          1st directory of ROMS NetCDF file (string)
 %
-%    dir1          2nd directory of ROMS NetCDF file (string)
+%    dir2          2nd directory of ROMS NetCDF file (string)
 %
 %    ncname        ROMS NetCDF filename (string)
 %  
@@ -35,6 +36,22 @@ function F = plot_diff_dirs (G, dir1, dir2, ncname, vname, rec1, varargin)
 %                    orient='r'  row (west-east) extraction
 %                    orient='c'  column (south-north) extraction
 %
+%    Caxis         Color axis range (optional; vector)
+%                    (default: [-Inf Inf])
+%
+%    Mmap          Switch to use m_map utility (optional; integer)
+%                    Mmap = 0,  no map projection (default)
+%                    Mmap = 1,  'm_map' utility
+%                    Mmap = 2,  native Matlab toolbox
+%
+%    ptype         Plot type (integer)
+%                     ptype < 0     use contourf with abs(ptype) colors
+%                     ptype = 1     use 'pcolor'
+%                     ptype = 2     use 'pcolorjw'
+%
+%    wrtPNG        Switch to write out PNG file (true or false)
+%                    (Optional, default: false)A
+%
 % On Output:
 %
 %    F             Requested variable structure (array)
@@ -49,26 +66,88 @@ function F = plot_diff_dirs (G, dir1, dir2, ncname, vname, rec1, varargin)
 
 % Initialize.
 
-doSection = false;
+F = struct('dir1'       , [], 'dir2'      , [], 'ncname'      , [],   ...
+	   'Vname'      , [], 'rec1'      , [], 'rec2',       , [],   ...
+           'Tname'      , [], 'Tstring'   , [],                       ...
+           'Level'      , [], 'is3d'      , [],                       ...
+           'X'          , [], 'Y'         , [],                       ...
+           'value1'     , [], 'min1'      , [], 'max1'        , [],   ...
+           'checkval1'  , [],                                         ...
+           'value2'     , [], 'min2'      , [], 'max2'        , [],   ...
+           'checkval2'  , [],                                         ...
+           'diff'       , [], 'diffmin'   , [], 'diffmax'     , [],   ...
+           'Caxis'      , [], 'doMap'     , [], 'projection'  , [],   ...
+           'ptype'      , [], 'orient'    , [], 'index'       , [],   ...
+           'gotCoast'   , [], 'lon_coast' , [], 'lat_coast'   , [],   ...
+           'shading'    , [], 'pltHandle' , [], 'wrtPNG'      , []);
+
+% Optional arguments.
 
 switch numel(varargin)
   case 0
     rec2      = rec1;
     index     = [];
     orient    = [];
+    Caxis     = [-Inf Inf];
+    Mmap      = 0;
+    ptype     = 1;
+    wrtPNG    = false; 
   case 1
     rec2      = varargin{1};
     index     = [];
     orient    = [];
+    Caxis     = [-Inf Inf];
+    Mmap      = 0;
+    ptype     = 1;
+    wrtPNG    = false; 
   case 2
     rec2      = varargin{1};
     index     = varargin{2};
     orient    = [];
+    Caxis     = [-Inf Inf];
+    Mmap      = 0;
+    ptype     = 1;
+    wrtPNG    = false; 
   case 3
     rec2      = varargin{1};
     index     = varargin{2};
     orient    = varargin{3};
-    doSection = true;
+    Caxis     = [-Inf Inf];
+    Mmap      = 0;
+    ptype     = 1;
+    wrtPNG    = false; 
+  case 4
+    rec2      = varargin{1};
+    index     = varargin{2};
+    orient    = varargin{3};
+    Caxis     = varargin{4};
+    Mmap      = 0;
+    ptype     = 1;
+    wrtPNG    = false; 
+  case 5
+    rec2      = varargin{1};
+    index     = varargin{2};
+    orient    = varargin{3};
+    Caxis     = varargin{4};
+    Mmap      = varargin{5};
+    ptype     = 1;
+    wrtPNG    = false; 
+  case 6
+    rec2      = varargin{1};
+    index     = varargin{2};
+    orient    = varargin{3};
+    Caxis     = varargin{4};
+    Mmap      = varargin{5};
+    ptype     = varargin{6};
+    wrtPNG    = false; 
+  case 7
+    rec2      = varargin{1};
+    index     = varargin{2};
+    orient    = varargin{3};
+    Caxis     = varargin{4};
+    Mmap      = varargin{5};
+    ptype     = varargin{6};
+    wrtPNG    = varargin{7}; 
 end
 
 F.ncname1 = strcat(dir1,'/',ncname);
@@ -112,10 +191,19 @@ F.checkval2 = bitcount(F.value2(:));
 F.diff      = F.value1 - F.value2;
 
 F.Caxis     = [-Inf Inf];
+F.Cmap      = redblue(254);
 F.doMap     = 0;
-F.ptype     = 0;
-F.gotCoast  = 0;
+F.ptype     = ptype;
+F.shading   = 'flat';
 F.wrtPNG    = false;
+
+if (isfield(G,'lon_coast') && isfield(G,'lat_coast'))
+  F.lon_coast = G.lon_coast;
+  F.lat_coast = G.lat_coast;
+  F.gotCoast = true;
+else
+  F.gotCoast = false;
+end
 
 % Set spatial coordinates.
 

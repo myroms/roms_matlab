@@ -108,6 +108,9 @@ if (nargin > 1)
   if (ischar(Sinp))
     process.zeta = true;
     Gout.his_name = Sinp;                    % Sinp is a NetCDF file
+    Sinfo = nc_inq(Sinp);
+    snames = {Sinfo.Variables.Name};         % Available variables
+    is3d = any(strcmp(snames,'s_rho'));      % 3D ROMS grid application
   elseif (isstruct(Sinp))
     process.parameters = true;               % Sinp are vertical parameters
   elseif (isnumeric(Sinp) && nargin == 2)
@@ -390,7 +393,6 @@ end
 
 if (process.zeta)
   if (ischar(Sinp))
-    Sinfo = nc_inq(Sinp);
     NvarsS = length(Sinfo.Variables);
 
     got.N           = false;
