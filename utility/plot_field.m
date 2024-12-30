@@ -34,44 +34,45 @@ function F=plot_field(Gname, Hname, Vname, Tindex, varargin)
 %                     Level > 0,    terrain-following level
 %                     Level < 0,    depth (field interpolation)
 %
-%    Caxis         Color axis (vector)
-%                    (Optional, default: [Inf Inf], choosen internally)
+%    Caxis         Color axis range (optional; vector)
+%                    (default: [-Inf Inf])
 %
-%    Mmap          Switch to use m_map utility (true or false)
-%                    (Optional, default: false)
+%    Mmap          Switch to use m_map utility (optional; integer)
+%                    Mmap = 0,  no map projection (default)
+%                    Mmap = 1,  'm_map' utility
+%                    Mmap = 2,  native Matlab toolbox
 %
-%    ptype         Plot type (scalar)
-%                    (Optional, default: 0)
+%    ptype         Plot type (optional; integer)
+%                    ptype < 0     use 'contourf' with abs(ptype) colors
+%                    ptype = 1     use 'pcolor'
+%                    ptype = 2     use 'pcolorjw'
 %
-%                     ptype = 0     use pcolor
-%                     ptype < 0     use contourf with abs(ptype) colors
-%
-%    wrtPNG        Switch to write out PNG file (true or false)
-%                    (Optional, default: false)
+%    wrtPNG        Switch to write out PNG file (optional; switch)
+%                    (default: false)
 %
 % On Output:
 %
-%    F             Requested 2D or 3D variable (array)
+%    F             Requested 2D or 3D variable (structure)
 %
 
 % svn $Id$
-%=========================================================================%
-%  Copyright (c) 2002-2024 The ROMS/TOMS Group                            %
-%    Licensed under a MIT/X style license                                 %
-%    See License_ROMS.md                            Hernan G. Arango      %
-%=========================================================================%
+%=======================================================================%
+%  Copyright (c) 2002-2025 The ROMS Group                               %
+%    Licensed under a MIT/X style license                               %
+%    See License_ROMS.md                            Hernan G. Arango    %
+%=======================================================================%
 
 % Initialize.
 
-F = struct('ncname'     , [], 'Vname'     , [],                         ...
-           'Tindex'     , [], 'Tname'     , [], 'Tstring'   , [],       ...
-	   'Level'      , [], 'is3d'      , [],                         ...
-           'X'          , [], 'Y'         , [],                         ...
-           'value'      , [], 'min'       , [], 'max'       , [],       ...
-	   'Caxis'      , [], 'doMap'     , [], 'projection', [],       ...
-           'ptype'      , [],                                           ...
-           'gotCoast'   , [], 'lon_coast' , [], 'lat_coast' , [],       ...
-           'pltHandle'  , [], 'wrtPNG'    , []);
+F = struct('ncname'     , [], 'Vname'     , [],                       ...
+           'Tindex'     , [], 'Tname'     , [], 'Tstring'   , [],     ...
+           'Level'      , [], 'is3d'      , [],                       ...
+           'X'          , [], 'Y'         , [],                       ...
+           'value'      , [], 'min'       , [], 'max'       , [],     ...
+           'Caxis'      , [], 'doMap'     , [], 'projection', [],     ...
+           'ptype'      , [],                                         ...
+           'gotCoast'   , [], 'lon_coast' , [], 'lat_coast' , [],     ...
+           'shading'    , [], 'pltHandle' , [], 'wrtPNG'    , []);
 
 F.projection = 'mercator';
 
@@ -156,11 +157,12 @@ switch numel(varargin)
     wrtPNG = varargin{5};
 end
 
-F.Level = Level;
-F.Caxis = Caxis;
-F.doMap = Mmap;
-F.ptype = ptype;
-F.wrtPNG = wrtPNG;
+F.Level   = Level;
+F.Caxis   = Caxis;
+F.doMap   = Mmap;
+F.ptype   = ptype;
+F.shading = 'flat';
+F.wrtPNG  = wrtPNG;
 
 % Set ROMS Grid structure.
   
@@ -185,11 +187,11 @@ if (nvdims > 0)
   for n=1:nvdims
     dimnam = char(I.Dimensions(n).Name);
     switch dimnam
-      case {'s_rho', 'level'}
+      case {'s_rho'}
         isr3d = true;
       case 's_w'
         isw3d = true;
-      case {'xi_rho','lon_rho', 'lon'}
+      case {'xi_rho','eta_rho'}
         Mname = 'mask_rho';
         got.Mname = true;
         if (~(got.Xname || got.Yname))
@@ -205,7 +207,7 @@ if (nvdims > 0)
           got.Yname = true;
           got.Zname = true;
         end
-      case {'xi_psi','lon_psi'}
+      case {'xi_psi','eta_psi'}
         Mname = 'mask_psi';
         got.Mname = true;
         if (~(got.Xname || got.Yname))
@@ -221,7 +223,7 @@ if (nvdims > 0)
           got.Yname = true;       
           got.Zname = true;
         end
-      case {'xi_u','lon_u'}
+      case {'xi_u','eta_u'}
         Mname = 'mask_u';
         got.Mname = true;
         if (~(got.Xname || got.Yname))
@@ -237,7 +239,7 @@ if (nvdims > 0)
           got.Yname = true;        
           got.Zname = true;
         end
-      case {'xi_v','lon_v'}
+      case {'xi_v','eta_v'}
         Mname = 'mask_v';
         got.Mname = true;
         if (~(got.Xname || got.Yname))
@@ -253,7 +255,7 @@ if (nvdims > 0)
           got.Yname = true;        
           got.Zname = true;
         end
-      case {'ocean_time', 'time', ~isempty(strfind(dimnam,'time'))}
+      case {'ocean_time', 'time', ~contains(dimnam,'time')}
         recordless = false;    
         Tsize = I.Dimensions(n).Length;
     end
@@ -274,19 +276,19 @@ if (any(itime))
   F.Tname = I.Attributes(itime).Value;
 end
 
-%--------------------------------------------------------------------------
+%------------------------------------------------------------------------
 % Get coordinates.
-%--------------------------------------------------------------------------
+%------------------------------------------------------------------------
 
 if (isfield(G,Xname))
   if (~isempty(G.(Xname)))  
     X = G.(Xname);
   else
-    error([' PLOT_FIELD - field '', Xname, ''',                          ...
+    error([' PLOT_FIELD - field '', Xname, ''',                       ...
            ' is empty in receiver grid structure: G']);
   end
 else
-  error([' PLOT_FIELD - unable to find field '', Xname, ''',             ...
+  error([' PLOT_FIELD - unable to find field '', Xname, ''',          ...
          ' in receiver grid structure: G']);
 end
 
@@ -294,11 +296,11 @@ if (isfield(G,Yname))
   if (~isempty(G.(Yname)))
     Y = G.(Yname);
   else
-    error([' PLOT_FIELD - field '', Yname, ''',                          ...
+    error([' PLOT_FIELD - field '', Yname, ''',                       ...
            ' is empty in receiver grid structure: G']);
   end
 else
-  error([' PLOT_FIELD - unable to find field '', Yname, ''',             ...
+  error([' PLOT_FIELD - unable to find field '', Yname, ''',          ...
          ' in receiver grid structure: G']);
 end
 
@@ -307,11 +309,11 @@ if (is3d)
     if (~isempty(G.(Zname)))
       Z = G.(Zname);
     else
-      error([' PLOT_FIELD - field '', Zname, ''',                        ...
+      error([' PLOT_FIELD - field '', Zname, ''',                     ...
              ' is empty in receiver grid structure: G']);
     end
   else
-    error([' PLOT_FIELD - unable to find field '', Zname, ''',           ...
+    error([' PLOT_FIELD - unable to find field '', Zname, ''',        ...
            ' in receiver grid structure: G']);
   end
 end
@@ -320,11 +322,11 @@ if (isfield(G,Mname))
   if (~isempty(G.(Mname)))
     mask = G.(Mname);
   else
-    error([' PLOT_FIELD - field '', Mname, ''',                          ...
+    error([' PLOT_FIELD - field '', Mname, ''',                       ...
           ' is empty in receiver grid structure: G']);
   end
 else
-  error([' PLOT_FIELD - unable to find field '', Mname, ''',             ...
+  error([' PLOT_FIELD - unable to find field '', Mname, ''',          ...
          ' in receiver grid structure: G']);
 end
 
@@ -342,12 +344,12 @@ end
 F.X = X;
 F.Y = Y;
 
-%--------------------------------------------------------------------------
+%------------------------------------------------------------------------
 % Read in requested variable from NetCDF file.
-%--------------------------------------------------------------------------
+%------------------------------------------------------------------------
 
 if (~recordless && Tindex > Tsize)
-  Tindex = Tsize;                     % process last time record available
+  Tindex = Tsize;                    % process last time record available
 end 
 F.Tindex = Tindex;
 
@@ -355,7 +357,7 @@ if (~isempty(F.Tname))
   Tvalue = nc_read(Hname,F.Tname,Tindex);
   Tattr  = nc_getatt(Hname,'units',F.Tname);
   Tdays  = true;
-  if (~isempty(strfind(Tattr, 'second')))
+  if (~contains(Tattr, 'second'))
     Tvalue = Tvalue/86400;                    % seconds to days
     Tdays  = false;
   end  
@@ -387,9 +389,9 @@ end
 
 F.value = value;
 
-%--------------------------------------------------------------------------
+%------------------------------------------------------------------------
 % Plot requested field
-%--------------------------------------------------------------------------
+%------------------------------------------------------------------------
 
 F = hplot(G, F);
 

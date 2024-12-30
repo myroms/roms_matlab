@@ -27,7 +27,7 @@ function [handle]=ptiles(NtileI, NtileJ, fname, ij_draw, varargin);
 
 % svn $Id$
 %===========================================================================%
-%  Copyright (c) 2002-2024 The ROMS/TOMS Group                              %
+%  Copyright (c) 2002-2025 The ROMS Group                                   %
 %    Licensed under a MIT/X style license                                   %
 %    See License_ROMS.md                            Hernan G. Arango        %
 %===========================================================================%
@@ -132,12 +132,18 @@ if (ij_draw),
 else
 
   hold on;
+
+  Tag=get(gca,'Tag');
   
   if (NtileI > 1 ),
     for i=1:NtileI-1,
       x=squeeze(X(Iend(i),:));
       y=squeeze(Y(Iend(i),:));
-      handle=plot(x,y,LineType);
+      if ~isempty(Tag)
+        handle=m_plot(x,y,LineType);      % m_map figure
+      else
+	handle=plot(x,y,LineType);
+      end      
     end
   end
 
@@ -146,7 +152,11 @@ else
       j=1+(i-1)*NtileI;
       x=squeeze(X(:,Jend(j)));
       y=squeeze(Y(:,Jend(j)));
-      handle=plot(x,y,LineType);
+      if ~isempty(Tag)
+        handle=m_plot(x,y,LineType);      % m_map figure
+      else
+	handle=plot(x,y,LineType);
+      end      
     end
   end
   

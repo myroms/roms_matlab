@@ -1,13 +1,13 @@
 #!/bin/bash
 #
-# svn $Id$
+# git $Id$
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-# Copyright (c) 2002-2023 The ROMS/TOMS Group                           :::
+# Copyright (c) 2002-2025 The ROMS Group                                :::
 #   Licensed under a MIT/X style license                                :::
 #   See License_ROMS.md                                                 :::
 #:::::::::::::::::::::::::::::::::::::::::::::::::::::: David Robertson :::
 #                                                                       :::
-# ROMS/TOMS Copyright Update Script                                     :::
+# ROMS Copyright Update Script                                          :::
 #                                                                       :::
 # Script to update the copyright information on 'matlab' source files.  :::
 # This script replaces the copyright string in the source files. It     :::
@@ -23,8 +23,8 @@
 #                                                                       :::
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-search="2002-2023 The ROMS/TOMS"
-replace="2002-2024 The ROMS/TOMS"
+search="2002-2024 The ROMS"
+replace="2002-2025 The ROMS"
 
 # Directories to search for replacements.
 

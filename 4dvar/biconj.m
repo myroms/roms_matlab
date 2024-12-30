@@ -62,7 +62,7 @@ function [ssh,err]=biconj(K,rhs_r2d,ssh_guess,Niter);
 
 % svn $Id$
 %===========================================================================%
-%  Copyright (c) 2002-2024 The ROMS/TOMS Group                              %
+%  Copyright (c) 2002-2025 The ROMS Group                                   %
 %    Licensed under a MIT/X style license           Andrew M. Moore         %
 %    See License_ROMS.md                            Hernan G. Arango        %
 %===========================================================================%

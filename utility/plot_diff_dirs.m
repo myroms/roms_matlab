@@ -2,7 +2,8 @@ function F = plot_diff_dirs (G, dir1, dir2, ncname, vname, rec1, varargin)
   
 % PLOT_DIFF:  Plots field difference between two directories
 %
-% F = plot_diff (G, dir1, dir2, ncname, vname, rec1, rec2, index, orient)
+% F = plot_diff (G, dir1, dir2, ncname, vname, rec1, rec2, index, orient,
+%                Caxis, Mmap, ptype, wrtPNG);  
 %
 % This function plots the field difference between two directories having
 % the same NetCDF filename at the specified time records.
@@ -15,7 +16,7 @@ function F = plot_diff_dirs (G, dir1, dir2, ncname, vname, rec1, varargin)
 %
 %    dir1          1st directory of ROMS NetCDF file (string)
 %
-%    dir1          2nd directory of ROMS NetCDF file (string)
+%    dir2          2nd directory of ROMS NetCDF file (string)
 %
 %    ncname        ROMS NetCDF filename (string)
 %  
@@ -35,87 +36,129 @@ function F = plot_diff_dirs (G, dir1, dir2, ncname, vname, rec1, varargin)
 %                    orient='r'  row (west-east) extraction
 %                    orient='c'  column (south-north) extraction
 %
+%    Caxis         Color axis range (optional; vector)
+%                    (default: [-Inf Inf])
+%
+%    Mmap          Switch to use m_map utility (optional; integer)
+%                    Mmap = 0,  no map projection (default)
+%                    Mmap = 1,  'm_map' utility
+%                    Mmap = 2,  native Matlab toolbox
+%
+%    ptype         Plot type (integer)
+%                     ptype < 0     use contourf with abs(ptype) colors
+%                     ptype = 1     use 'pcolor'
+%                     ptype = 2     use 'pcolorjw'
+%
+%    wrtPNG        Switch to write out PNG file (true or false)
+%                    (Optional, default: false)A
+%
 % On Output:
 %
 %    F             Requested variable structure (array)
 %
 
 % svn $Id$
-%=========================================================================%
-%  Copyright (c) 2002-2024 The ROMS/TOMS Group                            %
-%    Licensed under a MIT/X style license                                 %
-%    See License_ROMS.md                            Hernan G. Arango      %
-%=========================================================================%
+%=======================================================================%
+%  Copyright (c) 2002-2025 The ROMS Group                               %
+%    Licensed under a MIT/X style license                               %
+%    See License_ROMS.md                            Hernan G. Arango    %
+%=======================================================================%
 
 % Initialize.
 
-doSection = false;
+F = struct('dir1'       , [], 'dir2'      , [], 'ncname'      , [],   ...
+           'Vname'      , [], 'rec1'      , [], 'rec2'        , [],   ...
+           'Tname'      , [], 'Tstring'   , [],                       ...
+           'Level'      , [], 'is3d'      , [],                       ...
+           'X'          , [], 'Y'         , [],                       ...
+           'value1'     , [], 'min1'      , [], 'max1'        , [],   ...
+           'checkval1'  , [],                                         ...
+           'value2'     , [], 'min2'      , [], 'max2'        , [],   ...
+           'checkval2'  , [],                                         ...
+           'diff'       , [], 'diffmin'   , [], 'diffmax'     , [],   ...
+           'Caxis'      , [], 'doMap'     , [], 'projection'  , [],   ...
+           'ptype'      , [], 'orient'    , [], 'index'       , [],   ...
+           'gotCoast'   , [], 'lon_coast' , [], 'lat_coast'   , [],   ...
+           'shading'    , [], 'pltHandle' , [], 'wrtPNG'      , []);
+
+% Optional arguments.
 
 switch numel(varargin)
   case 0
     rec2      = rec1;
     index     = [];
     orient    = [];
+    Caxis     = [-Inf Inf];
+    Mmap      = 0;
+    ptype     = 1;
+    wrtPNG    = false; 
   case 1
     rec2      = varargin{1};
     index     = [];
     orient    = [];
+    Caxis     = [-Inf Inf];
+    Mmap      = 0;
+    ptype     = 1;
+    wrtPNG    = false; 
   case 2
     rec2      = varargin{1};
     index     = varargin{2};
     orient    = [];
+    Caxis     = [-Inf Inf];
+    Mmap      = 0;
+    ptype     = 1;
+    wrtPNG    = false; 
   case 3
     rec2      = varargin{1};
     index     = varargin{2};
     orient    = varargin{3};
-    doSection = true;
+    Caxis     = [-Inf Inf];
+    Mmap      = 0;
+    ptype     = 1;
+    wrtPNG    = false; 
+  case 4
+    rec2      = varargin{1};
+    index     = varargin{2};
+    orient    = varargin{3};
+    Caxis     = varargin{4};
+    Mmap      = 0;
+    ptype     = 1;
+    wrtPNG    = false; 
+  case 5
+    rec2      = varargin{1};
+    index     = varargin{2};
+    orient    = varargin{3};
+    Caxis     = varargin{4};
+    Mmap      = varargin{5};
+    ptype     = 1;
+    wrtPNG    = false; 
+  case 6
+    rec2      = varargin{1};
+    index     = varargin{2};
+    orient    = varargin{3};
+    Caxis     = varargin{4};
+    Mmap      = varargin{5};
+    ptype     = varargin{6};
+    wrtPNG    = false; 
+  case 7
+    rec2      = varargin{1};
+    index     = varargin{2};
+    orient    = varargin{3};
+    Caxis     = varargin{4};
+    Mmap      = varargin{5};
+    ptype     = varargin{6};
+    wrtPNG    = varargin{7}; 
 end
 
 F.ncname1 = strcat(dir1,'/',ncname);
 F.ncname2 = strcat(dir2,'/',ncname);
 F.Vname   = vname;
-F.Tname   = 'ocean_time';
+F.Tname   = [];
 F.Tindex  = rec1;
 F.rec1    = rec1;
 F.rec2    = rec2;
 
-% Get time string.
-
-Tvalue = nc_read(F.ncname1, F.Tname, F.Tindex);
-Tattr  = nc_getatt(F.ncname1, 'units', F.Tname);
-Tdays  = true;
-if (~isempty(strfind(Tattr, 'second')))
-  Tvalue = Tvalue/86400;                    % seconds to days
-  Tdays  = false;
-end  
-iatt = strfind(Tattr, 'since');
-if (~isempty(iatt))
-  iatt=iatt+6;
-  Torigin = Tattr(iatt:iatt+18);
-  epoch   = datenum(Torigin,31);            % 'yyyy-mm-dd HH:MM:SS' 
-  Tstring = datestr(epoch+Tvalue);
-else
-  Tstring = num2str(Tvalue);    
-end
-F.Tstring = Tstring;
-
-% Process field difference.
-
-F.value1    = nc_read(F.ncname1, vname, rec1);
-F.min1      = min(F.value1(:));
-F.max1      = max(F.value1(:));
-F.checkval1 = bitcount(F.value1(:));
-F.value2    = nc_read(F.ncname2, vname, rec2);
-F.min2      = min(F.value2(:));
-F.max2      = max(F.value2(:));
-F.checkval2 = bitcount(F.value2(:));
-F.diff      = F.value1 - F.value2;
-
-F.Caxis     = [-Inf Inf];
-F.doMap     = 0;
-F.ptype     = 0;
-F.gotCoast  = 0;
-F.wrtPNG    = false;
+recordless = true;
 
 % Set spatial coordinates.
 
@@ -169,6 +212,9 @@ if (nvdims > 0)
         if (isfield(G, 'z_v'))
           Z = G.z_v;     
         end
+     case {'ocean_time', 'time', ~contains(dimnam,'time')}
+        recordless = false;    
+        Tsize = I.Dimensions(n).Length;
     end
   end
 end
@@ -178,9 +224,83 @@ if (isw3d)
   Z = G.z_w;
 end
 
-%--------------------------------------------------------------------------
+%------------------------------------------------------------------------
+% Read in requested variable from NetCDF file.
+%------------------------------------------------------------------------
+
+% Get time string.
+
+if (~recordless)
+  if (rec1 > Tsize || rec2 > Tsize)
+    Tindex1 = Tsize;                 % process last time record available
+    Tindex2 = Tsize;
+  else
+    Tindex1 = rec1;
+    Tindex2 = rec2;
+  end
+else
+  Tindex1 = [];
+  Tindex2 = [];
+end 
+F.Tindex = Tindex1;
+
+if (~isempty(F.Tname))
+  Tvalue = nc_read(F.ncname1, F.Tname, F.Tindex);
+  Tattr  = nc_getatt(F.ncname1, 'units', F.Tname);
+  Tdays  = true;
+  if (~contains(Tattr, 'second'))
+    Tvalue = Tvalue/86400;                  % seconds to days
+    Tdays  = false;
+  end  
+  iatt = strfind(Tattr, 'since');
+  if (~isempty(iatt))
+    iatt=iatt+6;
+    Torigin = Tattr(iatt:iatt+18);
+    epoch   = datenum(Torigin,31);          % 'yyyy-mm-dd HH:MM:SS' 
+    Tstring = datestr(epoch+Tvalue);
+  else
+    Tstring = num2str(Tvalue);    
+  end
+  F.Tstring = Tstring;
+end
+
+% Process field difference.
+
+F.value1    = nc_read(F.ncname1, vname, Tindex1);
+F.min1      = min(F.value1(:));
+F.max1      = max(F.value1(:));
+F.checkval1 = bitcount(F.value1(:));
+F.value2    = nc_read(F.ncname2, vname, Tindex2);
+F.min2      = min(F.value2(:));
+F.max2      = max(F.value2(:));
+F.checkval2 = bitcount(F.value2(:));
+F.diff      = F.value1 - F.value2;
+
+F.Caxis     = [-Inf Inf];
+F.Cmap      = red_blue(256);
+F.doMap     = 0;
+F.ptype     = ptype;
+F.shading   = 'flat';
+F.wrtPNG    = false;
+
+doSection = false;
+if ~isempty(orient)
+  if (orient == 'c' || orient == 'r')
+    doSection = true;
+  end
+end
+
+if (isfield(G,'lon_coast') && isfield(G,'lat_coast'))
+  F.lon_coast = G.lon_coast;
+  F.lat_coast = G.lat_coast;
+  F.gotCoast = true;
+else
+  F.gotCoast = false;
+end
+
+%------------------------------------------------------------------------
 %  Extract horizontal or vertical section of the field difference.
-%--------------------------------------------------------------------------
+%------------------------------------------------------------------------
 
 if (is3d)
   Km = size(F.diff, 3);
@@ -233,9 +353,9 @@ end
 Dmin = min(F.value(:));
 Dmax = max(F.value(:));
 
-%--------------------------------------------------------------------------
+%------------------------------------------------------------------------
 %  Plot horizontal or vertical section field difference.
-%--------------------------------------------------------------------------
+%------------------------------------------------------------------------
 
 if (doSection)
   figure;
@@ -245,23 +365,23 @@ else
   P = hplot(G, F);
 end
 
-[~,name,~] = fileparts(ncname)
+[~,name,~] = fileparts(ncname);
 
 if (is3d)
   if (doSection)
-    title(['File: ', untexlabel(name), blanks(4),                         ...
-           'Var = ', vname,                                               ...
-           ',  Along ', sec_index,                                        ...
+    title(['File: ', untexlabel(name), blanks(4),                     ...
+           'Var = ', vname,                                           ...
+           ',  Along ', sec_index,                                    ...
            ',  Rec = ', num2str(rec1),'/', num2str(rec2) ]);
   else
-    title(['File: ', untexlabel(name), blanks(4),                         ...
-           'Var = ', vname,                                               ...
-           ',  Level = ', num2str(Level),                                 ...
+    title(['File: ', untexlabel(name), blanks(4),                      ...
+           'Var = ', vname,                                            ...
+           ',  Level = ', num2str(Level),                              ...
            ',  Rec = ', num2str(rec1),'/', num2str(rec2) ]);
   end  
 else
-  title(['File: ', untexlabel(name), blanks(4),                           ...
-         'Var = ', vname,                                                 ...
+  title(['File: ', untexlabel(name), blanks(4),                         ...
+         'Var = ', vname,                                               ...
          ',  Rec = ', num2str(rec1),'/', num2str(rec2) ]);
 end
 xlabel(['Min = ', num2str(Dmin), blanks(4), 'Max = ', num2str(Dmax)]);

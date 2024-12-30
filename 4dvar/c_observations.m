@@ -1,9 +1,9 @@
-function c_observations(S,file)
+function c_observations(S, varargin)
 
 %
 % C_OBSERVATIONS:  Creates 4D-Var observations NetCDF file
 %
-% [status]=c_observations(S,file)
+% [status]=c_observations(S, file)
 %
 % This function creates ROMS 4D-Var observation NetCDF file using specified
 % in structure array, S.
@@ -87,7 +87,7 @@ function c_observations(S,file)
   
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2024 The ROMS/TOMS Group                            %
+%  Copyright (c) 2002-2025 The ROMS Group                                 %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.md                            Hernan G. Arango      %
 %=========================================================================%
@@ -96,15 +96,16 @@ function c_observations(S,file)
 % Get error covariance standard deviation creation parameters.
 %--------------------------------------------------------------------------
 
-if (nargin < 2)
-  if (isfield(S,'ncfile'))
-    ncfile=S.ncfile;
-  else
-    error(['C_OBSERVATIONS - Cannot find file name field: ncfile, ',    ...
-          'in structure array S']);
-  end
-else
-  ncfile=file;    
+switch numel(varargin)
+  case 0
+    if (isfield(S,'ncfile'))
+      ncfile=S.ncfile;
+    else
+      error(['C_OBSERVATIONS - Cannot find file name field: ncfile, ',  ...
+             'in structure array S']);
+    end
+  case 1
+    ncfile=varargin{1};    
 end
 
 %--------------------------------------------------------------------------

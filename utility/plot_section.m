@@ -53,7 +53,7 @@ function F=plot_section(Gname, Hname, Vname, Tindex, orient, index,     ...
 
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2024 The ROMS/TOMS Group                            %
+%  Copyright (c) 2002-2025 The ROMS Group                                 %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.md                            Hernan G. Arango      %
 %=========================================================================%
@@ -155,7 +155,6 @@ switch Vname
     Cmap = cm_turbid(255);
     scale = 1.0;
   case {'salt'}
-    
     Cmap = flipud(cividis(255));
     scale = 1.0;
   case {'temp'}
@@ -164,9 +163,12 @@ switch Vname
   case {'u', 'v'}
     Cmap = cm_curl(512);
     scale = 1.0;
-  case {'w'}
+  case {'w','Ha', 'hz'}
     Cmap = cm_curl(512);
     scale = 86400.0;               % m/day
+  case {'Hz', 'hz'}
+    Cmap = cividis(512);
+    scale = 1.0;
   otherwise
     Cmap = cm_balance(512);
     scale = 1.0;
@@ -178,7 +180,18 @@ end
 
 if (getdata)
 
-  I = nc_vinfo(Hname, Vname);
+  V = nc_vnames(Hname);  
+
+  switch (Vname)
+    case {'Hz', 'hz'}
+      if (any(strcmp({V.Variables(:).Name}, 'Hz')))
+        I = nc_vinfo(Hname, 'Hz');
+      else
+        I = nc_vinfo(Hname, 'z_w');
+      end
+    otherwise 
+      I = nc_vinfo(Hname, Vname);
+  end
 
 %  Check variable dimensions and determine horizontal/vertical
 %  coordinates and Land/Sea mask arrays.
@@ -374,7 +387,22 @@ if (getdata)
   ReplaceValue = NaN;
   PreserveType = false;
 
-  field = nc_read(Hname,Vname,Tindex,ReplaceValue,PreserveType);
+  switch (Vname)
+    case {'Hz', 'hz'}
+      if (any(strcmp({V.Variables(:).Name}, 'Hz')))
+        field = nc_read(Hname,Vname,Tindex,ReplaceValue,PreserveType);
+      else
+        Zw = nc_read(Hname,'z_w',Tindex,ReplaceValue,PreserveType);
+        Np = size(Zw,3); N = Np-1;
+        for k = 2:Np
+          field(:,:,k-1) = Zw(:,:,k) - Zw(:,:,k-1);
+        end
+      end
+      Z = G.z_r;
+   otherwise
+      field = nc_read(Hname,Vname,Tindex,ReplaceValue,PreserveType);
+  end  
+
 end
 
 % Extract data section to plot.
@@ -489,7 +517,7 @@ if (ptype ~= 0)
 
   if (wrtPNG)
     png_file=strcat(Vname,'_',num2str(Tindex, '%4.4i'),'.png');
-    print(png_file, '-dpng', '-r300');
+    exportgraphics(gcf, png_file, 'resolution', 300);
   end
 
 end

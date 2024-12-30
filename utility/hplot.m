@@ -24,8 +24,9 @@ function P = hplot(G, F)
 %                    F.value        field values
 %                    F.Caxis        color axis
 %                    F.doMap        0: no, 1: m_map, 2: mapping toolbox
-%                    F.ptype        0:  'pcolor',
-%                                   <0: 'contourf' with abs(ptype) contours
+%                    F.ptype        <0: 'contourf' with abs(ptype) contours
+%                                   1:  'pcolor'
+%                                   2:  'pcolorjw'
 %                    F.projection   map projection
 %                    F.gotCoast     coastline switch
 %                    F.lon_coast    coastline longitude
@@ -44,7 +45,7 @@ function P = hplot(G, F)
 
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2024 The ROMS/TOMS Group                            %
+%  Copyright (c) 2002-2025 The ROMS Group                                 %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.md                            Hernan G. Arango      %
 %=========================================================================%
@@ -85,39 +86,43 @@ Marks = false;                    % draw min/max marks
 % Set colormap.
 %--------------------------------------------------------------------------
 
-switch P.Vname
-  case {'temp', 'temp-sur'}
-    Cmap = cm_balance(512);
-  case {'salt', 'salt_sur'}
-    Cmap = cm_delta(512);
-  case {'u_sur', 'u_sur_eastward', 'v_sur', 'v_sur_northward'}
-    Cmap = cm_curl(512);
-  case {'ubar', 'ubar_eastward', 'vbar', 'vbar_northward'}
-    Cmap = cm_speed(512);
-  case 'zeta'
-    Cmap = cm_delta(512);
-  case 'swrad'
-    Cmap = cm_thermal(512);
-  case 'lwrad'
-    Cmap = flipud(cm_thermal(512));
-  case {'latent', 'sensible', 'shflux'}
-    Cmap = cm_balance(512);
-  case {'EminusP', 'evaporation', 'ssflux'}
-    Cmap = cm_delta(512);
-  case 'rain'
-    Cmap = flipud(cm_haline(512));
-  case {'Uwind', 'Vwind'}
-    Cmap = cm_curl(512);
-  case {'sustr', 'svstr'}
-    Cmap = cm_curl(512);
-  case 'Pair'
-    Cmap = cm_haline(512);
-  case 'Qair'
-    Cmap = cm_delta(512);
-  case 'Hair'
-    Cmap = cm_delta(512);
-  otherwise
-    Cmap = cm_balance(512);
+if (isfield(P, 'Cmap'))
+  Cmap = P.Cmap;
+else
+  switch P.Vname
+    case {'temp', 'temp-sur'}
+      Cmap = cm_balance(512);
+    case {'salt', 'salt_sur'}
+      Cmap = cm_delta(512);
+    case {'u_sur', 'u_sur_eastward', 'v_sur', 'v_sur_northward'}
+      Cmap = cm_curl(512);
+    case {'ubar', 'ubar_eastward', 'vbar', 'vbar_northward'}
+      Cmap = cm_speed(512);
+    case 'zeta'
+      Cmap = cm_delta(512);
+    case 'swrad'
+      Cmap = cm_thermal(512);
+    case 'lwrad'
+      Cmap = flipud(cm_thermal(512));
+    case {'latent', 'sensible', 'shflux'}
+      Cmap = cm_balance(512);
+    case {'EminusP', 'evaporation', 'ssflux'}
+      Cmap = cm_delta(512);
+    case 'rain'
+      Cmap = flipud(cm_haline(512));
+    case {'Uwind', 'Vwind'}
+      Cmap = cm_curl(512);
+    case {'sustr', 'svstr'}
+      Cmap = cm_curl(512);
+    case 'Pair'
+      Cmap = cm_haline(512);
+    case 'Qair'
+      Cmap = cm_delta(512);
+    case 'Hair'
+      Cmap = cm_delta(512);
+    otherwise
+      Cmap = cm_balance(512);
+  end
 end
 
 f = nanland(P.value, G);
@@ -135,51 +140,42 @@ if (length(Imax) > 1 && ~isempty(Jmax > 1))
   Jmax = Jmax(1);
 end
 
-P.min = Pmin;
-P.max = Pmax;
-
-
-if (any(isinf(P.Caxis)))
-  P.Caxis = [Pmin Pmax];
-end
-
 %--------------------------------------------------------------------------
 % Plot requested field.
 %--------------------------------------------------------------------------
+
+Xmin = min(P.X(:));
+Xmax = max(P.X(:));
+Ymin = min(P.Y(:));
+Ymax = max(P.Y(:));
 
 figure;
 
 if (P.doMap == 1)                               % use m_map toolbox
 
-  LonMin=min(P.X(:));   LonMax=max(P.X(:));
-  LatMin=min(P.Y(:));   LatMax=max(P.Y(:));
-  m_proj(MyProjection,'longitudes',[LonMin,LonMax],                     ...
-                      'latitudes' ,[LatMin,LatMax]); 
+  m_proj(MyProjection,'longitudes',[Xmin,Xmax],'latitudes',[Ymin,Ymax]);
   m_grid('tickdir','out','yaxisloc','left');
   hold on;
-  if (P.ptype)
+  if (P.ptype < 0)
     NC = abs(P.ptype);
-    [C,H] = m_contourf(P.X, P.Y, nanland(P.value,G), NC);
+    [C,H] = m_contourf(P.X, P.Y, f, NC);
   else
-    H = m_pcolor(P.X, P.Y, nanland(P.value,G));
+    H = m_pcolor(P.X, P.Y, f);
   end
 
 elseif (P.doMap == 2)                           % Matlab mapping toolbox
 
-  LonLim=[min(P.X(:)) max(P.X(:))];
-  LatLim=[min(P.Y(:)) max(P.Y(:))];
-
-  delta=max(fix((LonLim(2)-LonLim(1))/5), fix((LatLim(2)-LatLim(1))/5));
+  delta=max(fix((Xmax-Xmin)/5), fix((Ymax-Ymin)/5));
   x = wrapTo180(0:delta:360);
-  indx = find(x >= LonLim(1) & x <= LonLim(2)); 
+  indx = find(x >= Xmin & x <= Xmax); 
   y = -90:delta:90;
-  indy = find(y >= LatLim(1) & y <= LatLim(2)); 
+  indy = find(y >= Ymin & y <= Ymax); 
   
   geomap = defaultm(MyProjection);              % create mapping structure
 
   clf
-  hax = axesm(geomap, 'MapLonLimit', LonLim,                            ...
-                      'MapLatLimit', LatLim,                            ...
+  hax = axesm(geomap, 'MapLonLimit', [Xmin Xmax],                       ...
+                      'MapLatLimit', [Ymin Ymax],                       ...
                       'Grid','on',                                      ...
                       'MLineLocation', delta,                           ...
                       'PLineLocation', delta,                           ...
@@ -192,11 +188,11 @@ elseif (P.doMap == 2)                           % Matlab mapping toolbox
 
   geomap = defaultm(geomap);                    % adjust map structure
                                                 % set empty properties
-  if (P.ptype)
+  if (P.ptype < 0)
     NC = abs(P.ptype);
-    [C,H] = contourfm(P.Y, P.X, nanland(P.value,G), NC);
+    [C,H] = contourfm(P.Y, P.X, f, NC);
   else
-    H = pcolorm(P.Y, P.X, nanland(P.value,G));
+    H = pcolorm(P.Y, P.X, f);
   end   
   
   a = axis;                                     % coastline fill area
@@ -211,25 +207,39 @@ elseif (P.doMap == 2)                           % Matlab mapping toolbox
 
 else                                            % no map
 
-  if (P.ptype)
+  if (P.ptype < 0)
     NC = abs(P.ptype);
-    [C,H] = contourf(P.X, P.Y, nanland(P.value,G), NC);
+    [C,H] = contourf(P.X, P.Y, f, NC);
+  elseif (P.ptype == 2)
+    H = pcolorjw(P.X, P.Y, f);
   else
-    H = pcolorjw(P.X, P.Y, nanland(P.value,G));
+    H = pcolor(P.X, P.Y, f);
   end
   hold on;
 
   if (P.gotCoast)
     hc = plot(P.lon_coast, P.lat_coast, 'k-');
+    axis([Xmin Xmax Ymin Ymax]);
   end
 
 end
 
-%shading flat
-shading interp;
+if (isfield(P, 'shading'))
+  switch (P.shading)
+    case 'faceted'
+      shading faceted;
+    case 'flat'
+      shading flat;
+    case 'interp'
+      shading interp;
+  end    
+else
+  shading flat
+end
 colorbar;
 colormap(Cmap);
-if (P.Caxis(1) ~= P.Caxis(2)) 
+
+if (isfield(P, 'Caxis'))
   caxis(P.Caxis);
 end
 
@@ -331,7 +341,7 @@ end
 
 if (P.wrtPNG)
   png_file=strcat(P.Vname,'_',num2str(P.Tindex, '%4.4i'),'.png');
-  print(png_file, '-dpng', '-r300');
+  exportgraphics(gcf, png_file, 'resolution', 300);
 end
 
 hold off;
