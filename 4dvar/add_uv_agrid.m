@@ -23,7 +23,7 @@ function F = add_uv_agrid(G, ncfile, u_varname, v_varname)
   
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2024 The ROMS/TOMS Group                            %
+%  Copyright (c) 2002-2025 The ROMS Group                                 %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.md                            Hernan G. Arango      %
 %=========================================================================%

@@ -34,7 +34,7 @@ function [status]=c_std_frc(S)
 
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2024 The ROMS/TOMS Group                            %
+%  Copyright (c) 2002-2025 The ROMS Group                                 %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.md                            Hernan G. Arango      %
 %=========================================================================%
@@ -243,7 +243,7 @@ end
 %  Create global attributes.
 %--------------------------------------------------------------------------
 
-type='ROMS/TOMS 4D-Var surface forcing error covariance standard deviation';
+type='ROMS 4D-Var surface forcing error covariance standard deviation';
 lstr=max(size(type));
 [status]=mexnc('PUT_ATT_TEXT',ncid,nc_constant('nc_global'),'type',     ...
                nc_constant('nc_char'),lstr,type);
