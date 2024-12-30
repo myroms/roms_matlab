@@ -1,4 +1,4 @@
-function [Istr,Iend,Jstr,Jend]=tile(Lm,Mm,NtileX,NtileE,tile,varargin);
+function [Istr,Iend,Jstr,Jend]=tile(Lm,Mm,NtileX,NtileE,varargin);
       
 %
 % TILE:  Compute ROMS parallel horizontal tile partitions
@@ -13,7 +13,7 @@ function [Istr,Iend,Jstr,Jend]=tile(Lm,Mm,NtileX,NtileE,tile,varargin);
 %    Mm          Number of interior RHO-points in the J-direction
 %    NtileI      Number of parallel partitions in the I-direction
 %    NtileJ      Number of parallel partitions in the J-direction
-%    tile        Tile number (0 <= tile <= NtileI*NtileJ-1)
+%    tile        Tile number (optional, 0 <= tile <= NtileI*NtileJ-1)
 %    verbose     display information (optional, default=true)
 %
 % On Output:
@@ -31,23 +31,28 @@ function [Istr,Iend,Jstr,Jend]=tile(Lm,Mm,NtileX,NtileE,tile,varargin);
 %    See License_ROMS.md                            Hernan G. Arango        %
 %===========================================================================%
 
-verbose=true;
-
 switch numel(varargin)
+  case 0
+    tile=0:1:NtileX*NtileE-1;
+    verbose=true;
   case 1
-    verbose=varargin{1};
+    tile=varargin{1};
+    verbose=true;
+  case 2
+    tile=varargin{1};
+    verbose=varargin{2};
 end
 
 %---------------------------------------------------------------------------
 % Compute tile(s) starting and ending indices.
 %---------------------------------------------------------------------------
 
-ChunkSizeX=floor((Lm+NtileX-1)./NtileX);
-ChunkSizeE=floor((Mm+NtileE-1)./NtileE);
-MarginX=floor((NtileX.*ChunkSizeX-Lm)./2);
-MarginE=floor((NtileE.*ChunkSizeE-Mm)./2);
+ChunkSizeX=fix((Lm+NtileX-1)./NtileX);
+ChunkSizeE=fix((Mm+NtileE-1)./NtileE);
+MarginX=fix((NtileX.*ChunkSizeX-Lm)./2);
+MarginE=fix((NtileE.*ChunkSizeE-Mm)./2);
 
-jtile=floor(tile./NtileX);
+jtile=fix(tile./NtileX);
 itile=tile-jtile.*NtileX;
 
 Istr=1+itile.*ChunkSizeX-MarginX;
@@ -64,12 +69,14 @@ if (verbose),
   disp(' ');
   for i=1:length(tile),
     disp([' tile: ',  num2str(tile(i),'%2.2i'), '  ', ...
-	  ' Itile = ', num2str(itile(i),'%2.2i'), ...
-          ' Jtile = ', num2str(jtile(i),'%2.2i'), ...
-          ' Istr = ', num2str(Istr(i),'%3.3i'), ...
-          ' Iend = ', num2str(Iend(i),'%3.3i'), ...
-          ' Jstr = ', num2str(Jstr(i),'%3.3i'), ...
-          ' Jend = ', num2str(Jend(i),'%3.3i')]);
+	  ' Itile = ', num2str(itile(i),'%2.2i'),     ...
+          ' Jtile = ', num2str(jtile(i),'%2.2i'),     ...
+          ' Istr = ', num2str(Istr(i),'%3.3i'),       ...
+          ' Iend = ', num2str(Iend(i),'%3.3i'),       ...
+          ' Jstr = ', num2str(Jstr(i),'%3.3i'),       ...
+          ' Jend = ', num2str(Jend(i),'%3.3i'),       ...
+	  ' (',num2str(Iend(i)-Istr(i)+1), ' x ',     ...
+	     num2str(Jend(i)-Jstr(i)+1), ')'])
   end
   disp(' ');
 end

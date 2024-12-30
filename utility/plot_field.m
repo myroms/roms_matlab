@@ -56,22 +56,22 @@ function F=plot_field(Gname, Hname, Vname, Tindex, varargin)
 %
 
 % svn $Id$
-%=========================================================================%
-%  Copyright (c) 2002-2024 The ROMS/TOMS Group                            %
-%    Licensed under a MIT/X style license                                 %
-%    See License_ROMS.md                            Hernan G. Arango      %
-%=========================================================================%
+%=======================================================================%
+%  Copyright (c) 2002-2024 The ROMS/TOMS Group                          %
+%    Licensed under a MIT/X style license                               %
+%    See License_ROMS.md                            Hernan G. Arango    %
+%=======================================================================%
 
 % Initialize.
 
-F = struct('ncname'     , [], 'Vname'     , [],                         ...
-           'Tindex'     , [], 'Tname'     , [], 'Tstring'   , [],       ...
-           'Level'      , [], 'is3d'      , [],                         ...
-           'X'          , [], 'Y'         , [],                         ...
-           'value'      , [], 'min'       , [], 'max'       , [],       ...
-           'Caxis'      , [], 'doMap'     , [], 'projection', [],       ...
-           'ptype'      , [],                                           ...
-           'gotCoast'   , [], 'lon_coast' , [], 'lat_coast' , [],       ...
+F = struct('ncname'     , [], 'Vname'     , [],                       ...
+           'Tindex'     , [], 'Tname'     , [], 'Tstring'   , [],     ...
+           'Level'      , [], 'is3d'      , [],                       ...
+           'X'          , [], 'Y'         , [],                       ...
+           'value'      , [], 'min'       , [], 'max'       , [],     ...
+           'Caxis'      , [], 'doMap'     , [], 'projection', [],     ...
+           'ptype'      , [],                                         ...
+           'gotCoast'   , [], 'lon_coast' , [], 'lat_coast' , [],     ...
            'shading'    , [], 'pltHandle' , [], 'wrtPNG'    , []);
 
 F.projection = 'mercator';
@@ -255,7 +255,7 @@ if (nvdims > 0)
           got.Yname = true;        
           got.Zname = true;
         end
-      case {'ocean_time', 'time', ~isempty(strfind(dimnam,'time'))}
+      case {'ocean_time', 'time', ~contains(dimnam,'time')}
         recordless = false;    
         Tsize = I.Dimensions(n).Length;
     end
@@ -276,19 +276,19 @@ if (any(itime))
   F.Tname = I.Attributes(itime).Value;
 end
 
-%--------------------------------------------------------------------------
+%------------------------------------------------------------------------
 % Get coordinates.
-%--------------------------------------------------------------------------
+%------------------------------------------------------------------------
 
 if (isfield(G,Xname))
   if (~isempty(G.(Xname)))  
     X = G.(Xname);
   else
-    error([' PLOT_FIELD - field '', Xname, ''',                          ...
+    error([' PLOT_FIELD - field '', Xname, ''',                       ...
            ' is empty in receiver grid structure: G']);
   end
 else
-  error([' PLOT_FIELD - unable to find field '', Xname, ''',             ...
+  error([' PLOT_FIELD - unable to find field '', Xname, ''',          ...
          ' in receiver grid structure: G']);
 end
 
@@ -296,11 +296,11 @@ if (isfield(G,Yname))
   if (~isempty(G.(Yname)))
     Y = G.(Yname);
   else
-    error([' PLOT_FIELD - field '', Yname, ''',                          ...
+    error([' PLOT_FIELD - field '', Yname, ''',                       ...
            ' is empty in receiver grid structure: G']);
   end
 else
-  error([' PLOT_FIELD - unable to find field '', Yname, ''',             ...
+  error([' PLOT_FIELD - unable to find field '', Yname, ''',          ...
          ' in receiver grid structure: G']);
 end
 
@@ -309,11 +309,11 @@ if (is3d)
     if (~isempty(G.(Zname)))
       Z = G.(Zname);
     else
-      error([' PLOT_FIELD - field '', Zname, ''',                        ...
+      error([' PLOT_FIELD - field '', Zname, ''',                     ...
              ' is empty in receiver grid structure: G']);
     end
   else
-    error([' PLOT_FIELD - unable to find field '', Zname, ''',           ...
+    error([' PLOT_FIELD - unable to find field '', Zname, ''',        ...
            ' in receiver grid structure: G']);
   end
 end
@@ -322,11 +322,11 @@ if (isfield(G,Mname))
   if (~isempty(G.(Mname)))
     mask = G.(Mname);
   else
-    error([' PLOT_FIELD - field '', Mname, ''',                          ...
+    error([' PLOT_FIELD - field '', Mname, ''',                       ...
           ' is empty in receiver grid structure: G']);
   end
 else
-  error([' PLOT_FIELD - unable to find field '', Mname, ''',             ...
+  error([' PLOT_FIELD - unable to find field '', Mname, ''',          ...
          ' in receiver grid structure: G']);
 end
 
@@ -344,12 +344,12 @@ end
 F.X = X;
 F.Y = Y;
 
-%--------------------------------------------------------------------------
+%------------------------------------------------------------------------
 % Read in requested variable from NetCDF file.
-%--------------------------------------------------------------------------
+%------------------------------------------------------------------------
 
 if (~recordless && Tindex > Tsize)
-  Tindex = Tsize;                     % process last time record available
+  Tindex = Tsize;                    % process last time record available
 end 
 F.Tindex = Tindex;
 
@@ -357,7 +357,7 @@ if (~isempty(F.Tname))
   Tvalue = nc_read(Hname,F.Tname,Tindex);
   Tattr  = nc_getatt(Hname,'units',F.Tname);
   Tdays  = true;
-  if (~isempty(strfind(Tattr, 'second')))
+  if (~contains(Tattr, 'second'))
     Tvalue = Tvalue/86400;                    % seconds to days
     Tdays  = false;
   end  
@@ -389,9 +389,9 @@ end
 
 F.value = value;
 
-%--------------------------------------------------------------------------
+%------------------------------------------------------------------------
 % Plot requested field
-%--------------------------------------------------------------------------
+%------------------------------------------------------------------------
 
 F = hplot(G, F);
 

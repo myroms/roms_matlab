@@ -3081,6 +3081,37 @@ switch Vname
     V.Cgridtype.Value         = 3;
     V.Datatype                = Datatype;
     V.ncType                  = nc_constant(nctype);
+  case 'u_eastward'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 's_rho';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = false;
+    V.Dimensions(4).Name      = 'ocean_time';
+    V.Dimensions(4).Length    = [];
+    V.Dimensions(4).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'eastward momentum component at RHO-points';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter second-1';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'ocean_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho lat_rho s_rho ocean_time';
+    else
+      V.Attributes(4).Value   = 'x_rho y_rho s_rho ocean_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 3;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype); 
   case 'v'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_v';
@@ -3140,6 +3171,37 @@ switch Vname
     V.Cgridtype.Value         = 4;
     V.Datatype                = Datatype;
     V.ncType                  = nc_constant(nctype);
+   case 'v_northward'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 's_rho';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = false;
+    V.Dimensions(4).Name      = 'ocean_time';
+    V.Dimensions(4).Length    = [];
+    V.Dimensions(4).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'northward momentum component at RHO-points';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'meter second-1';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'ocean_time';
+    V.Attributes(4).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(4).Value   = 'lon_rho lat_rho s_rho ocean_time';
+    else
+      V.Attributes(4).Value   = 'x_rho y_rho s_rho ocean_time';
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 3;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype); 
   case 'w'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_rho';
@@ -4738,6 +4800,97 @@ switch Vname
     V.Datatype                = Datatype;
     V.ncType                  = nc_constant(nctype);
        
+%--------------------------------------------------------------------------
+%  Seaice state variables.
+%--------------------------------------------------------------------------
+
+  case 'snow_time'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'snow_time';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'snow time';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'day';
+    V.Cgridtype.Name          = 'none';
+    V.Cgridtype.Value         = 0;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'snowfall'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'lon';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'lat';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'snow_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'snowfall rate';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'kg m-2 s-1';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'snow_time';
+    V.Attributes(4).Name      = 'coordinates';
+    V.Attributes(4).Value     = 'lon lat snow_time';
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+   case 'snow_albedo'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'lon';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'lat';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'snow_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'snow albedo';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = '(0 - 1)';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'snow_time';
+    V.Attributes(4).Name      = 'coordinates';
+    V.Attributes(4).Value     = 'lon lat snow_time';
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+   case 'snow_thickness'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'lon';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'lat';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Dimensions(3).Name      = 'snow_time';
+    V.Dimensions(3).Length    = [];
+    V.Dimensions(3).Unlimited = Unlimited;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'snowfall thickness';
+    V.Attributes(2).Name      = 'units';
+    V.Attributes(2).Value     = 'm of water equivalent';
+    V.Attributes(3).Name      = 'time';
+    V.Attributes(3).Value     = 'snow_time';
+    V.Attributes(4).Name      = 'coordinates';
+    V.Attributes(4).Value     = 'lon lat snow_time';
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = Datatype;
+    V.ncType                  = nc_constant(nctype);
+    
 %--------------------------------------------------------------------------
 %  Sediment state variables.
 %--------------------------------------------------------------------------

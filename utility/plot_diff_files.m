@@ -177,6 +177,7 @@ F.Tstring = Tstring;
 V1 = nc_vnames(F.ncname1);
 V2 = nc_vnames(F.ncname2);
 
+
 % Process field difference.
 
 switch (vname)
@@ -201,8 +202,14 @@ switch (vname)
       end
     end
   otherwise
-   F.value1 = nc_read(F.ncname1, vname, F.rec1);
-   F.value2 = nc_read(F.ncname2, vname, F.rec2);
+    ivar=strcmp({V1.Variables(:).Name}, vname);
+    if (length({V1.Variables(ivar).Dimensions.Length}))
+      F.value1 = nc_read(F.ncname1, vname);
+      F.value2 = nc_read(F.ncname2, vname);
+    else
+      F.value1 = nc_read(F.ncname1, vname, F.rec1);
+      F.value2 = nc_read(F.ncname2, vname, F.rec2);
+    end   
 end
 
 F.min1      = min(F.value1(:));
@@ -216,7 +223,7 @@ F.checkval2 = bitcount(F.value2(:));
 F.diff      = F.value1 - F.value2;
 
 F.Caxis     = Caxis;
-F.Cmap      = redblue(254);
+F.Cmap      = mpl_sstanom(256);
 F.doMap     = Mmap;
 F.ptype     = ptype;
 F.shading   = 'flat';
@@ -266,6 +273,18 @@ if (nvdims > 0)
         end
         if (isfield(G, 'z_r'))
           Z = G.z_r;
+        end
+      case {'xi_psi','lon_psi'}
+        mask = G.mask_psi;
+        if (G.spherical)
+          F.X = G.lon_psi;
+          F.Y = G.lat_psi;
+        else
+          F.X = G.x_psi./1000;
+          F.Y = G.y_psi./1000;
+        end
+        if (isfield(G, 'z_psi'))
+          Z = G.z_psi;
         end
      case {'xi_u','lon_u'}
         mask = G.mask_u;
