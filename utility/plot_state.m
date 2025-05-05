@@ -5,7 +5,7 @@ function S = plot_state(Gname, Sname, rec, varargin)
 % F = plot_state(Gname, Sname, rec, level, ptype, Mmap, orient, index,
 %                wrtPNG, PNGsuffix, R)
 %
-% This function plots hoeizontal or cross-section fields of the data
+% This function plots horizontal or cross-section fields of the data
 % assimilation state vector like increment, analysis, and trajectory.
 %
 % In cross-sections, we change the axis to the upper range, for example:

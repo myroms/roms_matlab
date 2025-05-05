@@ -23,6 +23,13 @@ function [J]=plot_penalty(ncname, LogScale, varargin)
 %
 %    J             Penalty/Cost function structure (struct)
 %
+% Example:
+%
+%   ncname = {'cycle1/roms_mod.nc', 'cycle2/roms_mod.nc'};
+%
+%   J = plot_penalty(ncname{1}, true);
+%   Jcompare = plot_penalty(ncname{1}, true, 'ncname{2});
+%
 
 % svn $Id$
 %=========================================================================%
