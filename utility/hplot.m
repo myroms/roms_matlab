@@ -49,7 +49,7 @@ function P = hplot(G, F)
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.md                            Hernan G. Arango      %
 %=========================================================================%
-  
+
 %--------------------------------------------------------------------------
 % Set output P structure, copy from input F structure.
 %--------------------------------------------------------------------------
@@ -59,7 +59,7 @@ P = F;
 %--------------------------------------------------------------------------
 % Initialize.
 %--------------------------------------------------------------------------
-  
+
 if (isfield(P, 'projection') & P.doMap > 0)
   if (~isempty(P.projection))
     MyProjection = P.projection;
@@ -78,7 +78,7 @@ Marks = false;                    % draw min/max marks
 %Land = [0.6706 0.5841 0.5176];   % light brown
  Land = [0.6 0.65 0.6];           % gray-green
  Lake = Land;
- 
+
 %Cedge = 'none';                  % MarkerEdgeColor
  Cedge = 'y';
 
@@ -90,16 +90,23 @@ if (isfield(P, 'Cmap'))
   Cmap = P.Cmap;
 else
   switch P.Vname
-    case {'temp', 'temp-sur'}
-      Cmap = cm_balance(512);
-    case {'salt', 'salt_sur'}
-      Cmap = cm_delta(512);
-    case {'u_sur', 'u_sur_eastward', 'v_sur', 'v_sur_northward'}
-      Cmap = cm_curl(512);
+    case {'temp', 'temp_sur', 'temp_slice'}
+      Cmap = flipud(mpl_Paired(256));
+    case {'salt', 'salt_sur', 'salt_slice'}
+      Cmap = mpl_Set3(256);
+    case {'pvorticity', 'pvorticity_slice'}
+      Cmap = mpl_Set1(256);
+    case {'rvorticity', 'rvorticity_slice'}
+      Cmap = cmap_odv('BlueRed_473');
+%     Cmap = cmap_odv('Ferret_blue_orange',256);
+    case {'u', 'u_sur', 'u_slice', 'u_eastward', 'u_eastward_slice'}
+      Cmap = mpl_rainbow200;
+    case {'v', 'v_sur', 'v_slice', 'v_northward', 'v_northward_slice'}
+      Cmap = flipud(mpl_rainbow200);
     case {'ubar', 'ubar_eastward', 'vbar', 'vbar_northward'}
       Cmap = cm_speed(512);
     case 'zeta'
-      Cmap = cm_delta(512);
+      Cmap = mpl_Accent(256);
     case 'swrad'
       Cmap = cm_thermal(512);
     case 'lwrad'
@@ -121,14 +128,14 @@ else
     case 'Hair'
       Cmap = cm_delta(512);
     otherwise
-      Cmap = cm_balance(512);
+      Cmap = cmap('R1');
   end
 end
 
 f = nanland(P.value, G);
 
-Pmin = min(f(:));  [Imin,Jmin] = find(f == min(f(:))); 
-Pmax = max(f(:));  [Imax,Jmax] = find(f == max(f(:))); 
+Pmin = min(f(:));  [Imin,Jmin] = find(f == min(f(:)));
+Pmax = max(f(:));  [Imax,Jmax] = find(f == max(f(:)));
 
 if (length(Imin) > 1 && ~isempty(Jmin > 1))
   Imin = Imin(1);
@@ -162,15 +169,14 @@ if (P.doMap == 1)                               % use m_map toolbox
   else
     H = m_pcolor(P.X, P.Y, f);
   end
-
 elseif (P.doMap == 2)                           % Matlab mapping toolbox
 
   delta=max(fix((Xmax-Xmin)/5), fix((Ymax-Ymin)/5));
   x = wrapTo180(0:delta:360);
-  indx = find(x >= Xmin & x <= Xmax); 
+  indx = find(x >= Xmin & x <= Xmax);
   y = -90:delta:90;
-  indy = find(y >= Ymin & y <= Ymax); 
-  
+  indy = find(y >= Ymin & y <= Ymax);
+
   geomap = defaultm(MyProjection);              % create mapping structure
 
   clf
@@ -184,7 +190,7 @@ elseif (P.doMap == 2)                           % Matlab mapping toolbox
                       'MlabelParallel', 'south',                        ...
                       'PLabelMeridian', 'west',                         ...
                       'MLabelLocation', x(indx),                        ...
-                      'PLabelLocation', y(indy));  
+                      'PLabelLocation', y(indy));
 
   geomap = defaultm(geomap);                    % adjust map structure
                                                 % set empty properties
@@ -193,12 +199,12 @@ elseif (P.doMap == 2)                           % Matlab mapping toolbox
     [C,H] = contourfm(P.Y, P.X, f, NC);
   else
     H = pcolorm(P.Y, P.X, f);
-  end   
-  
+  end
+
   a = axis;                                     % coastline fill area
   geoshow('landareas.shp', 'FaceColor', Land)
   axis(a)
-  
+
   tightmap
 
   P.geomap = geomap;                            % pass map structure
@@ -232,7 +238,7 @@ if (isfield(P, 'shading'))
       shading flat;
     case 'interp'
       shading interp;
-  end    
+  end
 else
   shading flat
 end
@@ -247,10 +253,19 @@ end
 
 if (P.doMap == 1)
  if (fill_land)
-    m_gshhs_i('patch', Land, 'edgecolor', Lake);
-  else
+%   m_coast('patch', Land);
+%   m_gshhs_i('patch', Land, 'edgecolor', Lake);
+    m_gshhs_h('patch', Land, 'edgecolor', 'none');
+ else
     m_gshhs_i('color','k');
   end
+% [x,y]=m_ll2xy(-128.292,37.918);     % WC13 T,S observation
+% plot(x, y, 'o','MarkerSize',8,                                       ...
+%      'MarkerEdgeColor', 'r', 'MarkerFaceColor',[0.8,0.8,0.80]);
+% x=[-134, -122.5];
+% y=[37.666 37.666];
+% [x,y]=m_ll2xy(x,y);                 % WC13 cross-section
+% plot(x,y,'r:');
 end
 
 P.pltHandle = H;
@@ -259,29 +274,36 @@ P.pltHandle = H;
 % Set figure title and xlabel.
 %--------------------------------------------------------------------------
 
-if (P.is3d)
-  if (~isempty(P.Tname))
-    ht = title([P.Vname, ':', blanks(4),                                ...
-                'Level = ', num2str(P.Level), ',', blanks(4),           ...
-                'Record = ', num2str(P.Tindex), ',', blanks(4),         ...
-                'time = ', P.Tstring],                                  ...
-               'FontSize', 14, 'FontWeight', 'bold' );
+doTitle = true;
+if (P.wrtPNG < 0)
+  doTitle = false;
+end
+
+if (doTitle)
+  if (P.is3d)
+    if (~isempty(P.Tname))
+      ht = title([untexlabel(P.Vname), ':', blanks(4),                  ...
+                 'Level = ', num2str(P.Level), ',', blanks(4),          ...
+                 'Record = ', num2str(P.Tindex), ',', blanks(4),        ...
+                 'time = ', P.Tstring],                                 ...
+                 'FontSize', 14, 'FontWeight', 'bold' );
+    else
+      ht = title([untexlabel(P.Vname), ':', blanks(4),                  ...
+                 'Level = ', num2str(P.Level), ',', blanks(4),          ...
+                 'Record = ', num2str(P.Tindex)],                       ...
+                 'FontSize', 14, 'FontWeight', 'bold' );
+    end
   else
-    ht = title([P.Vname, ':', blanks(4),                                ...
-                'Level = ', num2str(P.Level), ',', blanks(4),           ...
-                'Record = ', num2str(P.Tindex)],                        ...
-               'FontSize', 14, 'FontWeight', 'bold' );
-  end
-else
-  if (~isempty(P.Tname))
-    ht = title([P.Vname, ':', blanks(4),                                ... 
-                'Record = ', num2str(P.Tindex), ',', blanks(4),         ...
-                'time = ', P.Tstring],                                  ...
-               'FontSize', 14, 'FontWeight', 'bold' );
-  else
-    ht = title([P.Vname, ':', blanks(4),                                ... 
-                'Record = ', num2str(P.Tindex)],                        ...
-               'FontSize', 14, 'FontWeight', 'bold' );
+    if (~isempty(P.Tname))
+       ht = title([untexlabel(P.Vname), ':', blanks(4),                 ...
+                  'Record = ', num2str(P.Tindex), ',', blanks(4),       ...
+                  'time = ', P.Tstring],                                ...
+                  'FontSize', 14, 'FontWeight', 'bold' );
+    else
+      ht = title([untexlabel(P.Vname), ':', blanks(4),                  ...
+                 'Record = ', num2str(P.Tindex)],                       ...
+                 'FontSize', 14, 'FontWeight', 'bold' );
+    end
   end
 end
 
@@ -339,7 +361,7 @@ end
 %  Write out PNG file.
 %--------------------------------------------------------------------------
 
-if (P.wrtPNG)
+if (abs(P.wrtPNG))
   png_file=strcat(P.Vname,'_',num2str(P.Tindex, '%4.4i'),'.png');
   exportgraphics(gcf, png_file, 'resolution', 300);
 end

@@ -48,7 +48,9 @@ function F=plot_field(Gname, Hname, Vname, Tindex, varargin)
 %                    ptype = 2     use 'pcolorjw'
 %
 %    wrtPNG        Switch to write out PNG file (optional; switch)
-%                    (default: false)
+%                    (default: 0)
+%
+%                  if wrtPNG < 1, ommit figure title, doTitle = false
 %
 % On Output:
 %
@@ -88,11 +90,13 @@ got.Zname = false;
 is3d  = false;
 isr3d = false;
 isw3d = false;
+iszflat = false;
 
 F.Tname = [];
 Tsize = 0;
 recordless = true;
- 
+Tstring = blanks(2);
+
 D = nc_dinfo(Hname);
 N = D(strcmp({D.Name}, 's_rho')).Length;
 
@@ -161,11 +165,11 @@ F.Level   = Level;
 F.Caxis   = Caxis;
 F.doMap   = Mmap;
 F.ptype   = ptype;
-F.shading = 'flat';
+F.shading = 'interp';
 F.wrtPNG  = wrtPNG;
 
 % Set ROMS Grid structure.
-  
+
 if (~isstruct(Gname))
   G = get_roms_grid(Gname);
 else
@@ -191,6 +195,10 @@ if (nvdims > 0)
         isr3d = true;
       case 's_w'
         isw3d = true;
+      case 'z_slice'
+        iszflat = true;
+        z_slice = nc_read(Hname, 'z_slice');
+        F.Level = z_slice(Level);
       case {'xi_rho','eta_rho'}
         Mname = 'mask_rho';
         got.Mname = true;
@@ -218,9 +226,9 @@ if (nvdims > 0)
             Xname = 'x_psi';
             Yname = 'y_psi';
           end
-          Zname = 'z_r';
+          Zname = 'z_p';
           got.Xname = true;
-          got.Yname = true;       
+          got.Yname = true;
           got.Zname = true;
         end
       case {'xi_u','eta_u'}
@@ -233,10 +241,10 @@ if (nvdims > 0)
           else
             Xname = 'x_u';
             Yname = 'y_u';
-          end 
+          end
           Zname = 'z_u';
           got.Xname = true;
-          got.Yname = true;        
+          got.Yname = true;
           got.Zname = true;
         end
       case {'xi_v','eta_v'}
@@ -252,20 +260,20 @@ if (nvdims > 0)
           end
           Zname = 'z_v';
           got.Xname = true;
-          got.Yname = true;        
+          got.Yname = true;
           got.Zname = true;
         end
       case {'ocean_time', 'time', ~contains(dimnam,'time')}
-        recordless = false;    
+        recordless = false;
         Tsize = I.Dimensions(n).Length;
     end
   end
   if (isw3d)
     Zname = 'z_w';
-  end  
+  end
 end
 
-is3d = isr3d || isw3d;
+is3d = isr3d || isw3d || iszflat;
 
 F.is3d = is3d;
 
@@ -281,7 +289,7 @@ end
 %------------------------------------------------------------------------
 
 if (isfield(G,Xname))
-  if (~isempty(G.(Xname)))  
+  if (~isempty(G.(Xname)))
     X = G.(Xname);
   else
     error([' PLOT_FIELD - field '', Xname, ''',                       ...
@@ -307,7 +315,11 @@ end
 if (is3d)
   if (isfield(G,Zname))
     if (~isempty(G.(Zname)))
-      Z = G.(Zname);
+      if (iszflat)
+        Z = z_slice;
+      else
+        Z = G.(Zname);
+      end
     else
       error([' PLOT_FIELD - field '', Zname, ''',                     ...
              ' is empty in receiver grid structure: G']);
@@ -317,7 +329,7 @@ if (is3d)
            ' in receiver grid structure: G']);
   end
 end
-  
+
 if (isfield(G,Mname))
   if (~isempty(G.(Mname)))
     mask = G.(Mname);
@@ -350,24 +362,24 @@ F.Y = Y;
 
 if (~recordless && Tindex > Tsize)
   Tindex = Tsize;                    % process last time record available
-end 
+end
 F.Tindex = Tindex;
 
 if (~isempty(F.Tname))
   Tvalue = nc_read(Hname,F.Tname,Tindex);
   Tattr  = nc_getatt(Hname,'units',F.Tname);
   Tdays  = true;
-  if (~contains(Tattr, 'second'))
+  if (contains(Tattr, 'second'))
     Tvalue = Tvalue/86400;                    % seconds to days
     Tdays  = false;
-  end  
+  end
   iatt = strfind(Tattr, 'since');
   if (~isempty(iatt))
     Torigin = Tattr(iatt+6:end);
-    epoch   = datenum(Torigin,31);            % 'yyyy-mm-dd HH:MM:SS' 
+    epoch   = datenum(Torigin,31);            % 'yyyy-mm-dd HH:MM:SS'
     Tstring = datestr(epoch+Tvalue);
   else
-    Tstring = num2str(Tvalue);    
+    Tstring = num2str(Tvalue);
   end
 end
 F.Tstring = Tstring;
@@ -375,9 +387,14 @@ F.Tstring = Tstring;
 ReplaceValue = NaN;
 PreserveType = false;
 
-field = nc_read(Hname,Vname,Tindex,ReplaceValue,PreserveType);
+if (recordless)
+  field = nc_read(Hname,Vname,[],ReplaceValue,PreserveType);
+  F.shading = 'interp';
+else
+  field = nc_read(Hname,Vname,Tindex,ReplaceValue,PreserveType);
+end
 
-if (is3d)
+if (is3d || iszflat)
   if (Level > 0)
     value = squeeze(field(:,:,Level));
   else

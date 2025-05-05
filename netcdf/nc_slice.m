@@ -127,7 +127,7 @@ if (nvdims > 0),
           y = G.y_rho;
         end
         if (isfield(G, 'z_r')),
-	  Z = G.z_r;
+          Z = G.z_r;
         end
       case 'xi_psi'
         Mask = G.mask_psi;
@@ -138,8 +138,8 @@ if (nvdims > 0),
           x = G.x_psi;
           y = G.y_psi;
         end
-        if (isfield(G, 'z_psi')),
-	  Z = G.z_psi;
+        if (isfield(G, 'z_p')),
+          Z = G.z_p;
         end
       case 'xi_u'
         Mask = G.mask_u;
@@ -149,9 +149,9 @@ if (nvdims > 0),
         else
           x = G.x_u;
           y = G.y_u;
-        end 
+        end
         if (isfield(G, 'z_u')),
-	  Z = G.z_u;
+          Z = G.z_u;
         end
       case 'xi_v'
         Mname = G.mask_v;
@@ -163,17 +163,17 @@ if (nvdims > 0),
           y = G.y_v;
         end
         if (isfield(G, 'z_v')),
-	  Z = G.z_v;
+          Z = G.z_v;
         end
       case 'ocean_time'
-        recordless = false;    
+        recordless = false;
         Nrecs = I.Size(end);
         Tsize = I.Dimensions(n).Length;
     end
   end
   if (isw3d),
     Zname = 'z_w';
-  end  
+  end
 end
 
 is3d = isr3d || isw3d;
@@ -186,7 +186,7 @@ end
 
 if (~recordless && Tindex > Tsize),
   Tindex = Tsize;
-end 
+end
 
 % Determine starting and ending record to process.
 

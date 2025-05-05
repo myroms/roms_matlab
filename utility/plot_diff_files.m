@@ -1,8 +1,8 @@
 function F = plot_diff_files (G, ncname1, ncname2, vname, rec, varargin)
-  
+
 % PLOT_DIFF:  Plots field difference between two records or files
 %
-% F=plot_diff_files(G, ncname1, ncname2, vname, rec, index, orient, 
+% F=plot_diff_files(G, ncname1, ncname2, vname, rec, index, orient,
 %                   Caxis, Mmap, ptype, wrtPNG);
 %
 % This function plots the field difference between two files at the
@@ -15,9 +15,9 @@ function F = plot_diff_files (G, ncname1, ncname2, vname, rec, varargin)
 %    G             A existing ROMS grid structure (struct array)
 %
 %    ncname1       ROMS 1st NetCDF filename (string)
-%  
+%
 %    ncname2       ROMS 2nd NetCDF filename (string)
-%  
+%
 %    Vname         ROMS NetCDF variable name to process (string)
 %
 %    rec           Field/file time record to process (scalar or vector)
@@ -25,7 +25,7 @@ function F = plot_diff_files (G, ncname1, ncname2, vname, rec, varargin)
 %                               rec(2) is used in ncname2
 %
 %    index         horizontal or vertical section index (optional; integer)
-%                    if horizontal, then   1 <= index <= N  
+%                    if horizontal, then   1 <= index <= N
 %                    if orient='r', then   1 <= index <= Mp
 %                    if orient='c', then   1 <= index <= Lp
 %
@@ -77,7 +77,7 @@ F = struct('ncname1'    , [], 'ncname2'   , [], 'Vname'       , [],   ...
            'ptype'      , [], 'orient'    , [], 'index'       , [],   ...
            'gotCoast'   , [], 'lon_coast' , [], 'lat_coast'   , [],   ...
            'shading'    , [], 'pltHandle' , [], 'wrtPNG'      , []);
-  
+
 % Optional arguments.
 
 switch numel(varargin)
@@ -87,42 +87,42 @@ switch numel(varargin)
     Caxis     = [-Inf Inf];
     Mmap      = 0;
     ptype     = 1;
-    wrtPNG    = false; 
+    wrtPNG    = false;
  case 1
     index     = varargin{1};
     orient    = 'h';
     Caxis     = [-Inf Inf];
     Mmap      = 0;
     ptype     = 1;
-    wrtPNG    = false; 
+    wrtPNG    = false;
  case 2
     index     = varargin{1};
     orient    = varargin{2};
     Caxis     = [-Inf Inf];
     Mmap      = 0;
     ptype     = 1;
-    wrtPNG    = false; 
+    wrtPNG    = false;
  case 3
     index     = varargin{1};
     orient    = varargin{2};
     Caxis     = varargin{3};;
     Mmap      = 0;
     ptype     = 1;
-    wrtPNG    = false; 
+    wrtPNG    = false;
  case 4
     index     = varargin{1};
     orient    = varargin{2};
     Caxis     = varargin{3};
     Mmap      = varargin{4};
     ptype     = 1;
-    wrtPNG    = false; 
+    wrtPNG    = false;
  case 5
     index     = varargin{1};
     orient    = varargin{2};
     Caxis     = varargin{3};
     Mmap      = varargin{4};
     ptype     = varargin{5};
-    wrtPNG    = false; 
+    wrtPNG    = false;
  case 6
     index     = varargin{1};
     orient    = varargin{2};
@@ -160,15 +160,15 @@ Tdays  = true;
 if (~isempty(strfind(Tattr, 'second')))
   Tvalue = Tvalue/86400;                    % seconds to days
   Tdays  = false;
-end  
+end
 iatt = strfind(Tattr, 'since');
 if (~isempty(iatt))
   iatt=iatt+6;
   Torigin = Tattr(iatt:iatt+18);
-  epoch   = datenum(Torigin,31);            % 'yyyy-mm-dd HH:MM:SS' 
+  epoch   = datenum(Torigin,31);            % 'yyyy-mm-dd HH:MM:SS'
   Tstring = datestr(epoch+Tvalue);
 else
-  Tstring = num2str(Tvalue);    
+  Tstring = num2str(Tvalue);
 end
 F.Tstring = Tstring;
 
@@ -203,13 +203,13 @@ switch (vname)
     end
   otherwise
     ivar=strcmp({V1.Variables(:).Name}, vname);
-    if (length({V1.Variables(ivar).Dimensions.Length}))
-      F.value1 = nc_read(F.ncname1, vname);
-      F.value2 = nc_read(F.ncname2, vname);
-    else
+    if (any(contains({V1.Variables(ivar).Dimensions.Name},'time')))
       F.value1 = nc_read(F.ncname1, vname, F.rec1);
       F.value2 = nc_read(F.ncname2, vname, F.rec2);
-    end   
+    else
+      F.value1 = nc_read(F.ncname1, vname);
+      F.value2 = nc_read(F.ncname2, vname);
+    end
 end
 
 F.min1      = min(F.value1(:));
@@ -246,7 +246,7 @@ switch (vname)
     else
       I = nc_vinfo(F.ncname1, 'z_w');
     end
-  otherwise 
+  otherwise
     I = nc_vinfo(F.ncname1, vname);
 end
 nvdims = length(I.Dimensions);
@@ -296,7 +296,7 @@ if (nvdims > 0)
           F.Y = G.y_u./1000;
         end
         if (isfield(G, 'z_u'))
-          Z = G.z_u;     
+          Z = G.z_u;
         end
      case {'xi_v','lon_v'}
         mask = G.mask_v;
@@ -308,7 +308,7 @@ if (nvdims > 0)
           F.Y = G.y_v./1000;
         end
         if (isfield(G, 'z_v'))
-          Z = G.z_v;     
+          Z = G.z_v;
         end
     end
   end
@@ -348,17 +348,17 @@ if (is3d)
         V = nanland(V, M);
         s = squeeze(F.X(:,index));
         S = repmat(s, [1 Km]);
-        Z = squeeze(Z(:,index,:));  
+        Z = squeeze(Z(:,index,:));
         sec_index = ['j=', num2str(index)];
-    end    
-    F.value = V;  
+    end
+    F.value = V;
   else
     F.is3d  = false;
     if (isempty(index))
       Level = Km;
     else
       Level = min(Km,index);
-    end      
+    end
     F.Level = Level;
     for k=1:Km
       Dmin(k)=min(min(F.diff(:,:,k)));
@@ -367,7 +367,7 @@ if (is3d)
     F.diffmin = Dmin;
     F.diffmax = Dmax;
     F.value   = squeeze(F.diff(:,:,Level));
-  end  
+  end
 else
   F.is3d    = false;
   F.Level   = 1;
@@ -404,7 +404,7 @@ if (is3d)
            'Var = ', vname,                                               ...
            ',  Level = ', num2str(Level),                                 ...
            ',  Rec = ', num2str(F.rec1),'/', num2str(F.rec2) ]);
-  end  
+  end
 else
   title(['File1: ', untexlabel(name1), blanks(4),                         ...
          'Var = ', vname,                                                 ...

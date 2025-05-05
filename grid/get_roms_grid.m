@@ -84,7 +84,7 @@ function Gout = get_roms_grid(Ginp, Sinp, Tindex)
 %=========================================================================%
 
 % Check input arguments.
-  
+
 process.horizontal = false;
 process.parameters = false;
 process.zeta       = false;
@@ -166,9 +166,9 @@ if (~isstruct(Ginp))
     Gout.s_w           = [];
     Gout.Cs_w          = [];
   end
-    
+
   spherical = nc_read(Ginp,'spherical');
-  
+
   if (ischar(spherical))
     if (spherical == 'T' || spherical == 't')
       spherical = 1;
@@ -210,7 +210,7 @@ else
   varhor = [varhor, 'lon_rho', 'lat_rho', 'lon_psi', 'lat_psi',         ...
                     'lon_u', 'lat_u', 'lon_v', 'lat_v',                 ...
                     'lon_perimeter', 'lat_perimeter',                   ...
-	            'lon_rho_west',  'lat_rho_west',                    ...
+                    'lon_rho_west',  'lat_rho_west',                    ...
                     'lon_rho_east',  'lat_rho_east',                    ...
                     'lon_rho_south', 'lat_rho_south',                   ...
                     'lon_rho_north', 'lat_rho_north',                   ...
@@ -239,7 +239,7 @@ end
 if (isstruct(Ginp))
 
   Gout = Ginp;
-  
+
   got.N    = false;
   got.zeta = false;
 
@@ -264,7 +264,7 @@ else
     field = char(var);
     got.(field) = false;
   end
-   
+
   for n = 1:NvarsG
     field = char(Ginfo.Variables(n).Name);
     if (isfield(got,field))
@@ -274,7 +274,7 @@ else
 % If "Ginp" is a ROMS output NetCDF file, read in vertical coordinate
 % parameters.
 
-    switch field  
+    switch field
       case 'Vtransform'
         Gout.(field) = nc_read(Ginp,field);
       case 'Vstretching'
@@ -346,10 +346,10 @@ else
 % in primary file "Ginp", set their default values for backward
 % compatibility.
 
-  if (process.vertical)  
+  if (process.vertical)
     if (~got.Vtransform)
       Gout.Vtransform = 1;
-      got.Vtransform  = true;   
+      got.Vtransform  = true;
     end
 
     if (~got.Vstretching)
@@ -357,7 +357,7 @@ else
       got.Vstretching = true;
     end
   end
-  
+
 end
 
 %--------------------------------------------------------------------------
@@ -366,7 +366,7 @@ end
 %--------------------------------------------------------------------------
 
 if (process.parameters)
-  
+
   parlist = {'N', 'Vtransform', 'Vstretching',                          ...
              'theta_s', 'theta_b', 'Tcline', 'hc'};
 
@@ -452,7 +452,7 @@ if (process.zeta)
 
 % If vertical parameters "Vtransform" and "Vstretching" are not found
 % in secondary file, set their default values for backward compatibility.
-    
+
     if (~got.Vtransform)
       Gout.Vtransform  = 1;
       got.Vtransform   = true;
@@ -462,7 +462,7 @@ if (process.zeta)
       Gout.Vstretching = 1;
       got.Vstretching  = true;
     end
-    
+
   end
 end
 
@@ -489,7 +489,7 @@ if (process.horizontal)
 
     Gout.Lm = Lm;                %  This are horizontal (Lm,Mm) dimensions
     Gout.Mm = Mm;                %  that are specified in ROMS input script
-                                 %  RHO-points: Lp = Lm+1,  Mp = Mm+2  
+                                 %  RHO-points: Lp = Lm+1,  Mp = Mm+2
 
     if (~got.mask_rho)
       Gout.mask_rho = ones(Lr,Mr);
@@ -507,7 +507,7 @@ if (process.horizontal)
       Gout.mask_v   = ones(Lr,M);
       got.mask_v    = true;
     end
-  
+
     if (~got.angle)
       Gout.angle = zeros(Lr,Mr);
       got.angle  = true;
@@ -625,7 +625,7 @@ if (process.horizontal)
                           squeeze(fliplr(Gout.y_psi(1,1:Mm)))'];
     end
   end
-  
+
 % Determine "uniform", "curvilinear", and "vector_rotation" switches.
 
   if (got.pm && got.pn)
@@ -639,7 +639,7 @@ if (process.horizontal)
       Gout.curvilinear = true;
     end
   end
-  
+
   if (got.angle)
     if (length(unique(Gout.angle(:))) > 1 ||                            ...
                unique(Gout.angle(:))  > 0)
@@ -685,7 +685,7 @@ if (process.vertical && is3d)
   if (~got.N           || isempty(Gout.N          ))
     error([' GET_ROMS_GRID: unassigned field ''N''',                    ...
            ' in structure: Gout']);
-  end      
+  end
 
   h = Gout.h;
   if (~isempty(TimeRecord))
@@ -694,7 +694,7 @@ if (process.vertical && is3d)
     zeta = zeros(size(h));
     Gout.TimeRecord = 'Computing unperturbed depths, zeta=0';
   end
-   
+
   if (isempty(h))
     disp(' ')
     disp('   GET_ROMS_GRID - input file does not have grid data:');
@@ -719,6 +719,11 @@ if (process.vertical && is3d)
 
     igrid = 1;
     Gout.z_r = set_depth(Gout.Vtransform, Gout.Vstretching,             ...
+                         Gout.theta_s, Gout.theta_b, Gout.hc,           ...
+                         Gout.N, igrid, h, zeta, false);
+
+    igrid = 2;
+    Gout.z_p = set_depth(Gout.Vtransform, Gout.Vstretching,             ...
                          Gout.theta_s, Gout.theta_b, Gout.hc,           ...
                          Gout.N, igrid, h, zeta, false);
 

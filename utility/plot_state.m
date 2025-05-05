@@ -9,7 +9,7 @@ function S = plot_state(Gname, Sname, rec, varargin)
 % assimilation state vector like increment, analysis, and trajectory.
 %
 % In cross-sections, we change the axis to the upper range, for example:
-%  
+%
 %  axis([-Inf Inf -500 0]);      % zoom of the uppr 500m
 %
 % On Input:
@@ -41,7 +41,7 @@ function S = plot_state(Gname, Sname, rec, varargin)
 %                    orient='c'  column (south-north) vertical section
 %
 %    index         Cross-section gris index (optional; integer)
-%                    if orient='r', then   1 <= index <= Mp  west-east 
+%                    if orient='r', then   1 <= index <= Mp  west-east
 %                    if orient='c', then   1 <= index <= Lp  south-north
 %
 %    wrtPNG        Switch to write out PNG files (optional; switch)
@@ -102,7 +102,7 @@ Vnames   = {I.Variables.Name};
 N        = I.Dimensions(strcmp({I.Dimensions.Name}, 's_rho')).Length;
 Tindex   = abs(rec);
 
-Svarlist = {'zeta', 'u', 'v', 'temp', 'salt'};
+Svarlist = {'zeta', 'u', 'v', 'u_eastward', 'v_northward', 'temp', 'salt'};
 
 % Set tile partition, if 'tiling' global attribute exist.
 
@@ -211,7 +211,7 @@ end
 % Set parameters affecting the writing of PNG files.
 
 if (doPNG)
-  if (~islogical(wrtPNG))    
+  if (~islogical(wrtPNG))
     if (wrtPNG < 0)
       doTitle = false;
     end
@@ -257,15 +257,15 @@ for var = Svarlist
   ind   = strcmp(Vnames, field);
   isr3d = false;
   isw3d = false;
-  
+
 % Determine grid geometry variables.
-  
+
   if (any(ind))
 
     nfield = nfield+1;
     Dnames = {I.Variables(ind).Dimensions.Name};
     nvdims = length(Dnames);
-    
+
     for n = 1:nvdims
       dimnam = I.Variables(ind).Dimensions(n).Name;
       switch dimnam
@@ -333,9 +333,9 @@ for var = Svarlist
     if (any(itime))
       F.Tname = I.Variables(ind).Attributes(itime).Value;
     end
-  
-% Get grid coordinates. 
-  
+
+% Get grid coordinates.
+
     if (isfield(G,Xname))
       if (~isempty(G.(Xname)))
         X = G.(Xname);
@@ -399,7 +399,7 @@ for var = Svarlist
 
     F.X = X;
     F.Y = Y;
-  
+
 % Read in and process time variable.
 
     if (~recordless && Tindex > Tsize)
@@ -431,7 +431,7 @@ for var = Svarlist
 
     F.Vname = field;
     F.Level = level;
-  
+
     f = nc_read(Sname, F.Vname, Tindex, ReplaceValue, PreserveType);
 
     if (is3d)
@@ -465,7 +465,7 @@ for var = Svarlist
             V = nanland(V, M);
             s = squeeze(F.X(:,index));
             Q = repmat(s, [1 Km]);
-            Z = squeeze(Z0(:,index,:));  
+            Z = squeeze(Z0(:,index,:));
             if (G.spherical)                          % bathymetry
               x = squeeze(G.lon_rho(:,index));
             else
@@ -473,17 +473,17 @@ for var = Svarlist
             end
             z = -squeeze(G.h(:,index));
             sec_index = ['j=', num2str(index)];
-        end    
+        end
         F.X     = Q;
         F.Y     = Z;
-        F.value = V;  
+        F.value = V;
       else
         if (F.Level > 0)
           value = squeeze(f(:,:,F.Level));
         else
           [~,~,value] = nc_slice(G, Sname, field, F.Level, Tindex);
         end
-        F.value = value;  
+        F.value = value;
       end
     else
       F.is3d  = false;
@@ -493,7 +493,7 @@ for var = Svarlist
 
     F.min      = min(F.value(:));
     F.max      = max(F.value(:));
-    F.checkval = bitcount(F.value(:));    
+    F.checkval = bitcount(F.value(:));
 
     xlabel1    = ['Min = ', sprintf('%12.5e',F.min), blanks(3),         ...
                   'Max = ', sprintf('%12.5e',F.max)];
@@ -501,7 +501,7 @@ for var = Svarlist
 %--------------------------------------------------------------------------
 % Plot state field
 %--------------------------------------------------------------------------
-    
+
 % If plotting cross-sections, ignore 2D fields.
 
     if (~is3d && doSection)
@@ -515,15 +515,15 @@ for var = Svarlist
       case 'zeta'
         Cmap = mpl_Accent(256);
 %       Cmap = cmap_odv('Odv');;
-      case 'u'
+      case {'u', 'u_eastward'}
         Cmap = mpl_rainbow200;
-%       Cmap = cmap_odv('BlueRed_473');   
-      case 'v'
+%       Cmap = cmap_odv('BlueRed_473');
+      case {'v', 'v_northward'}
         Cmap = flipud(mpl_rainbow200);
-%       Cmap = cmap_odv('BlueRed_473');   
+%       Cmap = cmap_odv('BlueRed_473');
       case 'temp'
         Cmap = flipud(mpl_Paired(256));
-%       Cmap = cmap_odv('Odv_465');   
+%       Cmap = cmap_odv('Odv_465');
       case 'salt'
         Cmap = mpl_Set3(256);
 %       Cmap = flipud(mpl_gist_ncar(256));
@@ -531,7 +531,7 @@ for var = Svarlist
         Cmap = mpl_Accent(256);
     end
     F.Cmap = Cmap;
-  
+
 % Plot field.
 
 
@@ -549,9 +549,11 @@ for var = Svarlist
                % bathymetry curve
      hold on;
      area(x, z, min(z), 'FaceColor', Land, 'EdgeColor', Land);
+     plot(-128.292,-105.8667,'o','MarkerSize',8,'MarkerEdgeColor','k', ...
+          'MarkerFaceColor',[0.8,0.8,0.80]);   % singe obs location
      hold off;
-    
-     colorbar; 
+
+     colorbar;
      colormap(Cmap);
      shading interp;
      if (doZoom)
@@ -561,34 +563,34 @@ for var = Svarlist
      ylabel('Z (m)');
      if (doTitle)
        if (orient == 'c')
-         title([field,                                                 ...
+         title([untexlabel(field),                                     ...
                 ',  section along i = ', num2str(F.index),             ...
                 ',  Rec = ', num2st r(F.Tindex)]);
        else
-         title([field,                                                 ...
+         title([untexlabel(field),                                     ...
                 ',  section along j = ', num2str(F.index),             ...
                 ',  Rec = ', num2str(F.Tindex)]);
        end
      else
        title(blanks(2));
-     end   
+     end
    else
 
-     F = hplot(G, F);  
+     F = hplot(G, F);
 
      if (draw_tiling)
        hold on;
        h = ptiles(F.tiling(1), F.tiling(2), F.ncname, false, 'r-', false);
        hold off
      end
- 
+
      if (doTitle)
        if (is3d)
-         title([field,                                                 ...
+         title([untexlabel(field),                                     ...
                 ',  Level = ', num2str(F.Level),                       ...
                 ',  Rec = ', num2str(F.Tindex)]);
        else
-         title([field,                                                 ...
+         title([untexlabel(field),                                     ...
                 ',  Rec = ', num2str(F.Tindex)]);
        end
      else
@@ -600,7 +602,7 @@ for var = Svarlist
    if (doRange)
      caxis(R.(field));
    end
-   
+
    if (wrtPNG)
      if (isempty(PNGsuffix))
        suffix=num2str(F.Tindex, '%3.3i');
@@ -614,9 +616,9 @@ for var = Svarlist
      end
      exportgraphics(gcf, png_file, 'resolution', 300);
    end
-  
+
    S(nfield) = F;
 
   end
-  
+
 end
