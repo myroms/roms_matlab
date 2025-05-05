@@ -6,7 +6,7 @@ function F = gaspari_cohn(c)
 %
 % It computes and plots the Gaspari-Cohn (1999) correlation function
 % based on the support radius, c. It also plots the Gaussian correlation
-% with length-scale, L.  For isotropic covatiances L = c * sqrt(0.3). 
+% with length-scale, L.  For isotropic covatiances L = c * sqrt(0.3).
 %
 % On Input:
 %
@@ -16,10 +16,10 @@ function F = gaspari_cohn(c)
 %
 %    F         Isotropic correlation functions (struct)
 %
-  
+
 % Set distance (km).
 
-d = -600:1:600;
+d = -400:1:400;
 
 % Compute Gaussian correlation function.
 
@@ -60,12 +60,7 @@ ind     = find (-c <= d & d <= c);
 bc      = zeros(size(d));
 bc(ind) = 1;
 
-gc = exp(-(abs(d) ./ c)) .* bc;
-
-
 % Plot correlations.
-
-LB = c ./ 3.57;                      % BUMP fit value
 
 figure;
 
@@ -75,37 +70,37 @@ ymax = max(ymax, 1.1);
 
 h=plot(d,G,'b-',                      ...
        d,GC,'r-',                     ...
-       d,gc,'k:',                     ...
        [L L],[ymin ymax], 'b--',      ...
-       [c c],[ymin ymax], 'r--',      ...
-       [LB LB], [ymin ymax], 'c-.');
+       [L/2 L/2],[ymin ymax], 'b--',  ...
+       [c c],[ymin ymax], 'r--');
+
+
 axis([-Inf Inf 0 ymax]);
 grid on;
 
-Llabel = ['L = ', num2str(L) ' km'];
-clabel = ['c = ', num2str(c) ' km'];
-LBlabel = ['L_b = ', num2str(LB) ' km'];
-legend('Gaussian, L', 'Gaspar-Cohn, c', 'GC convolution', ...
-       Llabel, clabel, LBlabel,                           ...
+Llabel  = ['L = ', num2str(L) ' km'];
+L2label = ['L/2 = ', num2str(L/2) ' km'];
+clabel  = ['c = ', num2str(c) ' km'];
+legend('Gaussian, L', 'Gaspar-Cohn, c',                   ...
+       Llabel, L2label, clabel,                           ...
        'Location', 'northwest');
 xlabel('Distance (km)');
 ylabel('Correlation Scale');
 
 hold on;
-text(L, 0.1, 'L', 'Color','k', 'FontWeight', 'bold',      ...
+text(L, 0.1, 'L', 'Color','b', 'FontWeight', 'bold',      ...
      'HorizontalAlignment','center','FontSize',10);
-text(LB, 0.1, 'L_b', 'Color','k', 'FontWeight', 'bold',   ...
+text(L/2, 0.1, 'L/2', 'Color','b', 'FontWeight', 'bold',  ...
      'HorizontalAlignment','center','FontSize',10);
-text(c, 0.1, 'c', 'Color','k', 'FontWeight', 'bold',      ...
+text(c, 0.1, 'c', 'Color','r', 'FontWeight', 'bold',      ...
      'HorizontalAlignment','center','FontSize',10);
-text(-c, 0.1, '-c', 'Color','k', 'FontWeight', 'bold',    ...
+text(-c, 0.1, '-c', 'Color','r', 'FontWeight', 'bold',    ...
      'HorizontalAlignment','center','FontSize',10);
 hold off
 
 
 F.c = c;
 F.L = L;
-F.LB = LB;
 F.d = d;
 F.G = G;
 F.GC = GC;
