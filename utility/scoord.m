@@ -97,7 +97,7 @@ end,
 if (Vtransform < 1 | Vtransform > 2),
   disp(' ');
   disp([setstr(7),'*** Error:  SCOORD - Illegal parameter Vtransform = ' ...
-        num2str(Vtransfrom), setstr(7)]);
+        num2str(Vtransform), setstr(7)]);
   return
 end,
 

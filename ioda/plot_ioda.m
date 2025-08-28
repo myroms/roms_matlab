@@ -1,8 +1,8 @@
 function S = plot_ioda (ncname, varargin)
-  
+
 % PLOT_IODA:  Plots field from an IODA/UFO files.
 %
-% plot_ioda(ncname, ptype, wrtPNG)
+% plot_ioda(ncname, ptype, PNGprefix)
 %
 % On Input:
 %
@@ -15,9 +15,10 @@ function S = plot_ioda (ncname, varargin)
 %                    'ObsValue'    ~> observation value
 %                    'oman'        ~> observation minus analysis
 %                    'ombg'        ~> observation minus background
+%                    []            ~> plots selected groups
 %
-%    wrtPNG        Switch to write out PNG file (true or false)
-%                    (Optional, default: false)
+%    PNGprefix     PNG filename prefix (string; OPTIONAL)
+%                    (default: PNG files are not generated)
 %
 % On Output:
 %
@@ -41,29 +42,29 @@ Ngroups = length(I.Groups);
 
 switch numel(varargin)
   case 0
-    group   = "ObsValue";                        % default
-    got_grp = false;
-    wrtPNG  = false;
+    group     = "ObsValue";                        % default
+    got_grp   = false;
+    PNGprefix = [];
   case 1
-    group   = varargin{1}
+    group     = varargin{1};
     if (isempty(group))
       group   = "ObsValue";
       got_grp = false;
     else
-      got_grp = true; 
+      got_grp = true;
     end
-    wrtPNG  = false;
+    PNGprefix = [];
   case 2
-    group   = varargin{1};
+    group     = varargin{1};
     if (isempty(group))
       group   = "ObsValue";
       got_grp = false;
     else
-      got_grp = true; 
+      got_grp = true;
     end
-    wrtPNG  = varargin{2};
+    PNGprefix = varargin{2};
 end
-  
+
 % Check if requested group is available
 
 if (got_grp)
@@ -96,7 +97,7 @@ if (got_grp)
         for j=1:addit
           s = [ s ' '];
         end
-      end 
+      end
       if (i < Ngroups - 1)
         stri = int2str(i+3);
         if (length(stri) == 1)
@@ -104,13 +105,13 @@ if (got_grp)
         end
         grpnam = I.Groups(i+2).Name;
         s = [ s '  ' stri ') ' grpnam ];
-      end 
+      end
       disp(s);
     end
     disp(blanks(1));
-    error(['PLOT_IODA: cannot find NetCDF4 Group: ', group]);  
-  
-  end  
+    error(['PLOT_IODA: cannot find NetCDF4 Group: ', group]);
+
+  end
 end
 
 % Read input IODA/UFO NetCDF4 file.
@@ -138,7 +139,7 @@ elseif (strfind(ncname, 'vsur'))
   shortname = {'vsur'};
 elseif (strfind(ncname, 'uv_sur'))
   shortname = {'u_sur', 'v_sur'};
-end 
+end
 S.shortname = shortname;
 
 % Set Date for time axis labels.
@@ -172,7 +173,7 @@ for n = 1:S.nvars
   Vname = S.iodaVarName{n};
 
 %--------------------------------------------------------------------------
-% Plot "ObsValue" Group.  
+% Plot "ObsValue" Group.
 %--------------------------------------------------------------------------
 
   if ( (~got_grp && any(strcmp({I.Groups.Name}, 'ObsValue'))) ||        ...
@@ -185,9 +186,9 @@ for n = 1:S.nvars
       ylabel('depth');
       title(['Group:  ObsValue,   File:  ', untexlabel(MyFile)]);
       grid on;
-      if (wrtPNG)
-        png_file = strcat(shortname{n}, '_obsZ.png');
-        print(png_file, '-dpng', '-r300')
+      if (~isempty(PNGprefix))
+        png_file = strcat(PNGprefix, shortname{n}, '_obsZ.png');
+        exportgraphics(gcf, png_file, 'resolution', 300);
       end
     else
       figure;
@@ -197,16 +198,34 @@ for n = 1:S.nvars
       zlabel(Vname);
       grid on;
       title(['Group:  ObsValue,   File:  ', untexlabel(MyFile)]);
-      if (wrtPNG)
-        png_file = strcat(shortname{n}, '_obsXY.png');
-        print(png_file, '-dpng', '-r300')
+      if (~isempty(PNGprefix))
+        png_file = strcat(PNGprefix, shortname{n}, '_obsXY.png');
+        exportgraphics(gcf, png_file, 'resolution', 300);
       end
-    end  
-  
+
+      if (strcmp(Vname, 'absoluteDynamicTopography'))
+        ind = find(S.provenance > 0);
+        if ~isempty(ind)                % removes repetitive observations
+          figure;                       % with negative provenance
+          Value = S.ObsValue{n};
+          h2 = plot3(S.longitude(ind), S.latitude(ind), Value(ind), 'r+');
+          xlabel('Longitude');
+          ylabel('latitude');
+          zlabel(Vname);
+          grid on;
+          title(['Group:  UniqueObs,   File:  ', untexlabel(MyFile)]);
+          if (~isempty(PNGprefix))
+            png_file = strcat(PNGprefix, shortname{n}, '_noreps_obsXY.png');
+            exportgraphics(gcf, png_file, 'resolution', 300);
+          end
+        end
+      end
+    end
+
   end
-    
+
 %--------------------------------------------------------------------------
-% Plot "hofx" Group.  
+% Plot "hofx" Group.
 %--------------------------------------------------------------------------
 
   if ( (~got_grp && any(strcmp({I.Groups.Name}, 'hofx'))) ||            ...
@@ -220,11 +239,11 @@ for n = 1:S.nvars
     ylabel(Vname);
     grid on;
     title(['Group:  hofx,   File:  ', untexlabel(MyFile)]);
-    if (wrtPNG)
-      png_file = strcat(shortname{n}, '_enum.png');
-      print(png_file, '-dpng', '-r300')
+    if (~isempty(PNGprefix))
+      png_file = strcat(PNGprefix, shortname{n}, '_enum.png');
+      exportgraphics(gcf, png_file, 'resolution', 300);
     end
-       
+
     figure;
     h2 = plot(t, S.ObsValue{n}, 'r+',                                   ...
               t, S.hofx{n}, 'bo');
@@ -234,11 +253,11 @@ for n = 1:S.nvars
     ylabel(Vname);
     grid on;
     title(['Group:  hofx,   File:  ', untexlabel(MyFile)]);
-    if (wrtPNG)
-      png_file = strcat(shortname{n}, '_date.png');
-      print(png_file, '-dpng', '-r300')
+    if (~isempty(PNGprefix))
+      png_file = strcat(PNGprefix, shortname{n}, '_date.png');
+      exportgraphics(gcf, png_file, 'resolution', 300);
     end
-       
+
     figure;
     h3 = scatter(Nlocs, S.ObsValue{n} - S.hofx{n}, 'bo',                ...
                  'MarkerFaceColor', 'b');
@@ -248,11 +267,11 @@ for n = 1:S.nvars
     xlabel('Observation Number')
     ylabel([Vname, ' Innovation Vector']);
     title(['d = OBS - HofX for File:  ', untexlabel(MyFile)]);
-    if (wrtPNG)
-      png_file = strcat(shortname{n}, '_innov.png');
-      print(png_file, '-dpng', '-r300')
+    if (~isempty(PNGprefix))
+      png_file = strcat(PNGprefix, shortname{n}, '_innov.png');
+      exportgraphics(gcf, png_file, 'resolution', 300);
     end
-       
+
     if (any(strcmp({M.Variables.Name}, 'depth')))
       figure;
       h4 = plot(S.ObsValue{n}, S.depth, 'r+',                           ...
@@ -262,9 +281,9 @@ for n = 1:S.nvars
       ylabel('depth');
       grid on;
       title(['HofX File:  ', untexlabel(MyFile)]);
-      if (wrtPNG)
-        png_file = strcat(shortname{n}, '_depth.png');
-        print(png_file, '-dpng', '-r300')
+      if (~isempty(PNGprefix))
+        png_file = strcat(PNGprefix, shortname{n}, '_depth.png');
+        exportgraphics(gcf, png_file, 'resolution', 300);
       end
     else
       figure;
@@ -273,21 +292,21 @@ for n = 1:S.nvars
       legend('OBS', 'HofX', 'Location', 'best');
       xlabel('Longitude');
       ylabel('latitude');
-      zlabel(Vname); 
+      zlabel(Vname);
       grid on;
       title(['Group:  hofx,   File:  ', untexlabel(MyFile)]);
-      if (wrtPNG)
-        png_file = strcat(shortname{n}, '_lonlat.png');
-        print(png_file, '-dpng', '-r300')
+      if (~isempty(PNGprefix))
+        png_file = strcat(PNGprefix, shortname{n}, '_lonlat.png');
+        exportgraphics(gcf, png_file, 'resolution', 300);
       end
     end
-  
+
   end
 
 %--------------------------------------------------------------------------
 %  Plot "hofx0" Group: initial HofX.
 %--------------------------------------------------------------------------
-  
+
   if ( (~got_grp && any(strcmp({I.Groups.Name}, 'hofx0'))) ||           ...
        (strcmp(group, 'hofx0')) )
 
@@ -299,46 +318,95 @@ for n = 1:S.nvars
     ylabel(Vname);
     grid on;
     title(['Group:  hofx0,   File:  ', untexlabel(MyFile)]);
-    if (wrtPNG)
-      png_file = strcat(shortname{n}, '_hofx0.png');
-      print(png_file, '-dpng', '-r300')
+    if (~isempty(PNGprefix))
+      png_file = strcat(PNGprefix, shortname{n}, '_hofx0.png');
+      exportgraphics(gcf, png_file, 'resolution', 300);
     end
-  
+
     if (any(strcmp({M.Variables.Name}, 'depth')))
       figure;
       h4 = plot(S.ObsValue{n}, S.depth, 'r+',                           ...
-                S.hofx1{n}, S.depth, 'bo');
+                S.hofx0{n}, S.depth, 'bo');
       legend('OBS', 'Initial HofX', 'Location', 'best');
       xlabel(Vname);
       ylabel('depth');
       grid on;
       title(['Group:  hofx0,   File:  ', untexlabel(MyFile)]);
-      if (wrtPNG)
-        png_file = strcat(shortname{n}, '_hofx0_depth.png');
-        print(png_file, '-dpng', '-r300')
+      if (~isempty(PNGprefix))
+        png_file = strcat(PNGprefix, shortname{n}, '_hofx0_depth.png');
+        exportgraphics(gcf, png_file, 'resolution', 300);
       end
     else
       figure;
       h4 = plot3(S.longitude, S.latitude, S.ObsValue{n}, 'r+',         ...
-                 S.longitude, S.latitude, S.hofx1{n}, 'bo');
+                 S.longitude, S.latitude, S.hofx0{n}, 'bo');
       legend('OBS', 'Initial HofX', 'Location', 'best');
       xlabel('Longitude');
       ylabel('latitude');
-      zlabel(Vname); 
+      zlabel(Vname);
       grid on;
       title(['Group:  hofx0,   File:  ', untexlabel(MyFile)]);
-      if (wrtPNG)
-        png_file = strcat(shortname{n}, '_hofx0_lonlat.png');
-        print(png_file, '-dpng', '-r300')
+      if (~isempty(PNGprefix))
+        png_file = strcat(PNGprefix, shortname{n}, '_hofx0_lonlat.png');
+        exportgraphics(gcf, png_file, 'resolution', 300);
       end
     end
-  
+
+  end
+
+% Ensemble HofX.
+
+  if ( (~got_grp && any(strcmp({I.Groups.Name}, 'hofx0_1'))) ||         ...
+       (strcmp(group, 'hofx0_1')) )
+
+    figure;
+    h1 = plot(Nlocs, S.ObsValue{n}, 'r+',                               ...
+              Nlocs, S.hofx0_1{n}, 'bo');
+    legend('OBS', 'Initial HofX', 'Location', 'best');
+    xlabel('Observation Number')
+    ylabel(Vname);
+    grid on;
+    title(['Group:  hofx0 member 1,   File:  ', untexlabel(MyFile)]);
+    if (~isempty(PNGprefix))
+      png_file = strcat(PNGprefix, shortname{n}, '_hofx0_1.png');
+      exportgraphics(gcf, png_file, 'resolution', 300);
+    end
+
+    if (any(strcmp({M.Variables.Name}, 'depth')))
+      figure;
+      h4 = plot(S.ObsValue{n}, S.depth, 'r+',                           ...
+                S.hofx0_1{n}, S.depth, 'bo');
+      legend('OBS', 'Initial HofX', 'Location', 'best');
+      xlabel(Vname);
+      ylabel('depth');
+      grid on;
+      title(['Group:  hofx0 member 1,   File:  ', untexlabel(MyFile)]);
+      if (~isempty(PNGprefix))
+        png_file = strcat(PNGprefix, shortname{n}, '_hofx0_1_depth.png');
+        exportgraphics(gcf, png_file, 'resolution', 300);
+      end
+    else
+      figure;
+      h4 = plot3(S.longitude, S.latitude, S.ObsValue{n}, 'r+',         ...
+                 S.longitude, S.latitude, S.hofx0_1{n}, 'bo');
+      legend('OBS', 'Initial HofX', 'Location', 'best');
+      xlabel('Longitude');
+      ylabel('latitude');
+      zlabel(Vname);
+      grid on;
+      title(['Group:  hofx0 member 1,   File:  ', untexlabel(MyFile)]);
+      if (~isempty(PNGprefix))
+        png_file = strcat(PNGprefix, shortname{n}, '_hofx0_1_lonlat.png');
+        exportgraphics(gcf, png_file, 'resolution', 300);
+      end
+    end
+
   end
 
 %--------------------------------------------------------------------------
 %  Plot "hofx1" Group: Final HofX.
 %--------------------------------------------------------------------------
-  
+
   if ( (~got_grp && any(strcmp({I.Groups.Name}, 'hofx1'))) ||           ...
        (strcmp(group, 'hofx1')) )
 
@@ -350,11 +418,11 @@ for n = 1:S.nvars
     ylabel(Vname);
     grid on;
     title(['Group:  hofx1,   File:  ', untexlabel(MyFile)]);
-    if (wrtPNG)
-      png_file = strcat(shortname{n}, '_hofx1.png');
-      print(png_file, '-dpng', '-r300')
+    if (~isempty(PNGprefix))
+      png_file = strcat(PNGprefix, shortname{n}, '_hofx1.png');
+      exportgraphics(gcf, png_file, 'resolution', 300);
     end
- 
+
     if (any(strcmp({M.Variables.Name}, 'depth')))
       figure;
       h4 = plot(S.ObsValue{n}, S.depth, 'r+',                           ...
@@ -364,9 +432,9 @@ for n = 1:S.nvars
       ylabel('depth');
       grid on;
       title(['Group:  hofx1,   File:  ', untexlabel(MyFile)]);
-      if (wrtPNG)
-        png_file = strcat(shortname{n}, '_hofx1_depth.png');
-        print(png_file, '-dpng', '-r300')
+      if (~isempty(PNGprefix))
+        png_file = strcat(PNGprefix, shortname{n}, '_hofx1_depth.png');
+        exportgraphics(gcf, png_file, 'resolution', 300);
       end
     else
       figure;
@@ -375,21 +443,70 @@ for n = 1:S.nvars
       legend('OBS', 'Final HofX', 'Location', 'best');
       xlabel('Longitude');
       ylabel('latitude');
-      zlabel(Vname); 
+      zlabel(Vname);
       grid on;
       title(['Group:  hofx1,   File:  ', untexlabel(MyFile)]);
-      if (wrtPNG)
-        png_file = strcat(shortname{n}, '_hofx1_lonlat.png');
-        print(png_file, '-dpng', '-r300')
+      if (~isempty(PNGprefix))
+        png_file = strcat(PNGprefix, shortname{n}, '_hofx1_lonlat.png');
+        exportgraphics(gcf, png_file, 'resolution', 300);
       end
     end
-  
+
+  end
+
+% Ensemble HofX.
+
+  if ( (~got_grp && any(strcmp({I.Groups.Name}, 'hofx1_1'))) ||         ...
+       (strcmp(group, 'hofx1_1')) )
+
+    figure;
+    h1 = plot(Nlocs, S.ObsValue{n}, 'r+',                               ...
+              Nlocs, S.hofx1_1{n}, 'bo');
+    legend('OBS', 'Final HofX', 'Location', 'best');
+    xlabel('Observation Number')
+    ylabel(Vname);
+    grid on;
+    title(['Group:  hofx1 member 1,   File:  ', untexlabel(MyFile)]);
+    if (~isempty(PNGprefix))
+      png_file = strcat(PNGprefix, shortname{n}, '_hofx1_1.png');
+      exportgraphics(gcf, png_file, 'resolution', 300);
+    end
+
+    if (any(strcmp({M.Variables.Name}, 'depth')))
+      figure;
+      h4 = plot(S.ObsValue{n}, S.depth, 'r+',                           ...
+                S.hofx1_1{n}, S.depth, 'bo');
+      legend('OBS', 'Final HofX', 'Location', 'best');
+      xlabel(Vname);
+      ylabel('depth');
+      grid on;
+      title(['Group:  hofx1 member 1,   File:  ', untexlabel(MyFile)]);
+      if (~isempty(PNGprefix))
+        png_file = strcat(PNGprefix, shortname{n}, '_hofx1_1_depth.png');
+        exportgraphics(gcf, png_file, 'resolution', 300);
+      end
+    else
+      figure;
+      h4 = plot3(S.longitude, S.latitude, S.ObsValue{n}, 'r+',         ...
+                 S.longitude, S.latitude, S.hofx1_1{n}, 'bo');
+      legend('OBS', 'Final HofX', 'Location', 'best');
+      xlabel('Longitude');
+      ylabel('latitude');
+      zlabel(Vname);
+      grid on;
+      title(['Group:  hofx1 member 1,   File:  ', untexlabel(MyFile)]);
+      if (~isempty(PNGprefix))
+        png_file = strcat(PNGprefix, shortname{n}, '_hofx1_1_lonlat.png');
+        exportgraphics(gcf, png_file, 'resolution', 300);
+      end
+    end
+
   end
 
 %--------------------------------------------------------------------------
 %  Plot observation minus analysis
 %--------------------------------------------------------------------------
-  
+
   if ( (~got_grp && any(strcmp({I.Groups.Name}, 'oman'))) ||            ...
        (strcmp(group, 'oman')) )
 
@@ -398,18 +515,18 @@ for n = 1:S.nvars
     xlabel('Observation Number')
     ylabel(Vname);
     grid on;
-    title(['oman = OBS - Analysis,   File:  ', untexlabel(MyFile)]);    
-    if (wrtPNG)
-      png_file = strcat(shortname{n}, '_oman.png');
-      print(png_file, '-dpng', '-r300')
+    title(['oman = OBS - Analysis,   File:  ', untexlabel(MyFile)]);
+    if (~isempty(PNGprefix))
+      png_file = strcat(PNGprefix, shortname{n}, '_oman.png');
+      exportgraphics(gcf, png_file, 'resolution', 300);
     end
-  
+
   end
 
 %--------------------------------------------------------------------------
 %  Plot observation minus background.
 %--------------------------------------------------------------------------
-  
+
   if ( (~got_grp && any(strcmp({I.Groups.Name}, 'oman'))) ||            ...
        (strcmp(group, 'ombg')) )
 
@@ -418,16 +535,16 @@ for n = 1:S.nvars
     xlabel('Observation Number')
     ylabel(Vname);
     grid on;
-    title(['ombg = OBS - Background,   File:  ', untexlabel(MyFile)]);    
-    if (wrtPNG)
-      png_file = strcat(shortname{n}, '_ombg.png');
-      print(png_file, '-dpng', '-r300')
+    title(['ombg = OBS - Background,   File:  ', untexlabel(MyFile)]);
+    if (~isempty(PNGprefix))
+      png_file = strcat(PNGprefix, shortname{n}, '_ombg.png');
+      exportgraphics(gcf, png_file, 'resolution', 300);
     end
-  
+
   end
-  
+
 % plot next state variable, if any.
-  
+
 end
 
 return
