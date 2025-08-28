@@ -22,7 +22,7 @@ function [S]=ioda_read(ncfile)
 %              S.nvars            number of variables
 %              S.epoch            IODA time reference YYYYMMDDHH
 %              S.datenum          epoch date number
-%              S.dateTimeRef      IODA time reference string     
+%              S.dateTimeRef      IODA time reference string
 %              S.variable_names   UFO/IODA standard name
 %              S.dateTime         seconds since yyyy-mm-ddTHH:MM:SSZ
 %              S.date_time        date and time ISO 8601 UTC string
@@ -42,7 +42,7 @@ function [S]=ioda_read(ncfile)
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.md                            Hernan G. Arango      %
 %=========================================================================%
-  
+
 % Initialize.
 
 S = struct('ncfile'           , [],                                     ...
@@ -106,7 +106,9 @@ S.variables_name = cellstr(ncread(ncfile, '/MetaData/variables_name'))';
 
 S.dateTime = double(ncread(ncfile, '/MetaData/dateTime'));
 
-S.date_time = ncread(ncfile, '/MetaData/date_time');
+if (any(strcmp({G.Variables.Name}, 'date_time')))
+  S.date_time = ncread(ncfile, '/MetaData/date_time');
+end
 
 % Set IODA NetCDF variables.
 
@@ -196,6 +198,30 @@ if (any(strcmp({I.Groups.Name}, 'hofx0')))
   end
 end
 
+if (any(strcmp({I.Groups.Name}, 'hofx0_1')))
+  for i = 1:S.nvars
+    Vname = strcat('/hofx0_1/', S.iodaVarName{i});
+    field = double(ncread(ncfile, Vname));
+    S.hofx0_1{i} = field;
+  end
+end
+
+if (any(strcmp({I.Groups.Name}, 'hofx0_2')))
+  for i = 1:S.nvars
+    Vname = strcat('/hofx0_2/', S.iodaVarName{i});
+    field = double(ncread(ncfile, Vname));
+    S.hofx0_2{i} = field;
+  end
+end
+
+if (any(strcmp({I.Groups.Name}, 'hofx0_3')))
+  for i = 1:S.nvars
+    Vname = strcat('/hofx0_3/', S.iodaVarName{i});
+    field = double(ncread(ncfile, Vname));
+    S.hofx0_3{i} = field;
+  end
+end
+
 % Read in 'hofx1' Group: Final H(x).
 
 if (any(strcmp({I.Groups.Name}, 'hofx1')))
@@ -203,6 +229,30 @@ if (any(strcmp({I.Groups.Name}, 'hofx1')))
     Vname = strcat('/hofx1/', S.iodaVarName{i});
     field = double(ncread(ncfile, Vname));
     S.hofx1{i} = field;
+  end
+end
+
+if (any(strcmp({I.Groups.Name}, 'hofx1_1')))
+  for i = 1:S.nvars
+    Vname = strcat('/hofx0_1/', S.iodaVarName{i});
+    field = double(ncread(ncfile, Vname));
+    S.hofx1_1{i} = field;
+  end
+end
+
+if (any(strcmp({I.Groups.Name}, 'hofx1_2')))
+  for i = 1:S.nvars
+    Vname = strcat('/hofx0_2/', S.iodaVarName{i});
+    field = double(ncread(ncfile, Vname));
+    S.hofx1_2{i} = field;
+  end
+end
+
+if (any(strcmp({I.Groups.Name}, 'hofx1_3')))
+  for i = 1:S.nvars
+    Vname = strcat('/hofx0_3/', S.iodaVarName{i});
+    field = double(ncread(ncfile, Vname));
+    S.hofx1_3{i} = field;
   end
 end
 

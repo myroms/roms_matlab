@@ -57,13 +57,13 @@ function F=plot_section(Gname, Hname, Vname, Tindex, orient, index,     ...
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.md                            Hernan G. Arango      %
 %=========================================================================%
-  
+
 % Initialize.
 
 if (orient == 'c')
   F = struct('ncname'     , [], 'Vname'     , [],                       ...
              'Tindex'     , [], 'Tname'     , [], 'Tstring'   , [],     ...
-	     'column'     , [],                                         ...
+             'column'     , [],                                         ...
              'value'      , [], 'min'       , [], 'max'       , [],     ...
              'X'          , [], 'Z'         , [],                       ...
              'Imin'       , [], 'Jmin'      , [],                       ...
@@ -72,7 +72,7 @@ if (orient == 'c')
 else
   F = struct('ncname'     , [], 'Vname'     , [],                       ...
              'Tindex'     , [], 'Tname'     , [], 'Tstring'   , [],     ...
-	     'row'        , [],                                         ...
+             'row'        , [],                                         ...
              'value'      , [], 'min'       , [], 'max'       , [],     ...
              'X'          , [], 'Z'         , [],                       ...
              'Imin'       , [], 'Jmin'      , [],                       ...
@@ -180,7 +180,7 @@ end
 
 if (getdata)
 
-  V = nc_vnames(Hname);  
+  V = nc_vnames(Hname);
 
   switch (Vname)
     case {'Hz', 'hz'}
@@ -189,7 +189,7 @@ if (getdata)
       else
         I = nc_vinfo(Hname, 'z_w');
       end
-    otherwise 
+    otherwise
       I = nc_vinfo(Hname, Vname);
   end
 
@@ -336,7 +336,7 @@ if (getdata)
     N = size(Z,3);
   else
     error([' PLOT_SECTION - cannot plot a section for a 2D field: ''',  ...
-	   Vname, ''])
+           Vname, ''])
   end
 
   if (isfield(G,Mname))
@@ -352,8 +352,10 @@ if (getdata)
   end
 
   if (~G.spherical)
-    X = 0.001 .* X;
-    Y = 0.001 .* Y;
+    if (max(X(:)) > 5000 || max(Y(:)) > 5000)
+      X = 0.001 .* X;                           % scale to kilometers
+      Y = 0.001 .* Y;
+    end
   end
 end
 
@@ -401,7 +403,7 @@ if (getdata)
       Z = G.z_r;
    otherwise
       field = nc_read(Hname,Vname,Tindex,ReplaceValue,PreserveType);
-  end  
+  end
 
 end
 
@@ -435,7 +437,7 @@ switch orient
       x = squeeze(G.x_rho(:,index));
     end
     z = -squeeze(G.h(:,index));
-end    
+end
 
 V = V .* scale;
 
@@ -493,7 +495,7 @@ if (ptype ~= 0)
   hold on;
   area(x, z, min(z), 'FaceColor', Land, 'EdgeColor', Land);
   hold off;
-  
+
   if (~isempty(Tname))
     ht = title([untexlabel(Vname), ':', blanks(4),                      ...
                 'Record = ', num2str(Tindex), ',', blanks(4),           ...
