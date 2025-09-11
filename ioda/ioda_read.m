@@ -36,7 +36,7 @@ function [S]=ioda_read(ncfile)
 %              S.PreQC            observation quality control
 %
 
-% svn $Id$
+% git $Id$
 %=========================================================================%
 %  Copyright (c) 2002-2025 The ROMS Group                                 %
 %    Licensed under a MIT/X style license                                 %

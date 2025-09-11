@@ -6,7 +6,7 @@ function ioda_write(S, ncfile)
 % ioda_write(S, ncfile)
 %
 
-% svn $Id$
+% git $Id$
 %=========================================================================%
 %  Copyright (c) 2002-2025 The ROMS Group                                 %
 %    Licensed under a MIT/X style license                                 %
