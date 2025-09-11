@@ -25,7 +25,7 @@ function S = plot_ioda (ncname, varargin)
 %    S             IODA/UFO data (struc)
 %
 
-% svn $Id$
+% git $Id$
 %=========================================================================%
 %  Copyright (c) 2002-2025 The ROMS Group                                 %
 %    Licensed under a MIT/X style license                                 %

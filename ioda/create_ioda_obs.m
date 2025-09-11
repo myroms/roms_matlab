@@ -95,7 +95,7 @@ function create_ioda_obs(S, file)
 % }
 %
 
-% svn $Id$
+% git $Id$
 %=========================================================================%
 %  Copyright (c) 2002-2025 The ROMS Group                                 %
 %    Licensed under a MIT/X style license                                 %
@@ -182,21 +182,21 @@ end
 
 do_areaAvg = false;
 if (isfield(S, 'areaAvgRadius'))
-  if (~isnan(S.areaAvgRadius))
+  if (~isempty(S.areaAvgRadius))
     do_areaAvg = true;
   end
 end
 
 do_timeAvgBegin = false;
 if (isfield(S, 'timeAvgBegin'))
-  if (~isnan(S.timeAvgBegin))
+  if (~isempty(S.timeAvgBegin))
     do_timeAvgBegin = true;
   end
 end
 
 do_timeAvgEnd = false;
 if (isfield(S, 'timeAvgEnd'))
-  if (~isnan(S.timeAvgEnd))
+  if (~isempty(S.timeAvgEnd))
     do_timeAvgEnd = true;
   end
 end
@@ -210,7 +210,7 @@ D(nvars).name = 'nvars';          D(nvars).size = S.nvars;
 D(nsurv).name = 'survey';         D(nsurv).size = S.nsurvey;
 
 if (isfield(S, 'nwindow'))
-  if (~isnan(S.nwindow))
+  if (~isempty(S.nwindow))
     D(nwindow).name = 'timeWindow'; D(nwindow).size = S.nwindow;
   end
 end

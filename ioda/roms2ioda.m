@@ -1,15 +1,14 @@
-function roms2ioda(ObsData, HisName, prefix, suffix, varargin)
+function roms2ioda(ObsData, HisName, prefix, suffix, M)
 
 %
 % ROMS2IODA:  Converts ROMS observation NetCDF to IODA NetCDF4 files
 %
-% roms2ioda(ObsData, HisName, prefix, suffix, ...
-%           SSHareaAvg, SSHtimeAvg, UVtimeAvg)
+% roms2ioda(ObsData, HisName, prefix, suffix, M)
 %
 % This function converts a ROMS 4D-Var observation NetCDF file into several
-% IODA NetCDF files. One file per each observation type is usually the way
-% that the JEDI/UFO observation operator requires. Output files are of the
-% form:
+% IODA NetCDF files. One file per observation type is usually the way that
+% the JEDI/UFO observation operator requires. Output files are of the form:
+%  
 %                        prefix_obstype_suffix.nc4
 %
 % For example:           wc13_sst_20040103.nc4
@@ -29,7 +28,7 @@ function roms2ioda(ObsData, HisName, prefix, suffix, varargin)
 %    suffix      Output file suffix associated with date and time, use
 %                  YYYYMMDD or YYYYMMDDhh (numeric or string).
 %
-%                  NOTICE that the time of the output observations are
+%                  NOTICE that the time of the output observations is
 %                  converted to 'seconds since' time of suffix.
 %
 %                  For example, if suffix =  20040103  or
@@ -38,84 +37,80 @@ function roms2ioda(ObsData, HisName, prefix, suffix, varargin)
 %                  int64 dateTime(Location);
 %                  dateTime:units = "seconds since 2004-01-03T00:00:00Z";
 %
-%                  Therefore, input and output time of the observations
+%                  Thus, the input and output times of the observations
 %                  may have different time references!
 %
-%    SSHareaAvg  SSH observations area-averaged radius (km, OPTIONAL)
-%                  Use unique SSH observations (remove repetitive)
+%    M           IODA enhanced NetCDF-4 file Metadata structure
+%                  (struct array) computed with "ioda_metadat.m"
 %
-%                  float spatialAverage
+%                  M(:).name           variable short name
+%                  M(:).half_length    area-averaged half-length (km) scale
+%                  M(:).time_window    time-averaged window (hours)
+%                  M(:).ioda_vname     IODA NetCDF-4 variable name
+%                  M(:).standard_name  variable standard name
 %
-%    SSHtimeAvg  SSH observations time-averaged window since reference
-%                  time (hours; OPTIONAL).
+% USAGE:
+% ***** 
 %
-%                  For example 24 hours, 2004-01-03 to 2004-01-04
-%                                        2004-01-04 to 2004-01-05
-%                                        2004-01-05 to 2004-01-06
-%                                        and so on ...
+%   Example to convert single WC13 native ROMS 4D-Var observation file
+%   into multiple IODA-type files that can be used in native ROMS
+%   and ROMS-JEDI data assimilation algorithms, like:
+%  
+%     wc13_adt_20040103.nc4
+%     wc13_sst_20040103.nc4
+%     wc13_salt_20040103.nc4
+%     wc13_temp_20040103.nc4
 %
-%                  int64 dateTimeAverageStart(timeWindow);
+%   (1) Set IODA NetCDF-4 file metadata structure, M:
 %
-%                  int64 dateTimeAverageEnd(timeWindow);
+%       M = ioda_metadata(true);
 %
-%    UVtimeAvg   CODAR observations time-averaged window since reference
-%                  time (hours; OPTIONAL)
+%   (2) If applicable, set area-averaged and time-averaged parameters
+%       for specialized H(x) operators. If not, you can skip this step.
 %
-%                  For example 24 hours, 2004-01-03 to 2004-01-04
-%                                        2004-01-04 to 2004-01-05
-%                                        2004-01-05 to 2004-01-06
-%                                        and so on ...
+%       M(strcmp({M.name}, 'SSH')).half_length = 30;             % km
+%       M(strcmp({M.name}, 'SSH')).time_window = 36;             % hours
 %
-%                  int64 dateTimeAverageStart(timeWindow);
+%       M(strcmp({M.name}, 'uv_CODAR')).time_window = 24;        % hours
 %
-%                  int64 dateTimeAverageEnd(timeWindow);
+%   (3) Convert a single native file into multiple IODA-type files:
 %
-% Usage: Example to convert WC13 4D-Var observation file to create the
-%        following IODA-2 files:
-%                                  wc13_adt_20040103.nc4
-%                                  wc13_sst_20040103.nc4
-%                                  wc13_salt_20040103.nc4
-%                                  wc13_temp_20040103.nc4
+%       ObsData = 'WC13/Data/wc13_obs_20040103.nc';
+%       HisName = 'WC13/Forward/r06/wc13_roms_his_20040103.nc';
 %
-%   ObsData = 'WC13/Data/wc13_obs_20040103.nc';
-%   HisName = 'WC13/Forward/r06/wc13_roms_his_20040103.nc';
-%
-%   roms2ioda(ObsData, HisName, 'wc13', '20040103')
+%       roms2ioda(ObsData, HisName, 'wc13', '20040103', M)
 %
 % Dependencies:
 %
 %                create_ioda_obs.m
 %                get_roms_grid.m
+%                ioda_metadata.m
 %                obs_k2z.m
 %                obs_read.m
 
-% svn $Id$
+% git $Id$
 %=========================================================================%
 %  Copyright (c) 2002-2025 The ROMS Group                                 %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.md                            Hernan G. Arango      %
 %=========================================================================%
 
-% Initialize.
+% Initialize area-averaged and time-averaged parameters from Metdata
+% structure, M.  
 
-switch numel(varargin)
-  case 0
-    SSHareaAvg = NaN;
-    SSHtimeAvg = NaN;
-    UVtimeAvg  = NaN;
-  case 1
-    SSHareaAvg = varargin{1};
-    SSHtimeAvg = NaN;
-    UVtimeAvg  = NaN;
-  case 2
-    SSHareaAvg = varargin{1};
-    SSHtimeAvg = varargin{2};
-    UVtimeAvg  = NaN;
-  case 3
-    SSHareaAvg = varargin{1};
-    SSHtimeAvg = varargin{2};
-    UVtimeAvg  = varargin{3};
-end
+SSHareaAvg = M(strcmp({M.name}, 'SSH')).half_length;
+SSHtimeAvg = M(strcmp({M.name}, 'SSH')).time_window;
+
+SSTareaAvg = M(strcmp({M.name}, 'SST')).half_length;
+SSTtimeAvg = M(strcmp({M.name}, 'SST')).time_window;
+
+SSSareaAvg = M(strcmp({M.name}, 'SSS')).half_length;
+SSStimeAvg = M(strcmp({M.name}, 'SSS')).time_window;
+
+UVareaAvg  = M(strcmp({M.name}, 'uv_CODAR')).half_length;
+UVtimeAvg  = M(strcmp({M.name}, 'uv_CODAR')).time_window;
+
+% Read native ROMS observation file and load to S structure.
 
 if (ischar(ObsData))
   S = obs_read(ObsData);
@@ -173,6 +168,7 @@ days_window = floor((max(S.time)-min(S.time))+0.5);
 types = unique(S.type);
 
 got_ssh  = any(types == 1);
+got_sss  = false;                 % ROMS doesn't assimilate SSS from SMAP
 got_uvel = any(types == 4);
 got_vvel = any(types == 5);
 got_temp = any(types == 6);
@@ -203,7 +199,7 @@ if (~isempty(issh))
     S.provenance(issh) = sshProv;            % overwrite SSH provenance
   end
 
-  if (~isnan(SSHareaAvg) || ~isnan(SShtimeAbg))
+  if (~isempty(SSHareaAvg) || ~isempty(SShtimeAvg))
     issh = find(S.provenance(issh) > 0);
   end
 end
@@ -256,20 +252,20 @@ if (got_ssh)
     Obs.N              = G.N;
     Obs.nvars          = 1;
     Obs.units          = {'meter'};
-    Obs.ncvname        = {'absoluteDynamicTopography'};
+    Obs.ncvname        = {M(strcmp({M.name}, 'SSH')).ioda_vname};
     Obs.stateID        = 1;
     Obs.areaAvgRadius  = SSHareaAvg;
     Obs.timeAvgWindow  = SSHtimeAvg;
-    Obs.variables_name = {'absolute_dynamic_topography'};
+    Obs.variables_name = {M(strcmp({M.name}, 'SSH')).standard_name};
     Obs.datetime_ref   = DateTimeIODA;
     if (got_flagAtt)
       Obs.flag_values   = int32(P.flag_values(P.ssh));
       Obs.flag_meanings = string(join(P.flag_meanings(P.ssh)));
     end
-    if (~isnan(SSHareaAvg))
+    if (~isempty(SSHareaAvg))
       Obs.areaAvgRadius = SSHareaAvg * 1000;        % to meters
     end
-    if (~isnan(SSHtimeAvg))
+    if (~isempty(SSHtimeAvg))
       delta  = SSHtimeAvg * 3600;                    % to secods
       window = days_window * 86400;
       Tstr = 0:delta:window-delta;
@@ -294,9 +290,11 @@ if (got_temp)
     Obs.N              = G.N;
     Obs.nvars          = 1;
     Obs.units          = {'C'};
-    Obs.ncvname        = {'seaSurfaceTemperature'};
+    Obs.ncvname        = {M(strcmp({M.name}, 'SST')).ioda_vname};
     Obs.stateID        = 6;
-    Obs.variables_name = {'sea_surface_temperature'};
+    Obs.areaAvgRadius  = SSTareaAvg;
+    Obs.timeAvgWindow  = SSTtimeAvg;
+    Obs.variables_name = {M(strcmp({M.name}, 'SST')).standard_name};
     Obs.datetime_ref   = DateTimeIODA;
     if (got_flagAtt)
       sst_ind = contains(upper(P.flag_meanings), 'SST');
@@ -307,6 +305,62 @@ if (got_temp)
         Obs.flag_values   = int32(P.flag_values(P.temp));
         Obs.flag_meanings = string(join(P.flag_meanings(P.temp)));
       end
+    end
+    if (~isempty(SSTareaAvg))
+      Obs.areaAvgRadius = SSTareaAvg * 1000;        % to meters
+    end
+    if (~isempty(SSTtimeAvg))
+      delta  = SSTtimeAvg * 3600;                    % to secods
+      window = days_window * 86400;
+      Tstr = 0:delta:window-delta;
+      Tend = delta:delta:window;
+      Obs.timeAvgBegin = Tstr;
+      Obs.timeAvgEnd   = Tend;
+      Obs.nwindow      = length(Tstr);
+    end
+    create_ioda_obs(Obs);
+    write_observations(Obs);
+  end
+end
+
+% Process satellite sea surface salinity, like SMAP satellite data.
+
+if (got_sss)
+  isss = find(S.type == 7 & S.Zgrid == G.N);
+  if (~isempty(isss))
+    has_depth = false;
+    Obs = extract_observations(S, isss, DateTimeIODA, has_depth);
+    Obs.ncfile         = [prefix '_sss_' suffix '.nc4'];
+    Obs.N              = G.N;
+    Obs.nvars          = 1;
+    Obs.units          = {'dimensionless'};
+    Obs.ncvname        = {M(strcmp({M.name}, 'SSS')).ioda_vname};
+    Obs.stateID        = 6;
+    Obs.areaAvgRadius  = SSSareaAvg;
+    Obs.timeAvgWindow  = SSStimeAvg;
+    Obs.variables_name = {M(strcmp({M.name}, 'SSS')).standard_name};
+    Obs.datetime_ref   = DateTimeIODA;
+    if (got_flagAtt)
+      sst_ind = contains(upper(P.flag_meanings), 'SSS');
+      if (any(sss_ind))
+        Obs.flag_values   = int32(P.flag_values(sss_ind));
+        Obs.flag_meanings = string(join(P.flag_meanings(sss_ind)));
+      else
+        Obs.flag_values   = int32(P.flag_values(P.salt));
+        Obs.flag_meanings = string(join(P.flag_meanings(P.salt)));
+      end
+    end
+    if (~isempty(SSSareaAvg))
+      Obs.areaAvgRadius = SSSareaAvg * 1000;         % to meters
+    end
+    if (~isempty(SSStimeAvg))
+      delta  = SSStimeAvg * 3600;                    % to secods
+      window = days_window * 86400;
+      Tstr = 0:delta:window-delta;
+      Tend = delta:delta:window;
+      Obs.timeAvgBegin = Tstr;
+      Obs.timeAvgEnd   = Tend;
+      Obs.nwindow      = length(Tstr);
     end
     create_ioda_obs(Obs);
     write_observations(Obs);
@@ -325,8 +379,8 @@ if (got_temp)
     Obs.nvars          = 1;
     Obs.units          = {'C'};
     Obs.stateID        = 6;
-    Obs.ncvname        = {'waterTemperature'};
-    Obs.variables_name = {'sea_water_temperature'};
+    Obs.ncvname        = {M(strcmp({M.name}, 'temp')).ioda_vname};
+    Obs.variables_name = {M(strcmp({M.name}, 'temp')).standard_name};
     Obs.datetime_ref   = DateTimeIODA;
     if (got_flagAtt)
       sst_ind = contains(upper(P.flag_meanings(P.temp)), 'SST');
@@ -364,9 +418,9 @@ if (got_temp)
     Obs.N              = G.N;
     Obs.nvars          = 1;
     Obs.units          = {'C'};
-    Obs.ncvname        = {'waterPotentialTemperature'};
+    Obs.ncvname        = {M(strcmp({M.name}, 'ptemp')).ioda_vname};
     Obs.stateID        = 6;
-    Obs.variables_name = {'sea_water_potential_temperature'};
+    Obs.variables_name = {M(strcmp({M.name}, 'ptemp')).standard_name};
     Obs.datetime_ref   = DateTimeIODA;
     if (got_flagAtt)
       sst_ind = contains(upper(P.flag_meanings(P.temp)), 'SST');
@@ -394,9 +448,9 @@ if (got_salt)
     Obs.N              = G.N;
     Obs.nvars          = 1;
     Obs.units          = {'dimensionless'};
-    Obs.ncvname        = {'salinity'};
+    Obs.ncvname        = {M(strcmp({M.name}, 'salt')).ioda_vname};
     Obs.stateID        = 7;
-    Obs.variables_name = {'sea_water_salinity'};
+    Obs.variables_name = {M(strcmp({M.name}, 'salt')).standard_name};
     Obs.datetime_ref   = DateTimeIODA;
     if (got_flagAtt)
       Obs.flag_values   = int32(P.flag_values(P.salt));
@@ -432,18 +486,17 @@ if (got_uvel && got_vvel)
     Obs.N              = G.N;
     Obs.nvars          = 2;
     Obs.units          = {'m s-1', 'm s-1'};
-    Obs.ncvname        = {'waterZonalVelocity',                      ...
-                          'waterMeridionalVelocity'};
+    Obs.ncvname        = M(strcmp({M.name}, 'uv_CODAR')).ioda_vname;
     Obs.stateID        = [4, 5];
+    Obs.areaAvgRadius  = UVareaAvg;
     Obs.timeAvgWindow  = UVtimeAvg;
-    Obs.variables_name = {'eastward_sea_water_velocity',             ...
-                          'meridional_sea_water_velocity'};
+    Obs.variables_name = M(strcmp({M.name}, 'uv_CODAR')).standard_name;
     Obs.datetime_ref   = DateTimeIODA;
     if (got_flagAtt)
       Obs.flag_values   = int32(P.flag_values(P.uvel));
       Obs.flag_meanings = string(join(P.flag_meanings(P.uvel)));
     end
-    if (~isnan(UVtimeAvg))
+    if (~isempty(UVtimeAvg))
       delta  = UVtimeAvg * 3600;                    % to secods
       window = days_window * 86400;
       Tstr = 0:delta:window-delta;
@@ -451,6 +504,9 @@ if (got_uvel && got_vvel)
       Obs.timeAvgBegin = Tstr;
       Obs.timeAvgEnd   = Tend;
       Obs.nwindow      = length(Tstr);
+    end
+    if (~isempty(UVareaAvg))
+      Obs.areaAvgRadius = UVareaAvg * 1000;        % to meters
     end
     Obs = rotate_codar(Obs, G);
     create_ioda_obs(Obs);
@@ -474,7 +530,7 @@ Obs = struct('ncfile'        , [],                                      ...
              'nobs'          , [],                                      ...
              'nsurvey'       , [],                                      ...
              'nvars'         , [],                                      ...
-             'nwindow'       , NaN,                                     ...
+             'nwindow'       , [],                                      ...
              'units'         , [],                                      ...
              'ncvname'       , [],                                      ...
              'variable_names', [],                                      ...
@@ -490,9 +546,9 @@ Obs = struct('ncfile'        , [],                                      ...
              'provenance'    , [],                                      ...
              'stateID'       , [],                                      ...
              'sequenceNumber', [],                                      ...
-             'areaAvgRadius' , NaN,                                     ...
-             'timeAvgBegin'  , NaN,                                     ...
-             'timeAvgEnd'    , NaN,                                     ...
+             'areaAvgRadius' , [],                                      ...
+             'timeAvgBegin'  , [],                                      ...
+             'timeAvgEnd'    , [],                                      ...
              'x_grid'        , [],                                      ...
              'y_grid'        , [],                                      ...
              'z_grid'        , [],                                      ...
