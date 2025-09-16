@@ -199,7 +199,7 @@ if (~isempty(issh))
     S.provenance(issh) = sshProv;            % overwrite SSH provenance
   end
 
-  if (~isempty(SSHareaAvg) || ~isempty(SShtimeAvg))
+  if (~isempty(SSHareaAvg) || ~isempty(SSHtimeAvg))
     issh = find(S.provenance(issh) > 0);
   end
 end
