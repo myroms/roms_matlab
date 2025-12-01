@@ -234,7 +234,7 @@ for n = 1:ntypes
         Stype(varid) = 6;
         Svars{Tid} = 'All Temperature Data (x10^3)';
 
-        SSTindex = find(ObsZgrid(Tindex) == N);
+        SSTindex=find(ObsZgrid == N & ObsType == 6);
         if ~isempty(SSTindex)
           varid = varid + 1;
           SSTid = varid;

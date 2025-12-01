@@ -127,7 +127,6 @@ Vyear    = sscanf(Mversion, '%i');
 nlocs   = 1;         % "Location"   dimension index
 nvars   = 2;         % "nvars"      dimension index
 nsurv   = 3;         % "survey"     dimension index
-nwindow = 4;         % "timeWindow" dimension index
 
 % Set indices for NetCDF/HDF5 Group local structure vector element.
 
@@ -208,12 +207,6 @@ end
 D(nlocs).name = 'Location';       D(nlocs).size = S.nlocs;
 D(nvars).name = 'nvars';          D(nvars).size = S.nvars;
 D(nsurv).name = 'survey';         D(nsurv).size = S.nsurvey;
-
-if (isfield(S, 'nwindow'))
-  if (~isempty(S.nwindow))
-    D(nwindow).name = 'timeWindow'; D(nwindow).size = S.nwindow;
-  end
-end
 
 %--------------------------------------------------------------------------
 % Create NetCDF4 observation file.
@@ -340,7 +333,7 @@ for i = 1:length(G(Meta).vars)
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'units', string);
     case 'dateTimeAverageBegin'
       G(Meta).vid(i) = netcdf.defVar(G(Meta).gid, Vname, nc_int64,      ...
-                                     D(nwindow).did);
+                                     D(nlocs).did);
       string = 'start of time averaging filter';
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'long_name', string);
       epoch  = datenum(num2str(S.datetime_ref),'yyyymmddHH');
@@ -348,7 +341,7 @@ for i = 1:length(G(Meta).vars)
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'units', string);
     case 'dateTimeAverageEnd'
       G(Meta).vid(i) = netcdf.defVar(G(Meta).gid, Vname, nc_int64,      ...
-                                     D(nwindow).did);
+                                     D(nlocs).did);
       string = 'end of time averaging filter';
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'long_name', string);
       epoch  = datenum(num2str(S.datetime_ref),'yyyymmddHH');
@@ -409,7 +402,8 @@ for i = 1:length(G(Meta).vars)
       string = 'observation sequence number';
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'long_name', string);
     case 'spatialAverage'
-      G(Meta).vid(i) = netcdf.defVar(G(Meta).gid, Vname, nc_real, []);
+      G(Meta).vid(i) = netcdf.defVar(G(Meta).gid, Vname, nc_real,       ...
+                                     D(nvars).did);
       string = 'half-length of spatial averaging filter';
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'long_name', string);
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'units', 'meter');

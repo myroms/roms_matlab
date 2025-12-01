@@ -423,7 +423,7 @@ for time = Tstr:dt:Tend-dt                     % hours or days
           varid = Sid;
       end
       if ~isempty(vindex)
-        my_inn  = inc(vindex);
+        my_inn  = inn(vindex);
         my_inc  = inc(vindex);
         my_res  = res(vindex);
         my_Berr = Berr(vindex);            % standard deviation

@@ -168,7 +168,6 @@ days_window = floor((max(S.time)-min(S.time))+0.5);
 types = unique(S.type);
 
 got_ssh  = any(types == 1);
-got_sss  = false;                 % ROMS doesn't assimilate SSS from SMAP
 got_uvel = any(types == 4);
 got_vvel = any(types == 5);
 got_temp = any(types == 6);
@@ -189,7 +188,8 @@ isalt = find(S.type == 7);
 % Identify such repetitive observations by setting their provenance
 % to negative values.
 
-if (~isempty(issh))
+norepeat = false;
+if (~isempty(issh) & norepeat)
   [~,IA,~] = unique(complex(S.lat(issh), S.lon(issh)));
   if (~isempty(IA))
     sshProv = -abs(S.provenance(issh));      % Set negative SSH provenance
@@ -200,8 +200,15 @@ if (~isempty(issh))
   end
 
   if (~isempty(SSHareaAvg) || ~isempty(SSHtimeAvg))
-    issh = find(S.provenance(issh) > 0);
+    issh = find(S.type == 1 & S.provenance > 0);
   end
+
+else
+
+  if (~isempty(SSHareaAvg) || ~isempty(SSHtimeAvg))
+    issh = find(S.type == 1 & S.provenance > 0);
+  end
+
 end
 
 % Get provenance indices for each state variable.
@@ -325,7 +332,7 @@ end
 
 % Process satellite sea surface salinity, like SMAP satellite data.
 
-if (got_sss)
+if (got_salt)
   isss = find(S.type == 7 & S.Zgrid == G.N);
   if (~isempty(isss))
     has_depth = false;
@@ -441,9 +448,10 @@ end
 % Process salinity.
 
 if (got_salt)
+  ksalt = find(S.type == 7 & S.Zgrid ~= G.N);
   if (~isempty(isalt))
     has_depth = true;
-    Obs = extract_observations(S, isalt, DateTimeIODA, has_depth);
+    Obs = extract_observations(S, ksalt, DateTimeIODA, has_depth);
     Obs.ncfile         = [prefix '_salt_' suffix '.nc4'];
     Obs.N              = G.N;
     Obs.nvars          = 1;
