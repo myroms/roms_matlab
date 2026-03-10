@@ -258,14 +258,8 @@ if (P.doMap == 1)
     m_gshhs_h('patch', Land, 'edgecolor', 'none');
  else
     m_gshhs_i('color','k');
-  end
-% [x,y]=m_ll2xy(-128.292,37.918);     % WC13 T,S observation
-% plot(x, y, 'o','MarkerSize',8,                                       ...
-%      'MarkerEdgeColor', 'r', 'MarkerFaceColor',[0.8,0.8,0.80]);
-% x=[-134, -122.5];
-% y=[37.666 37.666];
-% [x,y]=m_ll2xy(x,y);                 % WC13 cross-section
-% plot(x,y,'r:');
+ end
+ hplot_extra;                       % add extra characteristic, if any
 end
 
 P.pltHandle = H;

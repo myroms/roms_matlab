@@ -98,7 +98,11 @@ recordless = true;
 Tstring = blanks(2);
 
 D = nc_dinfo(Hname);
-N = D(strcmp({D.Name}, 's_rho')).Length;
+if (any(strcmp({D.Name}, 's_rho')))
+  N = D(strcmp({D.Name}, 's_rho')).Length;
+else
+  N = varargin{1};      % Hname does not have vertical grid info
+end                     % It is probably not a ROMS history file
 
 %  Optional arguments.
 
@@ -389,7 +393,8 @@ PreserveType = false;
 
 if (recordless)
   field = nc_read(Hname,Vname,[],ReplaceValue,PreserveType);
-  F.shading = 'interp';
+% F.shading = 'interp';
+  F.shading = 'false';
 else
   field = nc_read(Hname,Vname,Tindex,ReplaceValue,PreserveType);
 end

@@ -4,6 +4,7 @@ Colormaps Information:
 * To use CMAP colors check the following link for ColorCET:
 
   https://colorcet.com/index.html
+  https://www.ncl.ucar.edu/Document/Graphics/color_table_gallery.shtml
 
   For example, use
 
@@ -19,3 +20,7 @@ Colormaps Information:
 
   colormap(cmap_odv('Odv_437'));
   colormap(cmap_odv('Odv_465'));
+
+* Color palettes for bathymery:
+
+colormap(flipud(mpl_amwg256)); caxis([0 5000]);    % USEC 3km

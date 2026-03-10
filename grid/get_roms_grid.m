@@ -259,6 +259,7 @@ else
   got.zeta           = false;
   got.lon_coast      = any(strcmp(vnames,'lon_coast'));
   got.lat_coast      = any(strcmp(vnames,'lat_coast'));
+  got.wtype_grid     = any(strcmp(vnames,'wtype_grid'));
 
   for var = varlist
     field = char(var);
@@ -652,6 +653,12 @@ if (process.horizontal)
   if (got.lon_coast)
     Gout.lon_coast = nc_read(Ginp,'lon_coast');
     Gout.lat_coast = nc_read(Ginp,'lat_coast');
+  end
+
+% If available, process Jerlov water type index.
+
+  if (got.wtype_grid)
+    Gout.wtype_grid = nc_read(Ginp,'wtype_grid');
   end
 
 end

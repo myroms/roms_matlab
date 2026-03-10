@@ -8,7 +8,7 @@ function roms2ioda(ObsData, HisName, prefix, suffix, M)
 % This function converts a ROMS 4D-Var observation NetCDF file into several
 % IODA NetCDF files. One file per observation type is usually the way that
 % the JEDI/UFO observation operator requires. Output files are of the form:
-%  
+%
 %                        prefix_obstype_suffix.nc4
 %
 % For example:           wc13_sst_20040103.nc4
@@ -50,12 +50,12 @@ function roms2ioda(ObsData, HisName, prefix, suffix, M)
 %                  M(:).standard_name  variable standard name
 %
 % USAGE:
-% ***** 
+% *****
 %
 %   Example to convert single WC13 native ROMS 4D-Var observation file
 %   into multiple IODA-type files that can be used in native ROMS
 %   and ROMS-JEDI data assimilation algorithms, like:
-%  
+%
 %     wc13_adt_20040103.nc4
 %     wc13_sst_20040103.nc4
 %     wc13_salt_20040103.nc4
@@ -96,7 +96,7 @@ function roms2ioda(ObsData, HisName, prefix, suffix, M)
 %=========================================================================%
 
 % Initialize area-averaged and time-averaged parameters from Metdata
-% structure, M.  
+% structure, M.
 
 SSHareaAvg = M(strcmp({M.name}, 'SSH')).half_length;
 SSHtimeAvg = M(strcmp({M.name}, 'SSH')).time_window;
@@ -342,7 +342,7 @@ if (got_salt)
     Obs.nvars          = 1;
     Obs.units          = {'dimensionless'};
     Obs.ncvname        = {M(strcmp({M.name}, 'SSS')).ioda_vname};
-    Obs.stateID        = 6;
+    Obs.stateID        = 7;
     Obs.areaAvgRadius  = SSSareaAvg;
     Obs.timeAvgWindow  = SSStimeAvg;
     Obs.variables_name = {M(strcmp({M.name}, 'SSS')).standard_name};
