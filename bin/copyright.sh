@@ -2,7 +2,7 @@
 #
 # git $Id$
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-# Copyright (c) 2002-2025 The ROMS Group                                :::
+# Copyright (c) 2002-2026 The ROMS Group                                :::
 #   Licensed under a MIT/X style license                                :::
 #   See License_ROMS.md                                                 :::
 #:::::::::::::::::::::::::::::::::::::::::::::::::::::: David Robertson :::
@@ -23,8 +23,8 @@
 #                                                                       :::
 #::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-search="2002-2024 The ROMS"
-replace="2002-2025 The ROMS"
+search="2002-2025 The ROMS"
+replace="2002-2026 The ROMS"
 
 # Directories to search for replacements.
 
