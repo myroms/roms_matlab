@@ -5,7 +5,7 @@ function F=plot_section(Gname, Hname, Vname, Tindex, orient, index,     ...
 % PLOT_SECTION:  Plots requested variable section from input NetCDF file
 %
 % F=plot_section(Gname, Hname, Vname, Tindex, orient, index,            ...
-%                ptype, Caxis, wrtPNG)
+%                ptype, Caxis, wrtPNG, PNGsuffix)
 %
 % This function plots requested ROMS variable section from input
 % history NetCDF file.
@@ -75,6 +75,8 @@ function F=plot_section(Gname, Hname, Vname, Tindex, orient, index,     ...
 %
 %                    if wrtPNG < 1, ommit figure tile, doTitle = false
 %
+%    PNGsuffix     PNG filename suffix qualifier (string; OPTIONAL)
+%
 % On Output:
 %
 %    F             Requested 3D variable section (struc)
@@ -124,6 +126,8 @@ isr3d = false;
 isw3d = false;
 isvec = false;
 
+zero_depth = true;
+
 Tname = [];
 Tsize = 0;
 recordless = true;
@@ -137,18 +141,28 @@ switch numel(varargin)
     ptype  = 0;
     Caxis  = [-Inf Inf];
     wrtPNG = false;
+    PNGsuffix = [];
   case 1
     ptype  = varargin{1};
     Caxis  = [-Inf Inf];
     wrtPNG = false;
+    PNGsuffix = [];
   case 2
     ptype  = varargin{1};
     Caxis  = varargin{2};
     wrtPNG = false;
+    PNGsuffix = [];
   case 3
     ptype  = varargin{1};
     Caxis  = varargin{2};
     wrtPNG = varargin{3};
+    PNGsuffix = [];
+    doPNG  = true;
+  case 4
+    ptype  = varargin{1};
+    Caxis  = varargin{2};
+    wrtPNG = varargin{3};
+    PNGsuffix = varargin{4};
     doPNG  = true;
 end
 
@@ -379,6 +393,9 @@ if (getdata)
     if (isfield(G,Zname))
       if (~isempty(G.(Zname)))
         Z = G.(Zname);
+        if (zero_depth)
+          Z(:,:,end) = 0.0;
+	end
       else
         error([' PLOT_SECTION - field '', Zname, ''',                ...
                ' is empty in receiver grid structure: G']);
@@ -609,7 +626,11 @@ if (ptype ~= 0)
 %  Write out PNG file.
 
   if (wrtPNG)
-    png_file=strcat(Vname,'_',num2str(Tindex, '%4.4i'),'.png');
+    if (~isempty(PNGsuffix))
+      png_file=strcat(Vname,'_',PNGsuffix,'.png');
+    else
+      png_file=strcat(Vname,'_',num2str(Tindex, '%4.4i'),'.png');
+    end
     exportgraphics(gcf, png_file, 'resolution', 300);
   end
 

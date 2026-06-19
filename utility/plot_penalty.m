@@ -233,7 +233,7 @@ end
 Cblue2   = [ 30 144 255]./255;        % dodger blue
 Cgreen1  = [60  179 123]./255;        % sea green
 Corange1 = [255 140   0]./255;        % dark orange
-Corange1 = [255 140   0]./255;        % dark orange
+Corchid1 = [153  50 204]./255;        % dark orchid
 
 Jmin  = J.Nobs/2;
 iter  = [1:Niter];
@@ -268,6 +268,12 @@ if (LogScale)
     hnl=plot(Niter,log10(J.NL(1,end)+J.b(end)),'kd','MarkerSize',8);
         set(hnl, 'markerfacecolor', 'm')
   end
+
+  if (got_overlay && isfield(J2,'NL'))
+    hnl2=plot(Niter,log10(J2.NL(1,end)+JB2(end)),'kp','MarkerSize',8);
+    set(hnl2, 'markerfacecolor', Corchid1)
+  end
+  
   if (isfield(J,'RP'))
     hrp=plot(Niter,log10(J.RP(1,end)+J.b(end)),'kd','MarkerSize',8);
         set(hrp, 'markerfacecolor', 'm')
@@ -319,10 +325,12 @@ if (got_overlay)
     label1='J';
     label2='J_{compare}';
     label3='J_{b compare}';
+    label4='J_{NL compare}';
   else
     label1=strcat('J_{',untexlabel(Algorithm),'}');
     label2=strcat('J_{',untexlabel(Algorithm2),'}');
     label3='J_{b compare}';
+    label4=strcat('J_{','NL ', untexlabel(Algorithm2),'}');
   end
 else
   label1='J';
@@ -331,7 +339,7 @@ end
 if (isfield(J,'NL'))
   if (got_overlay)
     legend(label1,label2,'J_o','J_b',label3,'J_{min}','J_{NL}',       ...
-           'Location','Southeast')
+           label4,'Location','Southeast')
   else
     legend(label1,'J_o','J_b','J_{min}','J_{NL}',                     ...
            'Location','Southeast')

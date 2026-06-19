@@ -95,7 +95,6 @@ function S = plot_state(Gname, Sname, rec, varargin)
 %
 %    S             Processed state variable structure (array)
 %
-
 % git $Id$
 %======================================================================%
 %  Copyright (c) 2002-2026 The ROMS Group                              %
@@ -446,7 +445,7 @@ for var = Svarlist
       end
       iatt = strfind(Tattr, 'since');
       if (~isempty(iatt))
-        Torigin = Tattr(iatt+6:end);
+        Torigin = Tattr(iatt+6:iatt+6+18);      % remove GMT, if any
         epoch   = datenum(Torigin,31);          % 'yyyy-mm-dd HH:MM:SS'
         Tstring = datestr(epoch+Tvalue);
       else

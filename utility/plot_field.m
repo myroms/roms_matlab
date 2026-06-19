@@ -4,7 +4,7 @@ function F=plot_field(Gname, Hname, Vname, Tindex, varargin)
 % PLOT_FIELD:  Plot requested ROMS variable from input NetCDF file
 %
 % F=plot_field(Gname, Hname, Vname, Tindex, Level, Caxis, Mmap, ptype,
-%              wrtPNG)
+%              wrtPNG, PNGsuffix)
 %
 % This function plots requested ROMS variable from input history
 % NetCDF file. This function is very useful when debugging a ROMS
@@ -52,6 +52,8 @@ function F=plot_field(Gname, Hname, Vname, Tindex, varargin)
 %
 %                  if wrtPNG < 1, ommit figure title, doTitle = false
 %
+%    PNGsuffix     PNG filename suffix qualifier (string; OPTIONAL)
+%
 % On Output:
 %
 %    F             Requested 2D or 3D variable (structure)
@@ -74,7 +76,8 @@ F = struct('ncname'     , [], 'Vname'     , [],                       ...
            'Caxis'      , [], 'doMap'     , [], 'projection', [],     ...
            'ptype'      , [],                                         ...
            'gotCoast'   , [], 'lon_coast' , [], 'lat_coast' , [],     ...
-           'shading'    , [], 'pltHandle' , [], 'wrtPNG'    , []);
+           'shading'    , [], 'pltHandle' , [], 'wrtPNG'    , [],     ...
+	   'PNGsuffix'  , []);
 
 F.projection = 'mercator';
 
@@ -91,6 +94,8 @@ is3d  = false;
 isr3d = false;
 isw3d = false;
 iszflat = false;
+special = false;
+scaleit = false;
 
 F.Tname = [];
 Tsize = 0;
@@ -113,6 +118,7 @@ switch numel(varargin)
     Mmap   = false;
     ptype  = 0;
     wrtPNG = false;
+    PNGsuffix = [];
   case 1
     if (~isinf(varargin{1}))
       Level = varargin{1};
@@ -123,6 +129,7 @@ switch numel(varargin)
     Mmap   = false;
     ptype  = 0;
     wrtPNG = false;
+    PNGsuffix = [];
   case 2
     if (~isinf(varargin{1}))
       Level = varargin{1};
@@ -133,6 +140,7 @@ switch numel(varargin)
     Mmap   = false;
     ptype  = 0;
     wrtPNG = false;
+    PNGsuffix = [];
   case 3
     if (~isinf(varargin{1}))
       Level = varargin{1};
@@ -143,6 +151,7 @@ switch numel(varargin)
     Mmap   = varargin{3};
     ptype  = 0;
     wrtPNG = false;
+    PNGsuffix = [];
   case 4
     if (~isinf(varargin{1}))
       Level = varargin{1};
@@ -153,6 +162,7 @@ switch numel(varargin)
     Mmap   = varargin{3};
     ptype  = varargin{4};
     wrtPNG = false;
+    PNGsuffix = [];
   case 5
     if (~isinf(varargin{1}))
       Level = varargin{1};
@@ -163,6 +173,18 @@ switch numel(varargin)
     Mmap   = varargin{3};
     ptype  = varargin{4};
     wrtPNG = varargin{5};
+    PNGsuffix = [];
+  case 6
+    if (~isinf(varargin{1}))
+      Level = varargin{1};
+    else
+      Level = N;
+    end
+    Caxis  = varargin{2};
+    Mmap   = varargin{3};
+    ptype  = varargin{4};
+    wrtPNG = varargin{5};
+    PNGsuffix = varargin{6};
 end
 
 F.Level   = Level;
@@ -171,6 +193,12 @@ F.doMap   = Mmap;
 F.ptype   = ptype;
 F.shading = 'interp';
 F.wrtPNG  = wrtPNG;
+
+if (~isempty(PNGsuffix))
+  F.PNGsuffix = PNGsuffix;
+else
+  F = rmfield(F, 'PNGsuffix');
+end
 
 % Set ROMS Grid structure.
 
@@ -199,6 +227,14 @@ if (nvdims > 0)
         isr3d = true;
       case 's_w'
         isw3d = true;
+      case {'frc_adjust'}
+        special = true;
+        F.Level = Level;
+      case {'axis'}
+        special = true;
+        scaleit = true;
+	Fscale  = 0.001;    % m to km
+        F.Level = Level;
       case 'z_slice'
         iszflat = true;
         z_slice = nc_read(Hname, 'z_slice');
@@ -399,9 +435,15 @@ else
   field = nc_read(Hname,Vname,Tindex,ReplaceValue,PreserveType);
 end
 
-if (is3d || iszflat)
+if (is3d || iszflat || special)
   if (Level > 0)
     value = squeeze(field(:,:,Level));
+    if (scaleit)
+      value = Fscale .* value;
+    end
+    if (special)
+      F.shading = 'interp';
+    end
   else
     [~,~,value] = nc_slice(G,Hname,Vname,Level,Tindex);
   end

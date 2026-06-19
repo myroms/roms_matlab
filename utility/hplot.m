@@ -356,7 +356,11 @@ end
 %--------------------------------------------------------------------------
 
 if (abs(P.wrtPNG))
-  png_file=strcat(P.Vname,'_',num2str(P.Tindex, '%4.4i'),'.png');
+  if (isfield(P, 'PNGsuffix'))
+    png_file=strcat(P.Vname,'_',P.PNGsuffix,'.png');
+  else
+    png_file=strcat(P.Vname,'_',num2str(P.Tindex, '%4.4i'),'.png');
+  end
   exportgraphics(gcf, png_file, 'resolution', 300);
 end
 

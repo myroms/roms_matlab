@@ -5,7 +5,7 @@ function S=extract_section(G, field, Xpath, Ypath, varargin)
 %
 % S=extract_section(G, field, Xpath, Ypath, npath)
 %
-% It extracts a speficied cross-section (Xpath, Ypath) from a ROMS
+% It extracts a specified cross-section (Xpath, Ypath) from a ROMS
 % 3D field. The horizontally interpolated values are returned at
 % all levels of the s-coordinate system. It is intended for plotting
 % elsewhere.
@@ -27,7 +27,7 @@ function S=extract_section(G, field, Xpath, Ypath, varargin)
 %
 %    npath       Number of section points, OPTIONAL (default 100)
 %
-%                  If Xpath and Ypath has only two values, the extraction
+%                  If Xpath and Ypath have only two values, the extraction
 %                  coordinates are computed as:
 %
 %                  x = linspace(Xpath(1), Xpath(2), npath)
@@ -179,7 +179,7 @@ end
 
 Fi = scatteredInterpolant(Xgrd(:), Ygrd(:), h(:), method);
 
-% Interpolate bathymery.
+% Interpolate bathymetry.
 
 S.h = Fi(S.Xpath(:), S.Ypath(:));
 S.h = -S.h;
