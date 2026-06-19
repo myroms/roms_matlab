@@ -26,7 +26,7 @@ function startup
 
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2025 The ROMS Group                                 %
+%  Copyright (c) 2002-2026 The ROMS Group                                 %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.md                            Hernan G. Arango      %
 %=========================================================================%
@@ -51,6 +51,8 @@ path(path, fullfile(my_root, 'roms_matlab', 'bathymetry', ''))
 path(path, fullfile(my_root, 'roms_matlab', 'boundary', ''))
 path(path, fullfile(my_root, 'roms_matlab', 'coastlines', ''))
 path(path, fullfile(my_root, 'roms_matlab', 'colormaps', ''))
+path(path, fullfile(my_root, 'roms_matlab', 'colormaps', 'CMAP', ''))
+path(path, fullfile(my_root, 'roms_matlab', 'colormaps', 'odv_palettes', ''))
 path(path, fullfile(my_root, 'roms_matlab', 'coupling', ''))
 path(path, fullfile(my_root, 'roms_matlab', 'forcing', ''))
 path(path, fullfile(my_root, 'roms_matlab', 'grid', ''))

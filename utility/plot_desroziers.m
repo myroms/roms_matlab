@@ -53,7 +53,7 @@ function D=plot_desroziers(MODname, Tstr, Tend, dt, varargin)
 
 % git $Id$
 %=======================================================================%
-%  Copyright (c) 2002-2025 The ROMS Group                               %
+%  Copyright (c) 2002-2026 The ROMS Group                               %
 %    Licensed under a MIT/X style license                               %
 %    See License_ROMS.md                            Hernan G. Arango    %
 %=======================================================================%
@@ -423,7 +423,7 @@ for time = Tstr:dt:Tend-dt                     % hours or days
           varid = Sid;
       end
       if ~isempty(vindex)
-        my_inn  = inc(vindex);
+        my_inn  = inn(vindex);
         my_inc  = inc(vindex);
         my_res  = res(vindex);
         my_Berr = Berr(vindex);            % standard deviation

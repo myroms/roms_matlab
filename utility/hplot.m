@@ -45,7 +45,7 @@ function P = hplot(G, F)
 
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2025 The ROMS Group                                 %
+%  Copyright (c) 2002-2026 The ROMS Group                                 %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.md                            Hernan G. Arango      %
 %=========================================================================%
@@ -258,14 +258,8 @@ if (P.doMap == 1)
     m_gshhs_h('patch', Land, 'edgecolor', 'none');
  else
     m_gshhs_i('color','k');
-  end
-% [x,y]=m_ll2xy(-128.292,37.918);     % WC13 T,S observation
-% plot(x, y, 'o','MarkerSize',8,                                       ...
-%      'MarkerEdgeColor', 'r', 'MarkerFaceColor',[0.8,0.8,0.80]);
-% x=[-134, -122.5];
-% y=[37.666 37.666];
-% [x,y]=m_ll2xy(x,y);                 % WC13 cross-section
-% plot(x,y,'r:');
+ end
+ hplot_extra;                       % add extra characteristic, if any
 end
 
 P.pltHandle = H;
@@ -362,7 +356,11 @@ end
 %--------------------------------------------------------------------------
 
 if (abs(P.wrtPNG))
-  png_file=strcat(P.Vname,'_',num2str(P.Tindex, '%4.4i'),'.png');
+  if (isfield(P, 'PNGsuffix'))
+    png_file=strcat(P.Vname,'_',P.PNGsuffix,'.png');
+  else
+    png_file=strcat(P.Vname,'_',num2str(P.Tindex, '%4.4i'),'.png');
+  end
   exportgraphics(gcf, png_file, 'resolution', 300);
 end
 

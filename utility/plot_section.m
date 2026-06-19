@@ -5,7 +5,7 @@ function F=plot_section(Gname, Hname, Vname, Tindex, orient, index,     ...
 % PLOT_SECTION:  Plots requested variable section from input NetCDF file
 %
 % F=plot_section(Gname, Hname, Vname, Tindex, orient, index,            ...
-%                ptype, Caxis, wrtPNG)
+%                ptype, Caxis, wrtPNG, PNGsuffix)
 %
 % This function plots requested ROMS variable section from input
 % history NetCDF file.
@@ -27,9 +27,32 @@ function F=plot_section(Gname, Hname, Vname, Tindex, orient, index,     ...
 %                    orient='r'  row (west-east) extraction
 %                    orient='c'  column (south-north) extraction
 %
-%    index         Row or column to extract (integer)
-%                    if orient='r', then   1 <= index <= Mp
-%                    if orient='c', then   1 <= index <= Lp
+%    index         Cross-section gris index (optional)
+%
+%                    if isscalar(index):
+%                      if orient='c', then  1 <= index <= Lp  south-north
+%                                           (I-section index)
+%                      if orient='r',       1 <= index <= Mp  west-east
+%                                           (J-section index)
+%                    else if ismatrix(index):
+%                      orient='c' or 'r'
+%
+%                      index(:,1)           section Xpath coordinates
+%                      index(:,2)           section Ypath coordinates
+%
+%                      It calls
+%
+%                      S=extract_section(G, field, index(:,1), index(:,2))
+%
+%                      Ensure size(index,1) is enough to resolve section
+%
+%                      For example, a section at Cape Hatteras along 35N
+%
+%                        x = [-76 -70];   y = [35 35];   npath = 200;
+%
+%                        index(:,1) = linspace(x(1), x(2), npath);
+%                        index(:,2) = linspace(y(1), y(2), npath);
+%                    end
 %
 %    ptype         Plot type (integer)
 %                     ptype < 0     use contourf with abs(ptype) colors
@@ -38,10 +61,21 @@ function F=plot_section(Gname, Hname, Vname, Tindex, orient, index,     ...
 %                     ptype = 2     use pcolorjw
 %
 %    Caxis         Color axis (vector)
-%                    (Optional, default: [Inf Inf], choosen internally)
+%                    (Optional, default: [-Inf Inf], choosen internally)
 %
-%    wrtPNG        Switch to write out PNG file (true or false)
-%                    (Optional, default: false)
+%    wrtPNG        Switch to write out PNG files (optional; switch)
+%                    (default: 0 or false)
+%
+%                    if abs(wrtPNG) > 1 and cross-sections, then
+%                    the vertical axis is zoom at Zmin. Then,
+%
+%                      Zmin   = -abs(wrtPNG)
+%                      wrtPNG = true
+%                      axis([-Inf Inf Zmin 0])
+%
+%                    if wrtPNG < 1, ommit figure tile, doTitle = false
+%
+%    PNGsuffix     PNG filename suffix qualifier (string; OPTIONAL)
 %
 % On Output:
 %
@@ -52,33 +86,36 @@ function F=plot_section(Gname, Hname, Vname, Tindex, orient, index,     ...
 %    axis([-Inf Inf -500 0)]
 
 % svn $Id$
-%=========================================================================%
-%  Copyright (c) 2002-2025 The ROMS Group                                 %
-%    Licensed under a MIT/X style license                                 %
-%    See License_ROMS.md                            Hernan G. Arango      %
-%=========================================================================%
+%======================================================================%
+%  Copyright (c) 2002-2026 The ROMS Group                              %
+%    Licensed under a MIT/X style license                              %
+%    See License_ROMS.md                            Hernan G. Arango   %
+%======================================================================%
 
 % Initialize.
 
 if (orient == 'c')
-  F = struct('ncname'     , [], 'Vname'     , [],                       ...
-             'Tindex'     , [], 'Tname'     , [], 'Tstring'   , [],     ...
-             'column'     , [],                                         ...
-             'value'      , [], 'min'       , [], 'max'       , [],     ...
-             'X'          , [], 'Z'         , [],                       ...
-             'Imin'       , [], 'Jmin'      , [],                       ...
+  F = struct('ncname'     , [], 'Vname'     , [],                    ...
+             'Tindex'     , [], 'Tname'     , [], 'Tstring'   , [],  ...
+             'column'     , [],                                      ...
+             'value'      , [], 'min'       , [], 'max'       , [],  ...
+             'X'          , [], 'Z'         , [],                    ...
+             'Imin'       , [], 'Jmin'      , [],                    ...
              'Imax'       , [], 'Jmax'      , []);
   F.column = index;
 else
-  F = struct('ncname'     , [], 'Vname'     , [],                       ...
-             'Tindex'     , [], 'Tname'     , [], 'Tstring'   , [],     ...
-             'row'        , [],                                         ...
-             'value'      , [], 'min'       , [], 'max'       , [],     ...
-             'X'          , [], 'Z'         , [],                       ...
-             'Imin'       , [], 'Jmin'      , [],                       ...
+  F = struct('ncname'     , [], 'Vname'     , [],                     ...
+             'Tindex'     , [], 'Tname'     , [], 'Tstring'   , [],   ...
+             'row'        , [],                                       ...
+             'value'      , [], 'min'       , [], 'max'       , [],   ...
+             'X'          , [], 'Z'         , [],                     ...
+             'Imin'       , [], 'Jmin'      , [],                     ...
              'Imax'       , [], 'Jmax'      , []);
   F.row = index;
 end
+doPNG = false;
+doTitle = true;
+doZoom = false;
 
 got.Mname = false;
 got.Xname = false;
@@ -88,6 +125,8 @@ got.Zname = false;
 isr3d = false;
 isw3d = false;
 isvec = false;
+
+zero_depth = true;
 
 Tname = [];
 Tsize = 0;
@@ -102,18 +141,44 @@ switch numel(varargin)
     ptype  = 0;
     Caxis  = [-Inf Inf];
     wrtPNG = false;
+    PNGsuffix = [];
   case 1
     ptype  = varargin{1};
     Caxis  = [-Inf Inf];
     wrtPNG = false;
+    PNGsuffix = [];
   case 2
     ptype  = varargin{1};
     Caxis  = varargin{2};
     wrtPNG = false;
+    PNGsuffix = [];
   case 3
     ptype  = varargin{1};
     Caxis  = varargin{2};
     wrtPNG = varargin{3};
+    PNGsuffix = [];
+    doPNG  = true;
+  case 4
+    ptype  = varargin{1};
+    Caxis  = varargin{2};
+    wrtPNG = varargin{3};
+    PNGsuffix = varargin{4};
+    doPNG  = true;
+end
+
+% Set parameters affecting the writing of PNG files.
+
+if (doPNG)
+  if (~islogical(wrtPNG))
+    if (wrtPNG < 0)
+      doTitle = false;
+    end
+    if (abs(wrtPNG) > 1)
+      Zmin   = -abs(wrtPNG);
+      doZoom = true;
+      wrtPNG = true;
+    end
+  end
 end
 
 % Set ROMS Grid structure.
@@ -155,10 +220,13 @@ switch Vname
     Cmap = cm_turbid(255);
     scale = 1.0;
   case {'salt'}
-    Cmap = flipud(cividis(255));
+    Cmap = flipud(mpl_Accent(256));
+%   Cmap = mpl_Set3(256);
+%   Cmap = flipud(cividis(255));
     scale = 1.0;
   case {'temp'}
-    Cmap = cm_balance(512);
+   Cmap = mpl_amwg256;
+%  Cmap = cm_balance(512);
     scale = 1.0;
   case {'u', 'v'}
     Cmap = cm_curl(512);
@@ -174,9 +242,9 @@ switch Vname
     scale = 1.0;
 end
 
-%--------------------------------------------------------------------------
+%-----------------------------------------------------------------------
 % Get Variable information.
-%--------------------------------------------------------------------------
+%-----------------------------------------------------------------------
 
 if (getdata)
 
@@ -292,20 +360,20 @@ if (getdata)
   end
 end
 
-%--------------------------------------------------------------------------
+%-----------------------------------------------------------------------
 % Get coordinates.
-%--------------------------------------------------------------------------
+%-----------------------------------------------------------------------
 
 if (getdata)
   if (isfield(G,Xname))
     if (~isempty(G.(Xname)))
       X = G.(Xname);
     else
-      error([' PLOT_SECTION - field '', Xname, ''',                     ...
+      error([' PLOT_SECTION - field '', Xname, ''',                  ...
              ' is empty in receiver grid structure: G']);
     end
   else
-    error([' PLOT_SECTION - unable to find field '', Xname, ''',        ...
+    error([' PLOT_SECTION - unable to find field '', Xname, ''',     ...
            ' in receiver grid structure: G']);
   end
 
@@ -313,11 +381,11 @@ if (getdata)
     if (~isempty(G.(Yname)))
       Y = G.(Yname);
     else
-      error([' PLOT_SECTION - field '', Yname, ''',                     ...
+      error([' PLOT_SECTION - field '', Yname, ''',                  ...
              ' is empty in receiver grid structure: G']);
     end
   else
-    error([' PLOT_SECTION - unable to find field '', Yname, ''',        ...
+    error([' PLOT_SECTION - unable to find field '', Yname, ''',     ...
            ' in receiver grid structure: G']);
   end
 
@@ -325,29 +393,32 @@ if (getdata)
     if (isfield(G,Zname))
       if (~isempty(G.(Zname)))
         Z = G.(Zname);
+        if (zero_depth)
+          Z(:,:,end) = 0.0;
+	end
       else
-        error([' PLOT_SECTION - field '', Zname, ''',                   ...
+        error([' PLOT_SECTION - field '', Zname, ''',                ...
                ' is empty in receiver grid structure: G']);
       end
     else
-      error([' PLOT_SECTION - unable to find field '', Zname, ''',      ...
+      error([' PLOT_SECTION - unable to find field '', Zname, ''',   ...
              ' in receiver grid structure: G']);
     end
     N = size(Z,3);
   else
-    error([' PLOT_SECTION - cannot plot a section for a 2D field: ''',  ...
-           Vname, ''])
+    error([' PLOT_SECTION - cannot plot a section for a 2D ',        ...
+           'field: ''', Vname, ''])
   end
 
   if (isfield(G,Mname))
     if (~isempty(G.(Mname)))
       mask = G.(Mname);
     else
-      error([' PLOT_SECTION - field '', Mname, ''',                     ...
+      error([' PLOT_SECTION - field '', Mname, ''',                  ...
              ' is empty in receiver grid structure: G']);
     end
   else
-    error([' PLOT_SECTION - unable to find field '', Mname, ''',        ...
+    error([' PLOT_SECTION - unable to find field '', Mname, ''',     ...
          ' in receiver grid structure: G']);
   end
 
@@ -359,13 +430,13 @@ if (getdata)
   end
 end
 
-%--------------------------------------------------------------------------
+%-----------------------------------------------------------------------
 % Read in requested variable from NetCDF file.
-%--------------------------------------------------------------------------
+%-----------------------------------------------------------------------
 
 if (getdata)
   if (~recordless && Tindex > Tsize)
-    Tindex = Tsize;                   % process last time record available
+    Tindex = Tsize;                 % process last time record available
   end
 
   if (~isempty(Tname))
@@ -409,34 +480,66 @@ end
 
 % Extract data section to plot.
 
-switch orient
-  case 'c'
-    V = squeeze(field(index,:,:)); [Im,Km]=size(V);
-    m = squeeze(mask(index,:));
-    M = repmat(m, [1 Km]);
-    V = nanland(V, M);
-    s = squeeze(Y(index,:));
-    Z = squeeze(Z(index,:,:));
-    if (G.spherical)                            % bathymetry
-      x = squeeze(G.lat_rho(index,:));
+if isscalar(index)
+  switch orient
+    case 'c'
+      V = squeeze(field(index,:,:)); Km=size(V, 2);
+      m = squeeze(mask(index,:));
+      M = repmat(m, [1 Km]);
+      V = nanland(V, M);
+      s = squeeze(Y(index,:));
+      Z = squeeze(Z(index,:,:));
+      if (G.spherical)                          % bathymetry
+        x = squeeze(G.lat_rho(index,:));
+      else
+        x = squeeze(G.y_rho(index,:));
+      end
+      z = -squeeze(G.h(index,:));
+      sec_label = ['section along i = ', num2str(index)];
+   case 'r'
+      V = squeeze(field(:,index,:)); Km=size(V,2);
+      m = squeeze(mask(:,index));
+      M = repmat(m, [1 Km]);
+      V = nanland(V, M);
+      s = squeeze(X(:,index));
+      S = repmat(s, [1 Km]);
+      Z = squeeze(Z(:,index,:));
+      if (G.spherical)                          % bathymetry
+        x = squeeze(G.lon_rho(:,index));
+      else
+        x = squeeze(G.x_rho(:,index));
+      end
+      z = -squeeze(G.h(:,index));
+      sec_label = ['section along j = ', num2str(index)];
+  end
+elseif ismatrix(index)
+  Xpath = index(:,1);
+  Ypath = index(:,2);
+  E = extract_section(G, field, Xpath, Ypath);
+  if isscalar(unique(Xpath))
+    S = E.Ygrd;                                 % latitude
+    lval = unique(Xpath);
+    if (lval > 0)
+      sec_label = ['section along ', num2str(lval), '\circN'];
     else
-      x = squeeze(G.y_rho(index,:));
+      sec_label = ['section along ', num2str(-lval), '\circS'];
     end
-    z = -squeeze(G.h(index,:));
- case 'r'
-    V = squeeze(field(:,index,:)); [Im,Km]=size(V);
-    m = squeeze(mask(:,index));
-    M = repmat(m, [1 Km]);
-    V = nanland(V, M);
-    s = squeeze(X(:,index));
-    S = repmat(s, [1 Km]);
-    Z = squeeze(Z(:,index,:));
-    if (G.spherical)                            % bathymetry
-      x = squeeze(G.lon_rho(:,index));
+  elseif isscalar(unique(Ypath))
+    S = E.Xgrd;                                 % longitude
+    lval = unique(Ypath);
+    if (lval > 0)
+      sec_label = ['section along ', num2str(lval), '\circE'];
     else
-      x = squeeze(G.x_rho(:,index));
+      sec_label = ['section along ', num2str(-lval), '\circW'];
     end
-    z = -squeeze(G.h(:,index));
+  else
+    S = E.dis;                                  % distance (km)
+    sec_label = blanks(1);
+  end
+  Z = E.depth;
+  V = E.value;
+  x = S(:,1);
+  z = E.h;
 end
 
 V = V .* scale;
@@ -488,7 +591,12 @@ if (ptype ~= 0)
   end
 
   shading interp;
-  colorbar; colormap(Cmap); caxis(Caxis);
+  colorbar;
+  colormap(Cmap);
+  caxis(Caxis);
+  if (doZoom)
+    axis([-Inf Inf Zmin 0]);
+  end
 
   % plot bathymetry curve.
 
@@ -497,20 +605,20 @@ if (ptype ~= 0)
   hold off;
 
   if (~isempty(Tname))
-    ht = title([untexlabel(Vname), ':', blanks(4),                      ...
-                'Record = ', num2str(Tindex), ',', blanks(4),           ...
-                'time = ', Tstring],                                    ...
+    ht = title([untexlabel(Vname), ':', blanks(4),                   ...
+                'Record = ', num2str(Tindex), ',', blanks(4),        ...
+                'time = ', Tstring],                                 ...
                 'FontSize', 14, 'FontWeight', 'bold' );
   else
-    ht = title([untexlabel(Vname), ':', blanks(4),                      ...
-                'Record = ', num2str(Tindex)],                          ...
+    ht = title([untexlabel(Vname), ':', blanks(4),                   ...
+                'Record = ', num2str(Tindex)],                       ...
                 'FontSize', 14, 'FontWeight', 'bold' );
   end
 
-  hx = xlabel(['Min = ', num2str(Fmin), blanks(4),                      ...
-               '(', num2str(Imin), ', ', num2str(Jmin), '),',           ...
-               blanks(8), 'Max = ', num2str(Fmax), blanks(4),           ...
-               '(', num2str(Imax), ', ', num2str(Jmax), ')'],           ...
+  hx = xlabel(['Min = ', num2str(Fmin), blanks(4),                   ...
+               '(', num2str(Imin), ', ', num2str(Jmin), '),',        ...
+               blanks(8), 'Max = ', num2str(Fmax), blanks(4),        ...
+               '(', num2str(Imax), ', ', num2str(Jmax), ')'],        ...
                'FontSize', 14, 'FontWeight', 'bold' );
 
   hy = ylabel('Z (m)', 'FontSize', 14, 'FontWeight', 'bold');
@@ -518,7 +626,11 @@ if (ptype ~= 0)
 %  Write out PNG file.
 
   if (wrtPNG)
-    png_file=strcat(Vname,'_',num2str(Tindex, '%4.4i'),'.png');
+    if (~isempty(PNGsuffix))
+      png_file=strcat(Vname,'_',PNGsuffix,'.png');
+    else
+      png_file=strcat(Vname,'_',num2str(Tindex, '%4.4i'),'.png');
+    end
     exportgraphics(gcf, png_file, 'resolution', 300);
   end
 

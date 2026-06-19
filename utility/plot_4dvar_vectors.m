@@ -38,7 +38,7 @@ function V=plot_4dvar_vectors(ncname, varargin)
 
 % git $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2025 The ROMS Group                                 %
+%  Copyright (c) 2002-2026 The ROMS Group                                 %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.md                            Hernan G. Arango      %
 %=========================================================================%
@@ -234,7 +234,7 @@ for n = 1:ntypes
         Stype(varid) = 6;
         Svars{Tid} = 'All Temperature Data (x10^3)';
 
-        SSTindex = find(ObsZgrid(Tindex) == N);
+        SSTindex=find(ObsZgrid == N & ObsType == 6);
         if ~isempty(SSTindex)
           varid = varid + 1;
           SSTid = varid;

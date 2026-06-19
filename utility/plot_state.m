@@ -40,9 +40,32 @@ function S = plot_state(Gname, Sname, rec, varargin)
 %                    orient='r'  row (west-east) vertical section
 %                    orient='c'  column (south-north) vertical section
 %
-%    index         Cross-section gris index (optional; integer)
-%                    if orient='r', then   1 <= index <= Mp  west-east
-%                    if orient='c', then   1 <= index <= Lp  south-north
+%    index         Cross-section gris index (optional)
+%
+%                    if isscalar(index):
+%                      if orient='c', then  1 <= index <= Lp  south-north
+%                                           (I-section index)
+%                      if orient='r',       1 <= index <= Mp  west-east
+%                                           (J-section index)
+%                    else if ismatrix(index):
+%                      orient='c' or 'r'
+%
+%                      index(:,1)           section Xpath coordinates
+%                      index(:,2)           section Ypath coordinates
+%
+%                      It calls
+%
+%                      S=extract_section(G, field, index(:,1), index(:,2))
+%
+%                      Ensure size(index,1) is enough to resolve section
+%
+%                      For example, a section at Cape Hatteras along 35N
+%
+%                        x = [-76 -70];   y = [35 35];   npath = 200;
+%
+%                        index(:,1) = linspace(x(1), x(2), npath);
+%                        index(:,2) = linspace(y(1), y(2), npath);
+%                    end
 %
 %    wrtPNG        Switch to write out PNG files (optional; switch)
 %                    (default: 0 or false)
@@ -72,18 +95,24 @@ function S = plot_state(Gname, Sname, rec, varargin)
 %
 %    S             Processed state variable structure (array)
 %
+% git $Id$
+%======================================================================%
+%  Copyright (c) 2002-2026 The ROMS Group                              %
+%    Licensed under a MIT/X style license                              %
+%    See License_ROMS.md                            Hernan G. Arango   %
+%======================================================================%
 
 % Initialize.
 
-F = struct('ncname'     , [], 'Vname'     , [],                       ...
-           'Tindex'     , [], 'Tname'     , [], 'Tstring'     , [],   ...
-           'Level'      , [], 'is3d'      , [], 'tiling'      , [],   ...
-           'X'          , [], 'Y'         , [], 'value'       , [],   ...
-           'min'        , [], 'max'       , [], 'checkval'    , [],   ...
-           'Caxis'      , [], 'Cmap'      , [], 'ptype'       , [],   ...
-           'doMap'      , [], 'projection', [],                       ...
-           'orient'     , [], 'index'     , [],                       ...
-           'gotCoast'   , [], 'lon_coast' , [], 'lat_coast'   , [],   ...
+F = struct('ncname'     , [], 'Vname'     , [],                      ...
+           'Tindex'     , [], 'Tname'     , [], 'Tstring'     , [],  ...
+           'Level'      , [], 'is3d'      , [], 'tiling'      , [],  ...
+           'X'          , [], 'Y'         , [], 'value'       , [],  ...
+           'min'        , [], 'max'       , [], 'checkval'    , [],  ...
+           'Caxis'      , [], 'Cmap'      , [], 'ptype'       , [],  ...
+           'doMap'      , [], 'projection', [],                      ...
+           'orient'     , [], 'index'     , [],                      ...
+           'gotCoast'   , [], 'lon_coast' , [], 'lat_coast'   , [],  ...
            'shading'    , [], 'pltHandle' , [], 'wrtPNG'      , []);
 
 F.projection = 'mercator';
@@ -102,7 +131,8 @@ Vnames   = {I.Variables.Name};
 N        = I.Dimensions(strcmp({I.Dimensions.Name}, 's_rho')).Length;
 Tindex   = abs(rec);
 
-Svarlist = {'zeta', 'u', 'v', 'u_eastward', 'v_northward', 'temp', 'salt'};
+Svarlist = {'zeta', 'u', 'v', 'u_eastward', 'v_northward',           ...
+            'temp', 'salt'};
 
 % Set tile partition, if 'tiling' global attribute exist.
 
@@ -245,9 +275,9 @@ else
   G = Gname;
 end
 
-%--------------------------------------------------------------------------
+%-----------------------------------------------------------------------
 % Plot each avaliable state variable.
-%--------------------------------------------------------------------------
+%-----------------------------------------------------------------------
 
 nfield = 0;
 
@@ -340,11 +370,11 @@ for var = Svarlist
       if (~isempty(G.(Xname)))
         X = G.(Xname);
       else
-        error([' PLOT_STATE - field '', Xname, ''',                     ...
+        error([' PLOT_STATE - field '', Xname, ''',                  ...
                ' is empty in receiver grid structure: G']);
       end
     else
-      error([' PLOT_STATE - unable to find field '', Xname, ''',        ...
+      error([' PLOT_STATE - unable to find field '', Xname, ''',     ...
              ' in receiver grid structure: G']);
     end
 
@@ -352,11 +382,11 @@ for var = Svarlist
       if (~isempty(G.(Yname)))
         Y = G.(Yname);
       else
-        error([' PLOT_STATE - field '', Yname, ''',                     ...
+        error([' PLOT_STATE - field '', Yname, ''',                  ...
                ' is empty in receiver grid structure: G']);
       end
     else
-      error([' PLOT_STATE - unable to find field '', Yname, ''',        ...
+      error([' PLOT_STATE - unable to find field '', Yname, ''',     ...
              ' in receiver grid structure: G']);
     end
 
@@ -365,11 +395,11 @@ for var = Svarlist
         if (~isempty(G.(Zname)))
           Z = G.(Zname);
         else
-          error([' PLOT_STATE - field '', Zname, ''',                   ...
+          error([' PLOT_STATE - field '', Zname, ''',                ...
                  ' is empty in receiver grid structure: G']);
         end
       else
-        error([' PLOT_STATE - unable to find field '', Zname, ''',      ...
+        error([' PLOT_STATE - unable to find field '', Zname, ''',   ...
              ' in receiver grid structure: G']);
       end
     end
@@ -378,11 +408,11 @@ for var = Svarlist
       if (~isempty(G.(Mname)))
         mask = G.(Mname);
       else
-        error([' PLOT_STATE - field '', Mname, ''',                     ...
+        error([' PLOT_STATE - field '', Mname, ''',                  ...
                ' is empty in receiver grid structure: G']);
       end
     else
-      error([' PLOT_STATE - unable to find field '', Mname, ''',        ...
+      error([' PLOT_STATE - unable to find field '', Mname, ''',     ...
              ' in receiver grid structure: G']);
     end
 
@@ -415,7 +445,7 @@ for var = Svarlist
       end
       iatt = strfind(Tattr, 'since');
       if (~isempty(iatt))
-        Torigin = Tattr(iatt+6:end);
+        Torigin = Tattr(iatt+6:iatt+6+18);      % remove GMT, if any
         epoch   = datenum(Torigin,31);          % 'yyyy-mm-dd HH:MM:SS'
         Tstring = datestr(epoch+Tvalue);
       else
@@ -442,41 +472,72 @@ for var = Svarlist
         Z0 = Z;                          % impose zero value at surface
         Z0(:,:,Km) = 0.0;                % for nicer cross-sections
 
-        switch orient
-          case 'c'
-            V = squeeze(f(index,:,:)); [Im,Km]=size(V);
-            m = squeeze(mask(index,:));
-            M = repmat(m', [1 Km]);
-            V = nanland(V, M);
-            s = squeeze(F.Y(index,:));
-            Q = repmat(s', [1 Km]);
-            Z = squeeze(Z0(index,:,:));
-            if (G.spherical)                          % bathymetry
-              x = squeeze(G.lat_rho(index,:));
+        if isscalar(index)
+          switch orient
+            case 'c'
+              V = squeeze(f(index,:,:)); Km=size(V,2);
+              m = squeeze(mask(index,:));
+              M = repmat(m', [1 Km]);
+              V = nanland(V, M);
+              s = squeeze(F.Y(index,:));
+              Q = repmat(s', [1 Km]);
+              Z = squeeze(Z0(index,:,:));
+              if (G.spherical)                        % bathymetry
+                x = squeeze(G.lat_rho(index,:));
+              else
+                x = squeeze(G.y_rho(index,:));
+              end
+              z = -squeeze(G.h(index,:));
+              sec_label = ['section along i = ', num2str(index)];
+            case 'r'
+              V = squeeze(f(:,index,:)); Km=size(V,2);
+              m = squeeze(mask(:,index));
+              M = repmat(m, [1 Km]);
+              V = nanland(V, M);
+              s = squeeze(F.X(:,index));
+              Q = repmat(s, [1 Km]);
+              Z = squeeze(Z0(:,index,:));
+              if (G.spherical)                        % bathymetry
+                x = squeeze(G.lon_rho(:,index));
+              else
+                x = squeeze(G.x_rho(:,index));
+              end
+              z = -squeeze(G.h(:,index));
+              sec_label = ['section along j = ', num2str(index)];
+          end
+          F.X     = Q;
+          F.Y     = Z;
+          F.value = V;
+        elseif ismatrix(index)
+          Xpath = index(:,1);
+          Ypath = index(:,2);
+          E = extract_section(G, f, Xpath, Ypath);
+          if isscalar(unique(Xpath))
+            F.X = E.Ygrd;                             % latitude
+            lval = unique(Xpath);
+            if (lval > 0)
+              sec_label = ['section along ', num2str(lval), '\circN'];
             else
-              x = squeeze(G.y_rho(index,:));
+              sec_label = ['section along ', num2str(-lval), '\circS'];
             end
-            z = -squeeze(G.h(index,:));
-            sec_index = ['i=', num2str(index)];
-          case 'r'
-            V = squeeze(f(:,index,:)); [Im,Km]=size(V);
-            m = squeeze(mask(:,index));
-            M = repmat(m, [1 Km]);
-            V = nanland(V, M);
-            s = squeeze(F.X(:,index));
-            Q = repmat(s, [1 Km]);
-            Z = squeeze(Z0(:,index,:));
-            if (G.spherical)                          % bathymetry
-              x = squeeze(G.lon_rho(:,index));
+          elseif isscalar(unique(Ypath))
+            F.X = E.Xgrd;                             % longitude
+            lval = unique(Ypath);
+            if (lval > 0)
+              sec_label = ['section along ', num2str(lval), '\circE'];
             else
-              x = squeeze(G.x_rho(:,index));
+              sec_label = ['section along ', num2str(-lval), '\circW'];
             end
-            z = -squeeze(G.h(:,index));
-            sec_index = ['j=', num2str(index)];
+          else
+            F.X = E.dis;                              % distance (km)
+            sec_label = blanks(1);
+          end
+          F.Y = E.depth;
+          F.Y(:,Km) = 0.0;              % impose zero at section surface
+          F.value = E.value;
+          x = F.X(:,1);
+          z = E.h;
         end
-        F.X     = Q;
-        F.Y     = Z;
-        F.value = V;
       else
         if (F.Level > 0)
           value = squeeze(f(:,:,F.Level));
@@ -495,12 +556,12 @@ for var = Svarlist
     F.max      = max(F.value(:));
     F.checkval = bitcount(F.value(:));
 
-    xlabel1    = ['Min = ', sprintf('%12.5e',F.min), blanks(3),         ...
+    xlabel1    = ['Min = ', sprintf('%12.5e',F.min), blanks(3),      ...
                   'Max = ', sprintf('%12.5e',F.max)];
 
-%--------------------------------------------------------------------------
+%-----------------------------------------------------------------------
 % Plot state field
-%--------------------------------------------------------------------------
+%-----------------------------------------------------------------------
 
 % If plotting cross-sections, ignore 2D fields.
 
@@ -549,8 +610,6 @@ for var = Svarlist
                % bathymetry curve
      hold on;
      area(x, z, min(z), 'FaceColor', Land, 'EdgeColor', Land);
-     plot(-128.292,-105.8667,'o','MarkerSize',8,'MarkerEdgeColor','k', ...
-          'MarkerFaceColor',[0.8,0.8,0.80]);   % singe obs location
      hold off;
 
      colorbar;
@@ -563,12 +622,10 @@ for var = Svarlist
      ylabel('Z (m)');
      if (doTitle)
        if (orient == 'c')
-         title([untexlabel(field),                                     ...
-                ',  section along i = ', num2str(F.index),             ...
-                ',  Rec = ', num2st r(F.Tindex)]);
+         title([untexlabel(field), sec_label,                        ...
+                ',  Rec = ', num2str(F.Tindex)]);
        else
-         title([untexlabel(field),                                     ...
-                ',  section along j = ', num2str(F.index),             ...
+         title([untexlabel(field), sec_label,                        ...
                 ',  Rec = ', num2str(F.Tindex)]);
        end
      else
@@ -580,7 +637,7 @@ for var = Svarlist
 
      if (draw_tiling)
        hold on;
-       h = ptiles(F.tiling(1), F.tiling(2), F.ncname, false, 'r-', false);
+       h = ptiles(F.tiling(1), F.tiling(2), F.ncname, false, 'r-', 0);
        hold off
      end
 

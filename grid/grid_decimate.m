@@ -36,7 +36,7 @@ function S = grid_decimate(Gfactor, Iname, Oname, varargin)
 
 % svn $Id$
 %=======================================================================%
-%  Copyright (c) 2002-2025 The ROMS Group                               %
+%  Copyright (c) 2002-2026 The ROMS Group                               %
 %    Licensed under a MIT/X style license                               %
 %    See License_ROMS.md                            Hernan G. Arango    %
 %=======================================================================%
@@ -428,18 +428,35 @@ for n = 1:nvars
     if (any(strcmp(Dnames,'s_w'  ))), Km = N+1; end
       
     F = nc_read(Iname, Vname);            % if got_grid = false
+    mydims = length(size(F));
     switch Vtype
       case ('RHO')                        % RHO-points metrics
-        Fout = F(Ir, Jr);
+        if (mydims == 2)
+          Fout = F(Ir, Jr);
+        elseif (mydims == 3)
+          Fout = F(Ir, Jr, :);
+        end
         nc_write(Oname, Vname, Fout);
       case ('PSI')                        % PSI-points metrics
-        Fout = F(Ip, Jp);
+        if (mydims == 2)
+          Fout = F(Ip, Jp);
+        elseif (mydims == 3)
+          Fout = F(Ip, Jp, :);
+        end
         nc_write(Oname, Vname, Fout);
       case ('U')                          % U-points metrics
-        Fout = F(Iu, Ju);
+        if (mydims == 2)
+          Fout = F(Iu, Ju);
+        elseif (mydims == 3)
+          Fout = F(Iu, Ju, :);
+        end
         nc_write(Oname, Vname, Fout);
       case ('V')                          % V-points metrics
-        Fout = F(Iv, Jv);
+        if (mydims == 2)
+          Fout = F(Iv, Jv);
+        elseif (mydims == 3)
+          Fout = F(Iv, Jv, :);
+        end
         nc_write(Oname, Vname, Fout);
       otherwise                           % Information arrays
         nc_write(Oname, Vname, F);

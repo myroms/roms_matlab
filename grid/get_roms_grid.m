@@ -78,7 +78,7 @@ function Gout = get_roms_grid(Ginp, Sinp, Tindex)
 
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2025 The ROMS Group                                 %
+%  Copyright (c) 2002-2026 The ROMS Group                                 %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.md                            Hernan G. Arango      %
 %=========================================================================%
@@ -259,6 +259,7 @@ else
   got.zeta           = false;
   got.lon_coast      = any(strcmp(vnames,'lon_coast'));
   got.lat_coast      = any(strcmp(vnames,'lat_coast'));
+  got.wtype_grid     = any(strcmp(vnames,'wtype_grid'));
 
   for var = varlist
     field = char(var);
@@ -652,6 +653,12 @@ if (process.horizontal)
   if (got.lon_coast)
     Gout.lon_coast = nc_read(Ginp,'lon_coast');
     Gout.lat_coast = nc_read(Ginp,'lat_coast');
+  end
+
+% If available, process Jerlov water type index.
+
+  if (got.wtype_grid)
+    Gout.wtype_grid = nc_read(Ginp,'wtype_grid');
   end
 
 end

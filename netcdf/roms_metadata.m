@@ -49,7 +49,7 @@ function V = roms_metadata(Vname,varargin)
 %
 % svn $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2025 The ROMS Group                                 %
+%  Copyright (c) 2002-2026 The ROMS Group                                 %
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMVariables.txt                   Hernan G. Arango      %
 %=========================================================================%
@@ -87,11 +87,11 @@ end
 %==========================================================================
 
 switch Vname
- 
+
 %--------------------------------------------------------------------------
 %  Grid variables.
 %--------------------------------------------------------------------------
- 
+
  case 'spherical'
     V.Name                    = Vname;
     V.Dimensions              = [];
@@ -287,7 +287,7 @@ switch Vname
       V.Attributes(3).Value   = 'lon_rho lat_rho';
     else
       V.Attributes(3).Value   = 'x_rho y_rho';
-    end      
+    end
     V.Cgridtype.Name          = 'density point';
     V.Cgridtype.Value         = 1;
     V.Datatype                = 'double';
@@ -310,7 +310,7 @@ switch Vname
       V.Attributes(3).Value   = 'lon_rho lat_rho';
     else
       V.Attributes(3).Value   = 'x_rho y_rho';
-    end      
+    end
     V.Cgridtype.Name          = 'density point';
     V.Cgridtype.Value         = 1;
     V.Datatype                = 'double';
@@ -333,7 +333,7 @@ switch Vname
       V.Attributes(3).Value   = 'lon_rho lat_rho';
     else
       V.Attributes(3).Value   = 'x_rho y_rho';
-    end      
+    end
     V.Cgridtype.Name          = 'density point';
     V.Cgridtype.Value         = 1;
     V.Datatype                = 'double';
@@ -875,7 +875,7 @@ switch Vname
       V.Attributes(4).Value   = 'lon lat';
     else
       V.Attributes(4).Value   = 'x_rho y_rho';
-    end      
+    end
     V.Cgridtype.Name          = 'density point';
     V.Cgridtype.Value         = 1;
     V.Datatype                = 'double';
@@ -900,7 +900,7 @@ switch Vname
       V.Attributes(4).Value   = 'lon_rho lat_rho';
     else
       V.Attributes(4).Value   = 'x_rho y_rho';
-    end      
+    end
     V.Cgridtype.Name          = 'density point';
     V.Cgridtype.Value         = 1;
     V.Datatype                = 'double';
@@ -925,7 +925,7 @@ switch Vname
       V.Attributes(4).Value   = 'lon_psi lat_psi';
     else
       V.Attributes(4).Value   = 'x_psi y_psi';
-    end      
+    end
     V.Cgridtype.Name          = 'streamfunction point';
     V.Cgridtype.Value         = 2;
     V.Datatype                = 'double';
@@ -950,7 +950,7 @@ switch Vname
       V.Attributes(4).Value   = 'lon_u lat_u';
     else
       V.Attributes(4).Value   = 'x_u y_u';
-    end      
+    end
     V.Cgridtype.Name          = 'u-velocity point';
     V.Cgridtype.Value         = 3;
     V.Datatype                = 'double';
@@ -975,7 +975,7 @@ switch Vname
       V.Attributes(4).Value   = 'lon_v lat_v';
     else
       V.Attributes(4).Value   = 'x_v y_v';
-    end      
+    end
     V.Cgridtype.Name          = 'v-velocity point';
     V.Cgridtype.Value         = 4;
     V.Datatype                = 'double';
@@ -998,7 +998,7 @@ switch Vname
       V.Attributes(3).Value   = 'lon_rho lat_rho';
     else
       V.Attributes(3).Value   = 'x_rho y_rho';
-    end      
+    end
     V.Cgridtype.Name          = 'density point';
     V.Cgridtype.Value         = 1;
     V.Datatype                = 'double';
@@ -1021,7 +1021,7 @@ switch Vname
       V.Attributes(3).Value   = 'lon_rho lat_rho';
     else
       V.Attributes(3).Value   = 'x_rho y_rho';
-    end      
+    end
     V.Cgridtype.Name          = 'density point';
     V.Cgridtype.Value         = 1;
     V.Datatype                = 'double';
@@ -1044,7 +1044,7 @@ switch Vname
       V.Attributes(3).Value   = 'lon_rho lat_rho';
     else
       V.Attributes(3).Value   = 'x_rho y_rho';
-    end      
+    end
     V.Cgridtype.Name          = 'density point';
     V.Cgridtype.Value         = 1;
     V.Datatype                = 'double';
@@ -1065,7 +1065,28 @@ switch Vname
       V.Attributes(2).Value   = 'lon_rho lat_rho';
     else
       V.Attributes(2).Value   = 'x_rho y_rho';
-    end      
+    end
+    V.Cgridtype.Name          = 'density point';
+    V.Cgridtype.Value         = 1;
+    V.Datatype                = 'double';
+    V.ncType                  = nc_constant('nc_double');
+  case 'wtype_grid'
+    V.Name                    = Vname;
+    V.Dimensions(1).Name      = 'xi_rho';
+    V.Dimensions(1).Length    = [];
+    V.Dimensions(1).Unlimited = false;
+    V.Dimensions(2).Name      = 'eta_rho';
+    V.Dimensions(2).Length    = [];
+    V.Dimensions(2).Unlimited = false;
+    V.Size                    = [];
+    V.Attributes(1).Name      = 'long_name';
+    V.Attributes(1).Value     = 'Jerlov water type index';
+    V.Attributes(2).Name      = 'coordinates';
+    if (spherical),
+      V.Attributes(2).Value   = 'lon_rho lat_rho';
+    else
+      V.Attributes(2).Value   = 'x_rho y_rho';
+    end
     V.Cgridtype.Name          = 'density point';
     V.Cgridtype.Value         = 1;
     V.Datatype                = 'double';
@@ -1088,12 +1109,12 @@ switch Vname
       V.Attributes(3).Value   = 'lon_rho lat_rho';
     else
       V.Attributes(3).Value   = 'x_rho y_rho';
-    end      
+    end
     V.Cgridtype.Name          = 'density point';
     V.Cgridtype.Value         = 1;
     V.Datatype                = 'double';
     V.ncType                  = nc_constant('nc_double');
-    
+
 %--------------------------------------------------------------------------
 %  Boundary conditions grid variables.
 %--------------------------------------------------------------------------
@@ -2181,7 +2202,7 @@ switch Vname
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
     V.ncType                  = nc_constant(nctype);
-    
+
 %--------------------------------------------------------------------------
 %  Wind-induced waves forcing variables.
 %--------------------------------------------------------------------------
@@ -2450,7 +2471,7 @@ switch Vname
     V.Cgridtype.Value         = 0;
     V.Datatype                = 'double';
     V.ncType                  = nc_constant('nc_double');
-    
+
 %--------------------------------------------------------------------------
 %  Tidal forcing variables.
 %--------------------------------------------------------------------------
@@ -2629,7 +2650,7 @@ switch Vname
 %--------------------------------------------------------------------------
 %  River runoff.
 %--------------------------------------------------------------------------
- 
+
   case 'river_time'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'river_time';
@@ -2837,7 +2858,7 @@ switch Vname
     V.Cgridtype.Name          = 'w-velocity point';
     V.Cgridtype.Value         = 5;
     V.Datatype                = Datatype;
-    V.ncType                  = nc_constant(nctype); 
+    V.ncType                  = nc_constant(nctype);
   case 'AKt'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_rho';
@@ -2868,7 +2889,7 @@ switch Vname
     V.Cgridtype.Name          = 'w-velocity point';
     V.Cgridtype.Value         = 5;
     V.Datatype                = Datatype;
-    V.ncType                  = nc_constant(nctype); 
+    V.ncType                  = nc_constant(nctype);
   case 'AKv'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_rho';
@@ -2899,7 +2920,7 @@ switch Vname
     V.Cgridtype.Name          = 'w-velocity point';
     V.Cgridtype.Value         = 5;
     V.Datatype                = Datatype;
-    V.ncType                  = nc_constant(nctype); 
+    V.ncType                  = nc_constant(nctype);
   case 'rho'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_rho';
@@ -2930,7 +2951,7 @@ switch Vname
     V.Cgridtype.Name          = 'density point';
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
-    V.ncType                  = nc_constant(nctype); 
+    V.ncType                  = nc_constant(nctype);
   case 'omega'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_rho';
@@ -2961,7 +2982,7 @@ switch Vname
     V.Cgridtype.Name          = 'w-velocity point';
     V.Cgridtype.Value         = 5;
     V.Datatype                = Datatype;
-    V.ncType                  = nc_constant(nctype); 
+    V.ncType                  = nc_constant(nctype);
   case 'temp'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_rho';
@@ -2992,7 +3013,7 @@ switch Vname
     V.Cgridtype.Name          = 'density point';
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
-    V.ncType                  = nc_constant(nctype); 
+    V.ncType                  = nc_constant(nctype);
   case 'salt'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_rho';
@@ -3021,7 +3042,7 @@ switch Vname
     V.Cgridtype.Name          = 'density point';
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
-    V.ncType                  = nc_constant(nctype); 
+    V.ncType                  = nc_constant(nctype);
   case 'u'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_u';
@@ -3052,7 +3073,7 @@ switch Vname
     V.Cgridtype.Name          = 'u-velocity point';
     V.Cgridtype.Value         = 3;
     V.Datatype                = Datatype;
-    V.ncType                  = nc_constant(nctype); 
+    V.ncType                  = nc_constant(nctype);
   case 'ubar'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_u';
@@ -3111,7 +3132,7 @@ switch Vname
     V.Cgridtype.Name          = 'density point';
     V.Cgridtype.Value         = 3;
     V.Datatype                = Datatype;
-    V.ncType                  = nc_constant(nctype); 
+    V.ncType                  = nc_constant(nctype);
   case 'v'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_v';
@@ -3142,7 +3163,7 @@ switch Vname
     V.Cgridtype.Name          = 'v-velocity point';
     V.Cgridtype.Value         = 4;
     V.Datatype                = Datatype;
-    V.ncType                  = nc_constant(nctype); 
+    V.ncType                  = nc_constant(nctype);
   case 'vbar'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_v';
@@ -3201,7 +3222,7 @@ switch Vname
     V.Cgridtype.Name          = 'density point';
     V.Cgridtype.Value         = 3;
     V.Datatype                = Datatype;
-    V.ncType                  = nc_constant(nctype); 
+    V.ncType                  = nc_constant(nctype);
   case 'w'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_rho';
@@ -3232,7 +3253,7 @@ switch Vname
     V.Cgridtype.Name          = 'w-velocity point';
     V.Cgridtype.Value         = 5;
     V.Datatype                = Datatype;
-    V.ncType                  = nc_constant(nctype); 
+    V.ncType                  = nc_constant(nctype);
   case 'zeta'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_rho';
@@ -3309,7 +3330,7 @@ switch Vname
     V.Cgridtype.Name          = 'density point';
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
-    V.ncType                  = nc_constant(nctype); 
+    V.ncType                  = nc_constant(nctype);
   case 'temp_east'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'eta_rho';
@@ -3338,7 +3359,7 @@ switch Vname
     V.Cgridtype.Name          = 'density point';
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
-    V.ncType                  = nc_constant(nctype); 
+    V.ncType                  = nc_constant(nctype);
   case 'temp_south'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_rho';
@@ -3367,7 +3388,7 @@ switch Vname
     V.Cgridtype.Name          = 'density point';
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
-    V.ncType                  = nc_constant(nctype); 
+    V.ncType                  = nc_constant(nctype);
   case 'temp_north'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_rho';
@@ -4011,7 +4032,7 @@ switch Vname
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
     V.ncType                  = nc_constant(nctype);
-    
+
 %--------------------------------------------------------------------------
 %  Biology state variables.
 %--------------------------------------------------------------------------
@@ -4170,7 +4191,7 @@ switch Vname
     V.Cgridtype.Name          = 'density point';
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
-    V.ncType                  = nc_constant(nctype); 
+    V.ncType                  = nc_constant(nctype);
   case 'iron'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_rho';
@@ -4387,7 +4408,7 @@ switch Vname
     V.Cgridtype.Name          = 'density point';
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
-    V.ncType                  = nc_constant(nctype); 
+    V.ncType                  = nc_constant(nctype);
   case 'NO3'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_rho';
@@ -4418,7 +4439,7 @@ switch Vname
     V.Cgridtype.Name          = 'density point';
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
-    V.ncType                  = nc_constant(nctype); 
+    V.ncType                  = nc_constant(nctype);
   case 'opal'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_rho';
@@ -4449,7 +4470,7 @@ switch Vname
     V.Cgridtype.Name          = 'density point';
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
-    V.ncType                  = nc_constant(nctype); 
+    V.ncType                  = nc_constant(nctype);
   case 'oxygen'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_rho';
@@ -4573,7 +4594,7 @@ switch Vname
     V.Cgridtype.Name          = 'density point';
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
-    V.ncType                  = nc_constant(nctype); 
+    V.ncType                  = nc_constant(nctype);
   case 'Pzooplankton'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_rho';
@@ -4697,7 +4718,7 @@ switch Vname
     V.Cgridtype.Name          = 'density point';
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
-    V.ncType                  = nc_constant(nctype); 
+    V.ncType                  = nc_constant(nctype);
   case 'zooplankton'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_rho';
@@ -4763,8 +4784,8 @@ switch Vname
 
 %--------------------------------------------------------------------------
 %  Inert passive tracer variables.
-%--------------------------------------------------------------------------   
-  
+%--------------------------------------------------------------------------
+
   case {'dye_01', 'dye_02', 'dye_03', 'dye_04',                         ...
         'dye_05', 'dye_06', 'dye_07', 'dye_08'}
     class = textscan(Vname, 'dye_ %d');
@@ -4799,7 +4820,7 @@ switch Vname
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
     V.ncType                  = nc_constant(nctype);
-       
+
 %--------------------------------------------------------------------------
 %  Seaice state variables.
 %--------------------------------------------------------------------------
@@ -4890,7 +4911,7 @@ switch Vname
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
     V.ncType                  = nc_constant(nctype);
-    
+
 %--------------------------------------------------------------------------
 %  Sediment state variables.
 %--------------------------------------------------------------------------
@@ -5020,7 +5041,7 @@ switch Vname
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
     V.ncType                  = nc_constant(nctype);
- 
+
   case 'erosion_stress'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_rho';
@@ -5107,7 +5128,7 @@ switch Vname
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
     V.ncType                  = nc_constant(nctype);
-   
+
   case {'mud_01', 'mud_02', 'mud_03', 'mud_04',                         ...
         'mud_05', 'mud_06', 'mud_07', 'mud_08'}
     class = textscan(Vname, 'mud_ %d');
@@ -5271,7 +5292,7 @@ switch Vname
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
     V.ncType                  = nc_constant(nctype);
-    
+
   case {'sand_01', 'sand_02', 'sand_03', 'sand_04',                     ...
         'sand_05', 'sand_06', 'sand_07', 'sand_08'}
     class = textscan(Vname, 'sand_ %d');
@@ -5406,7 +5427,7 @@ switch Vname
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
     V.ncType                  = nc_constant(nctype);
-    
+
 %--------------------------------------------------------------------------
 %  Inverse nudging time scales.
 %--------------------------------------------------------------------------
@@ -5434,7 +5455,7 @@ switch Vname
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
     V.ncType                  = nc_constant(nctype);
- 
+
  case 'M3_NudgeCoef'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_rho';
@@ -5461,7 +5482,7 @@ switch Vname
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
     V.ncType                  = nc_constant(nctype);
- 
+
  case 'tracer_NudgeCoef'
     V.Name                    = Vname;
     V.Dimensions(1).Name      = 'xi_rho';
@@ -5488,11 +5509,11 @@ switch Vname
     V.Cgridtype.Value         = 1;
     V.Datatype                = Datatype;
     V.ncType                  = nc_constant(nctype);
- 
+
  case {'temp_NudgeCoef',    'salt_NudgeCoef',                          ...
         'DON_NudgeCoef',     'iron_NudgeCoef',    'NO3_NudgeCoef',      ...
         'opal_NudgeCoef',    'PON_NudgeCoef',     'SiOH4_NudgeCoef',    ...
-        'TIC_NudgeCoef',                                                ...    
+        'TIC_NudgeCoef',                                                ...
         'mud_01_NudgeCoef',  'mud_02_NudgeCoef',  'mud_03_NudgeCoef',   ...
         'mud_04_NudgeCoef',  'mud_05_NudgeCoef',  'mud_06_NudgeCoef',   ...
         'mud_07_NudgeCoef',  'mud_08_NudgeCoef',                        ...

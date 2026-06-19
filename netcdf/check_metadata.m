@@ -25,17 +25,17 @@ function S = check_metadata(Sinp)
 %    S          Updated ROMS metadata structure (struct array)
 %
 
-% svn $Id$
+% git $Id$
 %=========================================================================%
-%  Copyright (c) 2002-2025 The ROMS Group                                 %
+%  Copyright (c) 2002-2026 The ROMS Group                                 %
 %    Licensed under a MIT/X style license                                 %
-%    See License_ROMVariables.txt                   Hernan G. Arango      %
+%    See License_ROMS.md                            Hernan G. Arango      %
 %=========================================================================%
 
 if (~isstruct(Sinp))
   error('CHECK_METADATA: input argument ''Sinp'' is not a structure');
 end
-  
+
 % Initialize output structure.
 
 S = Sinp;
@@ -49,10 +49,10 @@ nvars = length(S.Variables);
 for n=1:nvars
 
 % Fill variable dimension(s) length and variable size.
-  
+
   nvdims = length(S.Variables(n).Dimensions);
   vsize  = [];
-  
+
   for i=1:nvdims
     dname   = char(S.Variables(n).Dimensions(i).Name);
     dindex  = strcmp({S.Dimensions.Name}, dname);
@@ -74,7 +74,7 @@ for n=1:nvars
     if (RenameDim)
       foundit = false;
       if (strcmp(dname, 'ocean_time'))
-	    dindex = strfind({S.Dimensions.Name}, 'time');
+        dindex = strfind({S.Dimensions.Name}, 'time');
         dindex = ~cellfun(@isempty, dindex);
         if (any(dindex))
           dname = S.Dimensions(dindex).Name;
@@ -87,14 +87,14 @@ for n=1:nvars
         error(['CHECK_METADATA: dimension "',dname,'" is not ',         ...
                'available for variable "', char(S.Variables(n).Name),'"']);
       end
-    end     
-    
+    end
+
     Dcel{i} = dname;                                % horizontal cell array
 
     if (S.Variables(n).Dimensions(i).Unlimited)
       S.Variables(n).Dimensions(i).Length = 0;
       vsize = [vsize 0];
-    else      
+    else
       S.Variables(n).Dimensions(i).Length = dsize;
       vsize = [vsize dsize];
     end
@@ -133,7 +133,7 @@ for n=1:nvars
        S.Variables(n).Attributes(iatt).Value = char(Dcel{end});
      end
    end
-   
-end  
-  
+
+end
+
 return
