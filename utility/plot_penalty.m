@@ -265,12 +265,14 @@ if (LogScale)
        'LineStyle','--','Color',[0 0 0],'LineWidth',2);
 
   if (isfield(J,'NL'))
-    hnl=plot(Niter,log10(J.NL(1,end)+J.b(end)),'kd','MarkerSize',8);
+    Jnl=J.NL(1,end)+J.b(end);
+    hnl=plot(Niter,log10(Jnl),'kd','MarkerSize',8);
         set(hnl, 'markerfacecolor', 'm')
   end
 
   if (got_overlay && isfield(J2,'NL'))
-    hnl2=plot(Niter,log10(J2.NL(1,end)+JB2(end)),'kp','MarkerSize',8);
+    Jnl2=J2.NL(1,end)+J2.b(end);
+    hnl2=plot(Niter,log10(Jnl2),'kp','MarkerSize',8);
     set(hnl2, 'markerfacecolor', Corchid1)
   end
   
@@ -299,7 +301,8 @@ else
        'LineStyle','--','Color',[0 0 0],'LineWidth',2);
 
   if (isfield(J,'NL'))
-    hnl=plot(Niter,J.NL(1,end)+J.b(end),'kd','MarkerSize',8);
+    Jnl=J.NL(1,end)+J.b(end);
+    hnl=plot(Niter,Jnl,'kd','MarkerSize',8);
         set(hnl, 'markerfacecolor', 'm')
   end
   if (isfield(J,'RP'))

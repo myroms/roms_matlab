@@ -13,21 +13,21 @@ function create_ioda_obs(S, file)
 %   group: MetaData {
 %     variables:
 %       int64 dateTime(Location) ;
-%       int64 dateTimeAverageBegin(timeWindow) ;
-%       int64 dateTimeAverageEnd(timeWindow) ;
-%       float depth(Location) ;
+%       int64 dateTimeAverageBegin(Location) ;     (optional)
+%       int64 dateTimeAverageEnd(Location) ;       (optional)
+%       float depth(Location) ;                    (3D control variable)
 %       float latitude(Location) ;
 %       float longitude(Location) ;
 %       int provenance(Location) ;
 %       int sequenceNumber(Location) ;
-%       float spatialAverage ;
+%       float spatialAverage(nvars) ;              (optional)
 %       int stateID(nvars);
-%       int surveyIndex(survey)  ;
-%       int64 surveyTime(survey)  ;
+%       int surveyIndex(nsurvey)  ;
+%       int64 surveyTime(nsurvey)  ;
 %       string variables_name(nvars) ;
 %       float x_grid(Location) ;
 %       float y_grid(Location) ;
-%       float z_grid(Location) ;
+%       float z_grid(Location) ;                   (3D control variable)
 %   }
 %
 %   group: ObsError {
@@ -50,6 +50,7 @@ function create_ioda_obs(S, file)
 %    S        Observations file creation parameters (struct):
 %
 %               S.ncfile            NetCDF file name (string)
+%               S.roms_grid         ROMS application [Lm, Mm, N] values 
 %               S.ncvname(:)        IODA NetCDF4 variable name
 %               S.nlocs             number of observations
 %               S.nsurvey           number of survey times
@@ -117,6 +118,11 @@ end
 % Initialize.
 %--------------------------------------------------------------------------
 
+% Set FillValues.
+
+Ispval = int64(-2147483643);
+Fspval = single(1.0e+37);
+
 % Get Matlab version.
 
 Mversion = version('-release');
@@ -141,6 +147,18 @@ nc_int    = netcdf.getConstant('nc_int');        % integer
 nc_int64  = netcdf.getConstant('nc_int64');      % 64-bit integer
 nc_real   = netcdf.getConstant('nc_float');      % floating-point
 nc_string = netcdf.getConstant('nc_string');     % string type Matlab 2022b
+
+% ROMS Application dimension parameters
+
+if (isfield(S, 'roms_grid'))
+  Lm = S.roms_grid(1);
+  Mm = S.roms_grid(2);
+  N  = S.roms_grid(3);
+else
+  Lm = [];
+  Mm = [];
+  N  = [];
+end
 
 % Control switches.
 
@@ -239,6 +257,9 @@ varid = netcdf.getConstant('nc_global');
 netcdf.putAtt(ncid, varid, '_ioda_layout', 'ObsGroup');
 netcdf.putAtt(ncid, varid, '_ioda_layout_version', int32(3));
 netcdf.putAtt(ncid, varid, 'odb_version', int32(1));
+if (~isempty(Lm))
+  netcdf.putAtt(ncid, varid, 'roms_grid', int32(S.roms_grid));
+end
 netcdf.putAtt(ncid, varid, 'date_time', S.TimeIODA);
 netcdf.putAtt(ncid, varid, 'datetimeReference', S.DateIODA);
 
@@ -261,18 +282,17 @@ for i = 1:length(D)
       D(i).vid = netcdf.defVar(ncid, Vname, nc_int, D(i).did);
       netcdf.putAtt(ncid, D(i).vid, 'suggested_chunck_dim',             ...
                     int32(512));
+      netcdf.putAtt(ncid, D(i).vid, '_FillValue', int32(-1));
     case 'nvars'
       D(i).vid = netcdf.defVar(ncid, Vname, nc_int, D(i).did);
       netcdf.putAtt(ncid, D(i).vid, 'suggested_chunck_dim',             ...
                     int32(100));
-    case 'survey'
+      netcdf.putAtt(ncid, D(i).vid, '_FillValue', int32(-1));
+   case 'survey'
       D(i).vid = netcdf.defVar(ncid, Vname, nc_int, D(i).did);
       netcdf.putAtt(ncid, D(i).vid, 'suggested_chunck_dim',             ...
                     int32(100));
-    case 'timeWindow'
-      D(i).vid = netcdf.defVar(ncid, Vname, nc_int, D(i).did);
-      netcdf.putAtt(ncid, D(i).vid, 'suggested_chunck_dim',             ...
-                    int32(100));
+      netcdf.putAtt(ncid, D(i).vid, '_FillValue', int32(-1));
   end
 end
 
@@ -331,7 +351,8 @@ for i = 1:length(G(Meta).vars)
       epoch  = datenum(num2str(S.datetime_ref),'yyyymmddHH');
       string = ['seconds since ' datestr(epoch, 'yyyy-mm-ddTHH:MM:SSZ')];
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'units', string);
-    case 'dateTimeAverageBegin'
+      netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), '_FillValue', Ispval);
+   case 'dateTimeAverageBegin'
       G(Meta).vid(i) = netcdf.defVar(G(Meta).gid, Vname, nc_int64,      ...
                                      D(nlocs).did);
       string = 'start of time averaging filter';
@@ -339,7 +360,10 @@ for i = 1:length(G(Meta).vars)
       epoch  = datenum(num2str(S.datetime_ref),'yyyymmddHH');
       string = ['seconds since ' datestr(epoch, 'yyyy-mm-ddTHH:MM:SSZ')];
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'units', string);
-    case 'dateTimeAverageEnd'
+      string = [num2str(S.average_window) '-hour half-length averaging'];
+      netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'filter', string); 
+      netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), '_FillValue', Ispval);
+   case 'dateTimeAverageEnd'
       G(Meta).vid(i) = netcdf.defVar(G(Meta).gid, Vname, nc_int64,      ...
                                      D(nlocs).did);
       string = 'end of time averaging filter';
@@ -347,26 +371,32 @@ for i = 1:length(G(Meta).vars)
       epoch  = datenum(num2str(S.datetime_ref),'yyyymmddHH');
       string = ['seconds since ' datestr(epoch, 'yyyy-mm-ddTHH:MM:SSZ')];
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'units', string);
-    case 'depth'
+      string = [num2str(S.average_window) '-hour half-length averaging'];
+      netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'filter', string); 
+      netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), '_FillValue', Ispval);
+   case 'depth'
       G(Meta).vid(i) = netcdf.defVar(G(Meta).gid, Vname, nc_real,       ...
                                      D(nlocs).did);
       string = 'observation depth below sea level';
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'long_name', string);
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'units', 'meter');
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'negative', 'downwards');
-    case 'latitude'
+      netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), '_FillValue', Fspval);
+   case 'latitude'
       G(Meta).vid(i) = netcdf.defVar(G(Meta).gid, Vname, nc_real,       ...
                                      D(nlocs).did);
       string = 'observation latitude';
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'long_name', string);
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'units', 'degrees_north');
-    case 'longitude'
+      netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), '_FillValue', Fspval);  
+   case 'longitude'
       G(Meta).vid(i) = netcdf.defVar(G(Meta).gid, Vname, nc_real,       ...
                                      D(nlocs).did);
       string = 'observation longitude';
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'long_name', string);
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'units', 'degrees_east');
-    case 'provenance'
+      netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), '_FillValue', Fspval); 
+   case 'provenance'
       G(Meta).vid(i) = netcdf.defVar(G(Meta).gid, Vname, nc_int,        ...
                                      D(nlocs).did);
       string = 'observation origin identifier';
@@ -381,14 +411,15 @@ for i = 1:length(G(Meta).vars)
         netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'flag_meanings',     ...
                       S.flag_meanings);
       end
-    case 'stateID'
+      netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), '_FillValue', int32(0));
+   case 'stateID'
       G(Meta).vid(i) = netcdf.defVar(G(Meta).gid, Vname, nc_int,        ...
                                      D(nvars).did);
       string = 'state variable index';
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'long_name', string);
-      if (surface_obs)
+      if (surface_obs && ~isempty(N))
         netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'surface_level',     ...
-                    int32(S.N));
+                    int32(N));
       end
 %     values = 1:7;
 %     netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'flag_values',         ...
@@ -396,17 +427,20 @@ for i = 1:length(G(Meta).vars)
 %     values = 'zeta ubar vbar u v temperature salinity';
 %     netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'flag_meanings',       ...
 %                   values);
-    case 'sequenceNumber'
+      netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), '_FillValue', int32(-1));
+   case 'sequenceNumber'
       G(Meta).vid(i) = netcdf.defVar(G(Meta).gid, Vname, nc_int,        ...
                                      D(nlocs).did);
       string = 'observation sequence number';
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'long_name', string);
+      netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), '_FillValue', int32(-1));
     case 'spatialAverage'
       G(Meta).vid(i) = netcdf.defVar(G(Meta).gid, Vname, nc_real,       ...
                                      D(nvars).did);
-      string = 'half-length of spatial averaging filter';
+      string = 'spatial averaging radius';
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'long_name', string);
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'units', 'meter');
+      netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), '_FillValue', Fspval);  
     case 'surveyTime'
       G(Meta).vid(i) = netcdf.defVar(G(Meta).gid, Vname, nc_int64,      ...
                                      D(nsurv).did);
@@ -415,17 +449,19 @@ for i = 1:length(G(Meta).vars)
       epoch  = datenum(num2str(S.datetime_ref),'yyyymmddHH');
       string = ['seconds since ' datestr(epoch, 'yyyy-mm-ddTHH:MM:SSZ')];
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'units', string);
-    case 'surveyIndex'
+      netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), '_FillValue', Ispval);
+   case 'surveyIndex'
       G(Meta).vid(i) = netcdf.defVar(G(Meta).gid, Vname, nc_int,        ...
                                      D(nsurv).did);
       string = 'observation survey time indices as they appear in dateTime';
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'long_name', string);
+      netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), '_FillValue', int32(-1));
     case 'variables_name'
       G(Meta).vid(i) = netcdf.defVar(G(Meta).gid, Vname, nc_string,     ...
                                      D(nvars).did);
       string = 'observation UFO/IODA standard name';
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'long_name', string);
-      string = blanks(0);
+      string = 'MISSING';
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), '_FillValue', string,  ...
                     nc_string);
     case 'x_grid'
@@ -433,16 +469,31 @@ for i = 1:length(G(Meta).vars)
                                      D(nlocs).did);
       string = 'observation fractional x-grid location';
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'long_name', string);
+      if (~isempty(Lm))
+        netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'valid_min', 0.5);
+        netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'valid_max', Lm+0.5);
+      end
+      netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), '_FillValue', Fspval); 
     case 'y_grid'
       G(Meta).vid(i) = netcdf.defVar(G(Meta).gid, Vname, nc_real,       ...
                                      D(nlocs).did);
       string = 'observation fractional y-grid location';
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'long_name', string);
+      if (~isempty(Mm))
+        netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'valid_min', 0.5);
+        netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'valid_max', Mm+0.5);
+      end
+      netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), '_FillValue', Fspval); 
     case 'z_grid'
       G(Meta).vid(i) = netcdf.defVar(G(Meta).gid, Vname, nc_real,       ...
                                      D(nlocs).did);
       string = 'observation fractional z-grid location';
       netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'long_name', string);
+      if (~isempty(Lm))
+        netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'valid_min', single(1));
+        netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), 'valid_max', single(N));
+      end
+      netcdf.putAtt(G(Meta).gid, G(Meta).vid(i), '_FillValue', Fspval); 
   end
 end
 
@@ -466,6 +517,7 @@ for i = 1:S.nvars
     string = 'longitude, latitude, dateTime';
   end
   netcdf.putAtt(G(ObsE).gid, G(ObsE).vid(i), 'coordinates', string);
+  netcdf.putAtt(G(ObsE).gid, G(ObsE).vid(i), '_FillValue', Fspval);
 end
 
 %--------------------------------------------------------------------------
@@ -493,6 +545,7 @@ for i = 1:S.nvars
     string = 'longitude, latitude, dateTime';
   end
   netcdf.putAtt(G(ObsV).gid, G(ObsV).vid(i), 'coordinates', string);
+  netcdf.putAtt(G(ObsV).gid, G(ObsV).vid(i), '_FillValue', Fspval);
 end
 
 %--------------------------------------------------------------------------
@@ -511,6 +564,7 @@ for i = 1:S.nvars
     string = 'longitude, latitude, dateTime';
   end
   netcdf.putAtt(G(PreQ).gid, G(PreQ).vid(i), 'coordinates', string);
+  netcdf.putAtt(G(PreQ).gid, G(PreQ).vid(i), '_FillValue', int32(-1));
 end
 
 %--------------------------------------------------------------------------
