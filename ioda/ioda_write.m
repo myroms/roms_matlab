@@ -95,7 +95,9 @@ if (isfield(S, 'y_grid'))
 end
 
 if (isfield(S, 'z_grid'))
-  ncwrite(ncfile, 'MetaData/z_grid', S.z_grid);
+  if (~isempty(S.z_grid))
+    ncwrite(ncfile, 'MetaData/z_grid', S.z_grid);
+  end
 end
   
 %------------------------------------------------------------------------

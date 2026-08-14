@@ -100,8 +100,9 @@ S.nsurvey = I.Dimensions(strcmp({I.Dimensions.Name}, 'survey'    )).Length;
 
 S.TimeIODA = I.Attributes(strcmp({I.Attributes.Name}, 'date_time')).Value;
 S.DateIODA = I.Attributes(strcmp({I.Attributes.Name}, 'datetimeReference')).Value;
-S.source   = I.Attributes(strcmp({I.Attributes.Name}, 'sourceFiles')).Value;
-
+if (any(strcmp({I.Attributes.Name}, 'sourceFiles')))
+  S.source   = I.Attributes(strcmp({I.Attributes.Name}, 'sourceFiles')).Value;
+end
 S.datenum  = datenum(num2str(S.TimeIODA), 'yyyymmddHH');
 S.datetime_ref = S.TimeIODA;
 

@@ -266,7 +266,9 @@ netcdf.putAtt(ncid, varid, 'datetimeReference', S.DateIODA);
 string='Native ROMS 4D-Var observations file converted to IODA';
 netcdf.putAtt(ncid, varid, 'description', string);
 
-netcdf.putAtt(ncid, varid, 'sourceFiles',  S.source);
+if (~isempty(S.source))
+  netcdf.putAtt(ncid, varid, 'sourceFiles',  S.source);
+end
 
 history=['Created from Matlab script: ', mfilename, ' on ', date_stamp];
 netcdf.putAtt(ncid, varid, 'history', history);

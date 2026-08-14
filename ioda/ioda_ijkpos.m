@@ -218,63 +218,69 @@ end
 %  Vertical interpolation for depth to fractional k-levels.
 %------------------------------------------------------------------------
 
-Nobs = Obs.nlocs;
+Z = [];
 
-Xmin = 0.5;
-Xmax = Im-0.5;
-Ymin = 0.5;
-Ymax = Jm-0.5;
+if (isfield(Obs, 'depth'))
+  
+  Nobs = Obs.nlocs;
 
-Z = nan(size(Obs.longitude));
+  Xmin = 0.5;
+  Xmax = Im-0.5;
+  Ymin = 0.5;
+  Ymax = Jm-0.5;
 
-for n=1:Nobs
-  if (~isnan(X(n)) || ~isnan(Y(n)))
-    if (((Xmin <= X(n)) && (X(n) < Xmax)) &&                          ...
-        ((Ymin <= Y(n)) && (Y(n) < Ymax)))
-      i1=fix(X(n));
-      j1=fix(Y(n));
-      i2=i1+1;
-      j2=j1+1;
-      if (i2 > Im)
-        i2=i1;                     % observation at the eastern boundary
-      end
-      if (j2 > Jm)
-        i2=i1;                     % observation at the eastern boundary
-      end
-      p2=(i2-i1)*(X(n)-i1);
-      q2=(j2-j1)*(Y(n)-j1);
-      p1=1-p2;
-      q1=1-q2;
-      w11=p1*q1;
-      w21=p2*q1;
-      w22=p2*q2;
-      w12=p1*q2;
-      if (Obs.depth(n) < 0)
-        ztop=G.z_r(i1,j1,G.N);
-        zbot=G.z_r(i1,j1,1  );
-        if (Obs.depth(n) >= ztop)             % if shallower, set to
-          Z(n)=G.N;                           % surface level
-        elseif (zbot >= Obs.depth(n))         % if deeper, set to
-          Z(n)=1;                             % bottom level
-        else
-          for k=G.N:-1:2                      % Othewise interpolate
-            ztop=G.z_r(i1,j1,k  );            % to fractional level
-            xbot=G.z_r(i1,j1,k-1);
-            if ((ztop > Obs.depth(n)) && (Obs.depth(n) >= zbot))
-              k1=k-1;
-              k2=k;
-            end
-          end
-          dz=G.z_r(i1,j1,k2)-G.z_r(i1,j1,k1);
-          r2=(Obs.depth(n)-G.z_r(i1,j1,k1))/dz;
-          r1=1.0-r2;
-          Z(n)=k1+r2; 
+  Z = nan(size(Obs.longitude));
+
+  for n=1:Nobs
+    if (~isnan(X(n)) || ~isnan(Y(n)))
+      if (((Xmin <= X(n)) && (X(n) < Xmax)) &&                          ...
+          ((Ymin <= Y(n)) && (Y(n) < Ymax)))
+        i1=fix(X(n));
+        j1=fix(Y(n));
+        i2=i1+1;
+        j2=j1+1;
+        if (i2 > Im)
+          i2=i1;                   % observation at the eastern boundary
         end
+        if (j2 > Jm)
+          i2=i1;                   % observation at the eastern boundary
+        end
+        p2=(i2-i1)*(X(n)-i1);
+        q2=(j2-j1)*(Y(n)-j1);
+        p1=1-p2;
+        q1=1-q2;
+        w11=p1*q1;
+        w21=p2*q1;
+        w22=p2*q2;
+        w12=p1*q2;
+        if (Obs.depth(n) < 0)
+          ztop=G.z_r(i1,j1,G.N);
+          zbot=G.z_r(i1,j1,1  );
+          if (Obs.depth(n) >= ztop)           % if shallower, set to
+            Z(n)=G.N;                         % surface level
+          elseif (zbot >= Obs.depth(n))       % if deeper, set to
+            Z(n)=1;                           % bottom level
+          else
+            for k=G.N:-1:2                    % Othewise interpolate
+              ztop=G.z_r(i1,j1,k  );          % to fractional level
+              xbot=G.z_r(i1,j1,k-1);
+              if ((ztop > Obs.depth(n)) && (Obs.depth(n) >= zbot))
+                k1=k-1;
+                k2=k;
+              end
+            end
+            dz=G.z_r(i1,j1,k2)-G.z_r(i1,j1,k1);
+            r2=(Obs.depth(n)-G.z_r(i1,j1,k1))/dz;
+            r1=1.0-r2;
+            Z(n)=k1+r2; 
+          end
+        end
+      else
+        Z(n)=NaN;
       end
-    else
-      Z(n)=NaN;
-    end
-  end  
+    end  
+  end
+
 end
 
 %------------------------------------------------------------------------
