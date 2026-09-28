@@ -127,6 +127,8 @@ else
       Cmap = cm_delta(512);
     case 'Hair'
       Cmap = cm_delta(512);
+    case 'h'
+      Cmap = flipud(mpl_amwg256);
     otherwise
       Cmap = cmap('R1');
   end
@@ -232,8 +234,8 @@ end
 
 if (isfield(P, 'shading'))
   switch (P.shading)
-    case 'faceted'
-      shading faceted;
+    case 'facetted'
+      shading facetted;
     case 'flat'
       shading flat;
     case 'interp'

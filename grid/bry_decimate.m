@@ -1,15 +1,15 @@
-function S = grid_decimate(Gfactor, Iname, Oname, varargin)
+function S = bry_decimate(Gfactor, Ginp, Iname, Oname, varargin)
 
 %
-% GRID_DECIMATE:  Decimates a ROMS file into a coarser file
+% BRY_DECIMATE:  Decimates a ROMS boundary file into a coarser file
 %
-% S = grid_decimate(Gfactor, Iname, Oname, Lplot, Gout)
+% S = bry_decimate(Gfactor, Gname, Iname, Oname, Lplot, Gout)
 %
-% Given a fine-resolution ROMS solution NetCDF file (Iname), this
+% Given a fine-resolution ROMS boundary NetCDF file (Iname), this
 % function creates a coarser-resolution file (Oname) by decimating
-% the finer VARIABLES by the specified factor (Gfactor). To ensure
-% that both fine and coarse grids at RHO points coincide at the
-% domain boundary, we need:
+% the finer boundary VARIABLES by the specified factor (Gfactor).
+% To ensure that both fine and coarse grids at RHO points coincide at
+% the domain boundary, we need:
 %
 %   The number fine RHO-grid points (0:L, 0:M) must be multiples
 %   of Gfactor
@@ -28,9 +28,12 @@ function S = grid_decimate(Gfactor, Iname, Oname, varargin)
 %
 %    Gfactor    Grid decimation factor (only 2,3,4 are supported)
 %
-%    Iname      Input  finer   NetCDF filename (string)
+%    Ginp       Input  finer   Grid NetCDF filename (string)
+%            or Grid structure (struct)
 %
-%    Oname      Output coarser NetCDF filename (string)
+%    Iname      Input  finer   boundary NetCDF filename (string)
+%
+%    Oname      Output coarser boundary NetCDF filename (string)
 %
 %    Lplot      Switch to plot grid decimation diagram (logical)
 %
@@ -41,7 +44,7 @@ function S = grid_decimate(Gfactor, Iname, Oname, varargin)
 %    S          Coaser resolution NetCDF structure
 %
 
-% svn $Id$
+% git $Id$
 %=======================================================================%
 %  Copyright (c) 2002-2026 The ROMS Group                               %
 %    Licensed under a MIT/X style license                               %
@@ -78,21 +81,24 @@ S = [];
 
 legal = Gfactor > 1 && Gfactor < 5;
 if (~any(legal))
-  error([' GRID_DECIMATE: illegal decimation factor, Gfactor = ',     ...
+  error([' BRY_DECIMATE: illegal decimation factor, Gfactor = ',      ...
          num2str(Gfactor)]);
 end
 
 % If applicable, get finer grid and variable structures.
 
-I = nc_inq(Iname);
+if (~isstruct(Ginp))
+  F = get_roms_grid(Ginp);
+else
+  F = Ginp;
+end
 
-Lp = I.Dimensions(strcmp({I.Dimensions.Name},'xi_rho' )).Length;
-Mp = I.Dimensions(strcmp({I.Dimensions.Name},'eta_rho')).Length;
+% Set data sampling indices (PSI-points).
+
+[Lp,Mp] = size(F.h);
 
 L = Lp-1;
 M = Mp-1;
-
-spherical = any(strcmp({I.Variables.Name},'spherical'));
 
 % Check if both number of grid point are even or odd.
 
@@ -100,14 +106,14 @@ Imultiple = rem(L, Gfactor) == 0;
 Jmultiple = rem(M, Gfactor) == 0;
 
 if (~Imultiple)
-  error([' DECIMATE: The number grid-points in the X-direction, ',    ...
+  error([' BRY_DECIMATE: The number grid-points in the X-direction, ',...
          ' L = ', num2str(L), ' must be multiple Gfactor = ',         ...
          num2str(Gfactor), ', rem(L, Gfactor) = ',                    ...
          num2str(rem(L,Gfactor))]);
 end
 
 if (~Jmultiple)
-  error([' DECIMATE: The number grid-points in the X-direction, ',    ...
+  error([' BRY_DECIMATE: The number grid-points in the X-direction, ',...
          ' L = ', num2str(M), ' must be multiple Gfactor = ',         ...
          num2str(Gfactor), ', rem(M, Gfactor) = ',                    ...
          num2str(rem(M,Gfactor))]);
@@ -153,14 +159,14 @@ if (Lplot)
   Jstr = 1;  Jend = M;
 
   XboxF = [squeeze(XpF(Istr:Iend,Jstr));                            ...
-           squeeze(XpF(Iend,Jstr+1:Jend))';                         ...
-           squeeze(flipud(XpF(Istr:Iend-1,Jend)));                  ...
-           squeeze(fliplr(XpF(Istr,Jstr:Jend-1)))'];
+          squeeze(XpF(Iend,Jstr+1:Jend))';                          ...
+          squeeze(flipud(XpF(Istr:Iend-1,Jend)));                   ...
+          squeeze(fliplr(XpF(Istr,Jstr:Jend-1)))'];
 
   YboxF = [squeeze(YpF(Istr:Iend,Jstr));                            ...
-           squeeze(YpF(Iend,Jstr+1:Jend))';                         ...
-           squeeze(flipud(YpF(Istr:Iend-1,Jend)));                  ...
-           squeeze(fliplr(YpF(Istr,Jstr:Jend-1)))'];
+          squeeze(YpF(Iend,Jstr+1:Jend))';                          ...
+          squeeze(flipud(YpF(Istr:Iend-1,Jend)));                   ...
+          squeeze(fliplr(YpF(Istr,Jstr:Jend-1)))'];
 
 % Coarse grid physical boundary perimeter.
 
@@ -168,14 +174,14 @@ if (Lplot)
   Jstr = 1;  Jend = Jm-1;
 
   XboxC = [squeeze(XpC(Istr:Iend,Jstr));                            ...
-           squeeze(XpC(Iend,Jstr+1:Jend))';                         ...
-           squeeze(flipud(XpC(Istr:Iend-1,Jend)));                  ...
-           squeeze(fliplr(XpC(Istr,Jstr:Jend-1)))'];
+          squeeze(XpC(Iend,Jstr+1:Jend))';                          ...
+          squeeze(flipud(XpC(Istr:Iend-1,Jend)));                   ...
+          squeeze(fliplr(XpC(Istr,Jstr:Jend-1)))'];
 
   YboxC = [squeeze(YpC(Istr:Iend,Jstr));                            ...
-           squeeze(YpC(Iend,Jstr+1:Jend))';                         ...
-           squeeze(flipud(YpC(Istr:Iend-1,Jend)));                  ...
-           squeeze(fliplr(YpC(Istr,Jstr:Jend-1)))'];
+          squeeze(YpC(Iend,Jstr+1:Jend))';                          ...
+          squeeze(flipud(YpC(Istr:Iend-1,Jend)));                   ...
+          squeeze(fliplr(YpC(Istr,Jstr:Jend-1)))'];
   
 % Grid makers colors: RHO, PSI, U, and V.
 
@@ -322,16 +328,6 @@ if (any(contains(dnames, 'xi_v')))
   C.Dimensions(strcmp({C.Dimensions.Name},'eta_v'  )).Length = length(Jv);
 end
   
-if (any(contains(dnames, 'IorJ')))
-  IorJ = max(Im,Jm);
-  obc  = C.Dimensions(strcmp({C.Dimensions.Name},'obc_adjust')).Length;
-  C.Dimensions(strcmp({C.Dimensions.Name},'IorJ'   )).Length = IorJ;
-end
-
-if (any(contains(dnames, 'frc_adjust')))
-  frc = C.Dimensions(strcmp({C.Dimensions.Name},'frc_adjust')).Length;
-end
-
 % Check number of vertical levels.
 
 Index = strcmp({C.Dimensions.Name},'s_rho');
@@ -351,14 +347,9 @@ if (any(Index))
   C.Dimensions(strcmp({C.Dimensions.Name}, RecDim)).Length = 0;
 else
   Index = contains({C.Dimensions.Name}, 'time');
-  if (any(Index))
-    RecDim = C.Dimensions(Index).Name;
-    Nrec = C.Dimensions(strcmp({C.Dimensions.Name}, RecDim)).Length;
-    C.Dimensions(strcmp({C.Dimensions.Name}, RecDim)).Length = 0;
-  else
-    RecDim = 'NONE';  
-    Nrec = 0;
-  end
+  RecDim = C.Dimensions(Index).Name;
+  Nrec = C.Dimensions(strcmp({C.Dimensions.Name}, RecDim)).Length;
+  C.Dimensions(strcmp({C.Dimensions.Name}, RecDim)).Length = 0;
 end
 
 % Report.
@@ -400,13 +391,21 @@ status = nc_attadd(Oname, 'history', history);
 if (status ~= 0), return, end
 
 %------------------------------------------------------------------------
-% Process field data.
+% Process boundary field data.
 %------------------------------------------------------------------------
 
-GridVars = {'h', 'f', 'pm', 'pn', 'angle',                            ...
-            'lon_rho', 'lat_rho', 'lon_psi', 'lat_psi',               ...
-            'lon_u', 'lat_u', 'lon_v', 'lat_v',                       ...
-            'mask_rho', 'mask_psi', 'mask_u', 'mask_v'};
+GridVars = {'lon_rho_west',  'lat_rho_west',                          ...
+            'lon_rho_east',  'lat_rho_east',                          ...
+            'lon_rho_south', 'lat_rho_south',                         ...
+            'lon_rho_north', 'lat_rho_north',                         ...
+            'lon_u_west',    'lat_u_west',                            ...
+            'lon_u_east',    'lat_u_east',                            ...
+            'lon_u_south',   'lat_u_south',                           ...
+            'lon_u_north',   'lat_u_north',                           ...
+            'lon_v_west',    'lat_v_west',                            ...
+            'lon_v_east',    'lat_v_east',                            ...
+            'lon_v_south',   'lat_v_south',                           ...
+            'lon_v_north',   'lat_v_north'};
 
 nvars = length(C.Variables);
 
@@ -430,45 +429,58 @@ for n = 1:nvars
     disp(['Processing time-independent variable: ', Vname]);
     
     Vtype  = 'NONE';
-    if (any(strcmp(Dnames,'xi_rho'))),     Vtype = 'RHO'; end
-    if (any(strcmp(Dnames,'xi_psi'))),     Vtype = 'PSI'; end
-    if (any(strcmp(Dnames,'xi_u'))),       Vtype = 'U';   end
-    if (any(strcmp(Dnames,'xi_v'))),       Vtype = 'V';   end
-    if (any(strcmp(Dnames,'obc_adjust'))), Vtype = 'OBC'; end
-    if (any(strcmp(Dnames,'frc_adjust'))), Vtype = 'FRC'; end
+    if (any(strcmp(Dnames,'xi_rho'))),     Vtype = 'RHO_I'; end
+    if (any(strcmp(Dnames,'eta_rho'))),    Vtype = 'RHO_J'; end
+    if (any(strcmp(Dnames,'xi_u'))),       Vtype = 'U_I';   end
+    if (any(strcmp(Dnames,'eta_u'))),      Vtype = 'U_J';   end
+    if (any(strcmp(Dnames,'xi_v'))),       Vtype = 'V_I';   end
+    if (any(strcmp(Dnames,'eta_v'))),      Vtype = 'V_J';   end
     Km = 0;
     if (any(strcmp(Dnames,'s_rho'))), Km = N; end
-    if (any(strcmp(Dnames,'s_w'  ))), Km = N+1; end
       
     F = nc_read(Iname, Vname);            % if got_grid = false
     mydims = length(size(F));
     switch Vtype
-      case ('RHO')                        % RHO-points metrics
-        if (mydims == 2)
-          Fout = F(Ir, Jr);
-        elseif (mydims == 3)
-          Fout = F(Ir, Jr, :);
+      case ('RHO_I')                      % RHO-points metrics
+        if (mydims == 1)
+          Fout = F(Ir);
+        elseif (mydims == 2)
+          Fout = F(Ir, :);
         end
         nc_write(Oname, Vname, Fout);
-      case ('PSI')                        % PSI-points metrics
-        if (mydims == 2)
-          Fout = F(Ip, Jp);
-        elseif (mydims == 3)
-          Fout = F(Ip, Jp, :);
+      case ('RHO_J')                      % RHO-points metrics
+        if (mydims == 1)
+          Fout = F(Jr);
+        elseif (mydims == 2)
+          Fout = F(Jr, :);
         end
         nc_write(Oname, Vname, Fout);
-      case ('U')                          % U-points metrics
-        if (mydims == 2)
-          Fout = F(Iu, Ju);
-        elseif (mydims == 3)
-          Fout = F(Iu, Ju, :);
+      case ('U_I')                        % U-points metrics
+        if (mydims == 1)
+          Fout = F(Iu);
+        elseif (mydims == 2)
+          Fout = F(Iu, :);
         end
         nc_write(Oname, Vname, Fout);
-      case ('V')                          % V-points metrics
-        if (mydims == 2)
-          Fout = F(Iv, Jv);
-        elseif (mydims == 3)
-          Fout = F(Iv, Jv, :);
+      case ('U_J')                        % U-points metrics
+        if (mydims == 1)
+          Fout = F(Ju);
+        elseif (mydims == 2)
+          Fout = F(Ju, :);
+        end
+        nc_write(Oname, Vname, Fout);
+      case ('V_I')                        % V-points metrics
+        if (mydims == 1)
+          Fout = F(Iv);
+        elseif (mydims == 2)
+          Fout = F(Iv, :);
+        end
+        nc_write(Oname, Vname, Fout);
+      case ('V_J')                        % V-points metrics
+        if (mydims == 1)
+          Fout = F(Jv);
+        elseif (mydims == 2)
+          Fout = F(Jv, :);
         end
         nc_write(Oname, Vname, Fout);
       otherwise                           % Information arrays
@@ -509,83 +521,57 @@ for rec=1:Nrec
       if (RecVar)                         % time-dependent variables
 
         Vtype  = 'NONE';
-        if (any(strcmp(Dnames,'xi_rho'))),     Vtype = 'RHO'; end
-        if (any(strcmp(Dnames,'xi_psi'))),     Vtype = 'PSI'; end
-        if (any(strcmp(Dnames,'xi_u'))),       Vtype = 'U';   end
-        if (any(strcmp(Dnames,'xi_v'))),       Vtype = 'V';   end
-        if (any(strcmp(Dnames,'obc_adjust'))), Vtype = 'OBC'; end
-        if (any(strcmp(Dnames,'frc_adjust'))), Vtype = 'FRC'; end
+        if (any(strcmp(Dnames,'xi_rho'))),     Vtype = 'RHO_I'; end
+        if (any(strcmp(Dnames,'eta_rho'))),    Vtype = 'RHO_J'; end
+        if (any(strcmp(Dnames,'xi_u'))),       Vtype = 'U_I';   end
+        if (any(strcmp(Dnames,'eta_u'))),      Vtype = 'U_J';   end
+        if (any(strcmp(Dnames,'xi_v'))),       Vtype = 'V_I';   end
+        if (any(strcmp(Dnames,'eta_v'))),      Vtype = 'V_J';   end
         Km = 0;
         if (any(strcmp(Dnames,'s_rho'))), Km = N; end
-        if (any(strcmp(Dnames,'s_w'  ))), Km = N+1; end
       
         disp(['Processing time-dependent variable: ', Vname, ', (',   ...
               Vtype, '-points)']);
 
         F = nc_read(Iname, Vname, rec);    
-        if (nvdims > 2)                   % 2D or 3D fields
+        if (nvdims > 1)                   % 1D or 2D boundary fields
           switch Vtype
-            case ('RHO')
+            case ('RHO_I')
               Ic = Ir;
+            case ('RHO_J')
               Jc = Jr;
-            case ('PSI')
-              Ic = Ip;
-              Jc = Jp; 
-            case ('U')
+            case ('U_I')
               Ic = Iu;
+            case ('U_J')
               Jc = Ju; 
-            case ('V')
+            case ('V_I')
               Ic = Iv;
+            case ('V_J')
               Jc = Jv;       
-            case ('OBC')
-              if (Im >= Jm)
-                Bc = Ir;
-              else
-                Bc = Jr;
-              end
           end
-
-          if (strcmp(Vtype, 'FRC'))       % Process FRC adjustment
-            Im = length(Ic);
-            Jm = length(Jc);
-            Fout = zeros([Im Jm frc]);
-            for k = 1:frc
-              Fout(:,:,k) = squeeze(F(Ic,Jc,k));
-            end    
-            nc_write(Oname, Vname, Fout, rec);
-          elseif (strcmp(Vtype, 'OBC'))   % Process OBC adjustment
+          if (contains(Vname,'_west') || contains(Vname,'_east'))
             if (Km > 0)
-              Fout = zeros([IorJ Km 4 obc]);
-             for ibry = 1:4               % HGA need efficient code
-                for iobc = 1:obc
-                   for k = 1:Km
-                     Fout(1:IorJ,k,ibry,iobc) = squeeze(F(Bc,k,ibry,iobc));
-                   end
-                end
-              end
-            else
-              Fout = zeros([IorJ 4 obc]);
-              for ibry = 1:4
-                for iobc = 1:obc
-                  Fout(1:IorJ,ibry,iobc) = squeeze(F(1:IorJ,ibry,iobc));
-                end
-              end
-            end
-            nc_write(Oname, Vname, Fout, rec);
-          else          
-            if (Km > 0)                   % Process 3D state field
-              Im = length(Ic);
-              Jm = length(Jc);
-              Fout = zeros([Im Jm Km]);
+              Jm = length(Jc);            % Process 2D boundary
+              Fout = zeros([Jm Km]);
               for k = 1:Km
-                Fout(:,:,k) = squeeze(F(Ic,Jc,k));
+                Fout(:,k) = squeeze(F(Jc,k));
               end  
-            else                          % Process 2D state field
-              Fout = F(Ic, Jc);
+            else
+              Fout = F(Jc);               % Process 1D boundary
             end
-            nc_write(Oname, Vname, Fout, rec);
-          end  
-        else                              % Process time coordinate
+	  elseif (contains(Vname,'_south') || contains(Vname,'_north'))
+            if (Km > 0)
+              Im = length(Ic);            % Process 2D boundary
+              Fout = zeros([Im Km]);
+              for k = 1:Km
+                Fout(:,k) = squeeze(F(Ic,k));
+              end  
+            else
+              Fout = F(Ic);               % Process 1D boundary
+            end
+	  end  
+          nc_write(Oname, Vname, Fout, rec);
+	else                              % Process time coordinate
           nc_write(Oname, Vname, F, rec);
         end
       end
@@ -597,8 +583,6 @@ end
 % Get full extracted grid structure.
 %------------------------------------------------------------------------
 
-if (spherical)
-  S = get_roms_grid(Oname);
-end
+S = get_roms_grid(Oname);
 
 return

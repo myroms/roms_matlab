@@ -1,9 +1,8 @@
-function M = ioda_metadata (varargin)
+function M = ioda_metadata (cycle_length, varargin)
 
-%
 % IODA_METADATA:  Sets metadata structure for IODA-type NetCDF4 files
 %
-% M = ioda_metadata (report)
+% M = ioda_metadata (cycle_length, report)
 %
 % This function initializes the metadata structure, M, for IODA-enhanced
 % NetCDF-4 files. It sets the names of the data assimilation control
@@ -16,7 +15,8 @@ function M = ioda_metadata (varargin)
 %  
 % On Input:
 %
-%    report    Switch to report metadata (OPTIONAL)
+%    cycle_length   Data Assimilation cycle length (hours)
+%    report         Switch to report metadata (OPTIONAL)
 %
 % On Output:
 %
@@ -24,7 +24,8 @@ function M = ioda_metadata (varargin)
 %                (struct array)
 %
 %                M(:).name           variable short name
-%                M(:).half_length    area-averaged half-length (km) scale
+%                M(:).cycle_length   Data Assimilation cycle (hours)
+%                M(:).radius         area-averaged radius (km) scale
 %                M(:).time_window    time-averaged window (hours)
 %                M(:).ioda_vname     IODA NetCDF-4 variable name
 %                M(:).standard_name  variable standard name
@@ -38,9 +39,13 @@ function M = ioda_metadata (varargin)
 %  or
 %       M = ioda_metadata(true);
 %
+%  To set the Data Assimilation cycle length to every element use:
+%
+%       [M.cycle_length] = deal(96);                       % hours
+%
 %  To set the area-averaged and time-averaged scales for SSH use:
 %
-%       M(strcmp({M.name}, 'SSH')).half_length = 30;       % km
+%       M(strcmp({M.name}, 'SSH')).radius = 30;            % km
 %       M(strcmp({M.name}, 'SSH')).time_window = 36;       % hours
 %
 %  To set a time-averaged window of 24 hours for uv_CODAR velocities use:
@@ -71,11 +76,12 @@ end
 % Define structure array where is element is associated with a variable
 % in ROMS data assimilation control vector.
 
-M(1:7) = struct('name'          , [],                                 ...
-                'half_length'   , [],                                 ...
-                'time_window'   , [],                                 ...
-                'ioda_vname'    , [],                                 ...
-                'standard_name' , []);
+M(1:7) = struct('name'           , [],                                ...
+                'cycle_length'   , [],                                ...
+                'radius'         , [],                                ...
+                'time_window'    , [],                                ...
+                'ioda_vname'     , [],                                ...
+                'standard_name'  , []);
 
 % Initialize structure values.
 
@@ -109,6 +115,10 @@ M(7).name          = 'salt';
 M(7).ioda_vname    = 'salinity';
 M(7).standard_name = 'sea_water_salinity';
 
+% Set data assimilation cycle length.
+
+[M.cycle_length] = deal(cycle_length);
+
 % Report.
 
 if (report)
@@ -121,6 +131,9 @@ if (report)
   for i = 1:nvars
     disp(M(i))
   end
+
+  disp(blanks(1));
+  disp( struct2table(M) );
 end
 
 return
