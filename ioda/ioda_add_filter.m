@@ -38,6 +38,14 @@ function ioda_add_filter(InpName, OutName, M);
 %                  M(:).ioda_vname     IODA NetCDF-4 variable name
 %                  M(:).standard_name  variable standard name
 %
+%                  Here, M(:).time_window is the half-length value.
+%                  For example, if time_window=12 hours, the effective
+%                  averaging in H(x) is for 24 hours for each location.
+%
+%                    |<------------ 24 h ------------->|
+%                    |---------- dateTime(n) ----------|
+%                    |<-----12 h----->|<-----12 h----->|
+%
 % USAGE:
 % *****
 %

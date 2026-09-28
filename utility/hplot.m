@@ -234,8 +234,8 @@ end
 
 if (isfield(P, 'shading'))
   switch (P.shading)
-    case 'faceted'
-      shading faceted;
+    case 'facetted'
+      shading facetted;
     case 'flat'
       shading flat;
     case 'interp'

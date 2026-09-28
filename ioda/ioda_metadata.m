@@ -1,9 +1,8 @@
-function M = ioda_metadata (varargin)
+function M = ioda_metadata (cycle_length, varargin)
 
-%
 % IODA_METADATA:  Sets metadata structure for IODA-type NetCDF4 files
 %
-% M = ioda_metadata (report)
+% M = ioda_metadata (cycle_length, report)
 %
 % This function initializes the metadata structure, M, for IODA-enhanced
 % NetCDF-4 files. It sets the names of the data assimilation control
@@ -16,7 +15,8 @@ function M = ioda_metadata (varargin)
 %  
 % On Input:
 %
-%    report    Switch to report metadata (OPTIONAL)
+%    cycle_length   Data Assimilation cycle length (hours)
+%    report         Switch to report metadata (OPTIONAL)
 %
 % On Output:
 %
@@ -115,13 +115,24 @@ M(7).name          = 'salt';
 M(7).ioda_vname    = 'salinity';
 M(7).standard_name = 'sea_water_salinity';
 
+% Set data assimilation cycle length.
+
+[M.cycle_length] = deal(cycle_length);
+
 % Report.
 
 if (report)
+  nvars = length(M);
+
   disp(blanks(1));
   disp('IODA NetCDF-4 file Metadata Structure:');
   disp(blanks(1));
   
+  for i = 1:nvars
+    disp(M(i))
+  end
+
+  disp(blanks(1));
   disp( struct2table(M) );
 end
 

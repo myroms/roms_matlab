@@ -4,6 +4,7 @@
 % EXTRA='WC13_Vname';
 % EXTRA='ECCOFS';
 % EXTRA='ECCOFS_Vname';
+% EXTRA='DOMAIN';
   EXTRA='None';
 
 switch EXTRA
@@ -34,7 +35,10 @@ switch EXTRA
     y=38;
     [x,y]=m_ll2xy(x,y);                 % WC13 variable name
     text(x,y, untexlabel(P.Vname),'FontSize',20,                     ...
-         'FontWeight','bold','Color','k'); 
+         'FontWeight','bold','Color','k');
+  case 'DOMAIN'
+    [x,y]=m_ll2xy(G.lon_perimeter, G.lat_perimeter);
+    plot(x,y,'k-', 'LineWidth', 3);   
   otherwise
     % skip
 end

@@ -17,6 +17,13 @@ function S = grid_decimate(Gfactor, Iname, Oname, varargin)
 %               rem(L, Gfactor) = 0
 %               rem(M, Gfactor) = 0
 %
+% WARNING: Cannot decimate files having packed (SHORT) NetCDF
+%          variable. If so you must unapack before decimation, use:
+%
+%          ncpdq -P upk filename_packed.nc filename_unpaked.nc
+%      or
+%          ncunpack filename_packed.nc filename_unpaked.nc
+%
 % On Input:
 %
 %    Gfactor    Grid decimation factor (only 2,3,4 are supported)
@@ -71,20 +78,21 @@ S = [];
 
 legal = Gfactor > 1 && Gfactor < 5;
 if (~any(legal))
-  error([' DECIMATE: illegal decimation factor, Gfactor = ',          ...
+  error([' GRID_DECIMATE: illegal decimation factor, Gfactor = ',     ...
          num2str(Gfactor)]);
 end
 
 % If applicable, get finer grid and variable structures.
 
-F = get_roms_grid(Iname);
+I = nc_inq(Iname);
 
-% Set data sampling indices (PSI-points).
-
-[Lp,Mp] = size(F.h);
+Lp = I.Dimensions(strcmp({I.Dimensions.Name},'xi_rho' )).Length;
+Mp = I.Dimensions(strcmp({I.Dimensions.Name},'eta_rho')).Length;
 
 L = Lp-1;
 M = Mp-1;
+
+spherical = any(strcmp({I.Variables.Name},'spherical'));
 
 % Check if both number of grid point are even or odd.
 
@@ -145,14 +153,14 @@ if (Lplot)
   Jstr = 1;  Jend = M;
 
   XboxF = [squeeze(XpF(Istr:Iend,Jstr));                            ...
-          squeeze(XpF(Iend,Jstr+1:Jend))';                          ...
-          squeeze(flipud(XpF(Istr:Iend-1,Jend)));                   ...
-          squeeze(fliplr(XpF(Istr,Jstr:Jend-1)))'];
+           squeeze(XpF(Iend,Jstr+1:Jend))';                         ...
+           squeeze(flipud(XpF(Istr:Iend-1,Jend)));                  ...
+           squeeze(fliplr(XpF(Istr,Jstr:Jend-1)))'];
 
   YboxF = [squeeze(YpF(Istr:Iend,Jstr));                            ...
-          squeeze(YpF(Iend,Jstr+1:Jend))';                          ...
-          squeeze(flipud(YpF(Istr:Iend-1,Jend)));                   ...
-          squeeze(fliplr(YpF(Istr,Jstr:Jend-1)))'];
+           squeeze(YpF(Iend,Jstr+1:Jend))';                         ...
+           squeeze(flipud(YpF(Istr:Iend-1,Jend)));                  ...
+           squeeze(fliplr(YpF(Istr,Jstr:Jend-1)))'];
 
 % Coarse grid physical boundary perimeter.
 
@@ -160,14 +168,14 @@ if (Lplot)
   Jstr = 1;  Jend = Jm-1;
 
   XboxC = [squeeze(XpC(Istr:Iend,Jstr));                            ...
-          squeeze(XpC(Iend,Jstr+1:Jend))';                          ...
-          squeeze(flipud(XpC(Istr:Iend-1,Jend)));                   ...
-          squeeze(fliplr(XpC(Istr,Jstr:Jend-1)))'];
+           squeeze(XpC(Iend,Jstr+1:Jend))';                         ...
+           squeeze(flipud(XpC(Istr:Iend-1,Jend)));                  ...
+           squeeze(fliplr(XpC(Istr,Jstr:Jend-1)))'];
 
   YboxC = [squeeze(YpC(Istr:Iend,Jstr));                            ...
-          squeeze(YpC(Iend,Jstr+1:Jend))';                          ...
-          squeeze(flipud(YpC(Istr:Iend-1,Jend)));                   ...
-          squeeze(fliplr(YpC(Istr,Jstr:Jend-1)))'];
+           squeeze(YpC(Iend,Jstr+1:Jend))';                         ...
+           squeeze(flipud(YpC(Istr:Iend-1,Jend)));                  ...
+           squeeze(fliplr(YpC(Istr,Jstr:Jend-1)))'];
   
 % Grid makers colors: RHO, PSI, U, and V.
 
@@ -343,9 +351,14 @@ if (any(Index))
   C.Dimensions(strcmp({C.Dimensions.Name}, RecDim)).Length = 0;
 else
   Index = contains({C.Dimensions.Name}, 'time');
-  RecDim = C.Dimensions(Index).Name;
-  Nrec = C.Dimensions(strcmp({C.Dimensions.Name}, RecDim)).Length;
-  C.Dimensions(strcmp({C.Dimensions.Name}, RecDim)).Length = 0;
+  if (any(Index))
+    RecDim = C.Dimensions(Index).Name;
+    Nrec = C.Dimensions(strcmp({C.Dimensions.Name}, RecDim)).Length;
+    C.Dimensions(strcmp({C.Dimensions.Name}, RecDim)).Length = 0;
+  else
+    RecDim = 'NONE';  
+    Nrec = 0;
+  end
 end
 
 % Report.
@@ -584,6 +597,8 @@ end
 % Get full extracted grid structure.
 %------------------------------------------------------------------------
 
-S = get_roms_grid(Oname);
+if (spherical)
+  S = get_roms_grid(Oname);
+end
 
 return

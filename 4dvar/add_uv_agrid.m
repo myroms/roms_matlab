@@ -1,9 +1,9 @@
-function F = add_uv_agrid(G, ncfile, u_varname, v_varname)
+function F = add_uv_agrid(G, ncfile, u_varname, v_varname, varargin)
 
 %
 % ADD_UV_AGRID:  Adds rotated vector components to ROMS NetCDF file
 %
-% add_uv_agrid(ncfile, u_varname, v_varname)
+% F = add_uv_agrid(ncfile, u_varname, v_varname, Lrotate)
 %
 % Adds vector components at RHO-points (A-grid) and rotate its values
 % to geographical Eastward and Nortward directions.  
@@ -12,9 +12,19 @@ function F = add_uv_agrid(G, ncfile, u_varname, v_varname)
 %
 %    G             ROMS grid NetCDF filename (string)
 %              or, an existing ROMS grid structure (struct array)
+
 %    ncfile        ROMS NetCDF filename (string)
+%
 %    u_varname     U-component variable name to add (string)
+%
 %    v_varname     V-component variable name to add (string)
+%
+%    Lrotate       Switch to rotate to geographical directions
+%                    (OPTIONAL; default = true)
+%
+%                  WARNING:  set to false when processing vector
+%                            component standard deviations for
+%                            background error covariance modeling
 %
 % Example: Compute and sdd 4D-Var standard deviations at RHO-points
 %          (A-grid) rotated to Eastward and Northward directions.
@@ -27,6 +37,13 @@ function F = add_uv_agrid(G, ncfile, u_varname, v_varname)
 %    Licensed under a MIT/X style license                                 %
 %    See License_ROMS.md                            Hernan G. Arango      %
 %=========================================================================%
+
+switch numel(varargin)
+  case 0
+    Lrotate = true;
+  case 1
+    Lrotate = varargin{1};
+end
 
 % Initialize.
   
@@ -95,7 +112,7 @@ end
 %  Compute vector components at RHO-points and rotate to Eastward and
 %  Nortward directions
 
-Nrec = double(size(nc_read(ncfile, 'ocean_time')));
+Nrec = double(length(ncread(ncfile, 'ocean_time')));
 
 for rec = 1:Nrec
 
@@ -133,6 +150,8 @@ for rec = 1:Nrec
 
   % Average to RHO-points, A-grid. Apply gradient lateral boundary.
   
+  disp('*** Averaging C-grid vector components to RHO-points (A-grid)');
+
   if (is3d)
     Urho(2:L, 1:Mp, :) = 0.5 .* (Uinp(1:Lm, 1:Mp, :)+Uinp(2:L,  1:Mp, :));
     Urho(1,   :,    :) = Urho(2, :, :);
@@ -141,6 +160,8 @@ for rec = 1:Nrec
     Vrho(1:Lp, 2:M, :) = 0.5 .* (Vinp(1:Lp, 1:Mm, :)+Vinp(1:Lp, 2:M,  :));
     Vrho(:,    1,   :) = Vrho(:, 2, :);   
     Vrho(:,    Mp,  :) = Vrho(:, M, :);   
+  
+    start = [1 1 1 rec];
   else
     Urho(2:L,  1:Mp) = 0.5 .* (Uinp(1:Lm, 1:Mp)+Uinp(2:L,  1:Mp));
     Urho(1,   :) = Urho(2, :);
@@ -149,23 +170,36 @@ for rec = 1:Nrec
     Vrho(1:Lp, 2:M ) = 0.5 .* (Vinp(1:Lp, 1:Mm)+Vinp(1:Lp, 2:M ));
     Vrho(:,    1 ) = Vrho(:, 2);   
     Vrho(:,    Mp) = Vrho(:, M);   
+
+    start = [1 1 rec];
   end
   
   % Rotate geographical Eastward and Northward components.
 
-  Urot = Urho .* CosAngle - Vrho .* SinAngle;
-  Vrot = Vrho .* CosAngle + Urho .* SinAngle;
-  
+  if (Lrotate)
+    disp('*** Rotating to Geographic East and North directions');
+    
+    Urot = Urho .* CosAngle - Vrho .* SinAngle;
+    Vrot = Vrho .* CosAngle + Urho .* SinAngle;
+  end
+
   % Write out rotated A-grid components.
 
-  nc_write(ncfile, u_varname, Urot, rec);
-  nc_write(ncfile, v_varname, Vrot, rec);
-
+  if (Lrotate)
+    ncwrite(ncfile, u_varname, Urot, start);
+    ncwrite(ncfile, v_varname, Vrot, start);
+  else
+    ncwrite(ncfile, u_varname, Urho, start);
+    ncwrite(ncfile, v_varname, Vrho, start);
+  end
+  
   F.time = nc_read(ncfile, 'ocean_time', rec);
   F(rec).Urho = Urho;
   F(rec).Vrho = Vrho;
-  F(rec).Urot = Urot;
-  F(rec).Vrot = Vrot;
+  if (Lrotate)
+    F(rec).Urot = Urot;
+    F(rec).Vrot = Vrot;
+  end
 end
 
 return

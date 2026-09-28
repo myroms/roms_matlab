@@ -276,24 +276,26 @@ netcdf.putAtt(ncid, varid, 'history', history);
 %--------------------------------------------------------------------------
 % Define NetCDF4 file variables: same as dimension names.
 %--------------------------------------------------------------------------
+%
+% For now, set chunk size to dimension value.
 
 for i = 1:length(D)
   Vname = char(D(i).name);
   switch Vname
     case 'Location'
       D(i).vid = netcdf.defVar(ncid, Vname, nc_int, D(i).did);
-      netcdf.putAtt(ncid, D(i).vid, 'suggested_chunck_dim',             ...
-                    int32(512));
+      netcdf.putAtt(ncid, D(i).vid, 'suggested_chunk_dim',              ...
+                    int32(S.nlocs));
       netcdf.putAtt(ncid, D(i).vid, '_FillValue', int32(-1));
     case 'nvars'
       D(i).vid = netcdf.defVar(ncid, Vname, nc_int, D(i).did);
-      netcdf.putAtt(ncid, D(i).vid, 'suggested_chunck_dim',             ...
-                    int32(100));
+      netcdf.putAtt(ncid, D(i).vid, 'suggested_chunk_dim',              ...
+                    int32(S.nvars));
       netcdf.putAtt(ncid, D(i).vid, '_FillValue', int32(-1));
    case 'survey'
       D(i).vid = netcdf.defVar(ncid, Vname, nc_int, D(i).did);
-      netcdf.putAtt(ncid, D(i).vid, 'suggested_chunck_dim',             ...
-                    int32(100));
+      netcdf.putAtt(ncid, D(i).vid, 'suggested_chunk_dim',              ...
+                    int32(S.nsurvey));
       netcdf.putAtt(ncid, D(i).vid, '_FillValue', int32(-1));
   end
 end

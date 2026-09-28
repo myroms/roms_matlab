@@ -17,6 +17,13 @@ function S = bry_decimate(Gfactor, Ginp, Iname, Oname, varargin)
 %               rem(L, Gfactor) = 0
 %               rem(M, Gfactor) = 0
 %
+% WARNING: Cannot decimate files having packed (SHORT) NetCDF
+%          variable. If so you must unapack before decimation, use:
+%
+%          ncpdq -P upk filename_packed.nc filename_unpaked.nc
+%      or
+%          ncunpack filename_packed.nc filename_unpaked.nc
+%
 % On Input:
 %
 %    Gfactor    Grid decimation factor (only 2,3,4 are supported)
