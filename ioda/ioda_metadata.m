@@ -26,31 +26,43 @@ function M = ioda_metadata (cycle_length, varargin)
 %                M(:).name           variable short name
 %                M(:).cycle_length   Data Assimilation cycle (hours)
 %                M(:).radius         area-averaged radius (km) scale
-%                M(:).time_window    time-averaged window (hours)
+%                M(:).time_window    half time-averaged window (hours)
 %                M(:).ioda_vname     IODA NetCDF-4 variable name
 %                M(:).standard_name  variable standard name
 %
 %                M(:).name = 'SSH', 'SST', 'SSS', 'uv_CODAR', 
 %                            'ptemp', 'temp', 'salt'
-%                 
+%
+%                Specify the half-length value for 'time_window'.
+%                For example, if the time-averaging is for 36 hours,
+%                time_window = 18 hours. Such that,
+%
+%                |<------------ 36 h ------------->|
+%                |---------- dateTime(n) ----------|
+%                |<-----18 h----->|<-----18 h----->|
+%
+%                Time averaging will be truncated for observations near
+%                the start or end of the data assimilation cycle.
+%
 % USAGE:
 %
-%       M = ioda_metadata;
+%       M = ioda_metadata(cycle_length);
 %  or
-%       M = ioda_metadata(true);
+%       M = ioda_metadata(cycle_length, true);
 %
-%  To set the Data Assimilation cycle length to every element use:
+%  To update Data Assimilation cycle length to every element, use:
 %
 %       [M.cycle_length] = deal(96);                       % hours
 %
-%  To set the area-averaged and time-averaged scales for SSH use:
+%  To set the area-averaged and time-averaged scales for SSH, use:
+%  (repeated SSH observations, if any, are removed) 
 %
-%       M(strcmp({M.name}, 'SSH')).radius = 30;            % km
-%       M(strcmp({M.name}, 'SSH')).time_window = 36;       % hours
+%       M(strcmp({M.name}, 'SSH')).radius = 40;            % km
+%       M(strcmp({M.name}, 'SSH')).time_window = 18;       % 36 hours
 %
 %  To set a time-averaged window of 24 hours for uv_CODAR velocities use:
 %
-%       M(strcmp({M.name}, 'uv_CODAR')).time_window = 24;  % hours
+%       M(strcmp({M.name}, 'uv_CODAR')).time_window = 12;  % 24 hours
 %
 %  To display the updated values use:
 %

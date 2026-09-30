@@ -46,9 +46,20 @@ function roms2ioda(ObsData, HisName, prefix, suffix, M)
 %                  M(:).name           variable short name
 %                  M(:).cycle_length   Data Assimilation cyle (hours)
 %                  M(:).radius         area-averaged radius (km) scale
-%                  M(:).time_window    time-averaged window (hours)
+%                  M(:).time_window    half time-averaged window (hours)
 %                  M(:).ioda_vname     IODA NetCDF-4 variable name
 %                  M(:).standard_name  variable standard name
+%
+%                  Specify the half-length value for 'time_window'.
+%                  For example, if the time-averaging is for 36 hours,
+%                  time_window = 18 hours. Such that,
+%
+%                  |<------------ 36 h ------------->|
+%                  |---------- dateTime(n) ----------|
+%                  |<-----18 h----->|<-----18 h----->|
+%
+%                  Time averaging will be truncated for observations near
+%                  the start or end of the data assimilation cycle.
 %
 % USAGE:
 % *****
@@ -64,7 +75,7 @@ function roms2ioda(ObsData, HisName, prefix, suffix, M)
 %
 %   (1) Set IODA NetCDF-4 file metadata structure, M:
 %
-%       M = ioda_metadata(true);
+%       M = ioda_metadata(cycle_length, true);
 %
 %   (2) Set Data Assimilation cycle length (hours) using "deal" to
 %       assing values to all structure elements.
@@ -75,9 +86,9 @@ function roms2ioda(ObsData, HisName, prefix, suffix, M)
 %       for specialized H(x) operators. If not, you can skip this step.
 %
 %       M(strcmp({M.name}, 'SSH')).radius = 30;                  % km
-%       M(strcmp({M.name}, 'SSH')).time_window = 36;             % hours
+%       M(strcmp({M.name}, 'SSH')).time_window = 18;             % hours
 %
-%       M(strcmp({M.name}, 'uv_CODAR')).time_window = 24;        % hours
+%       M(strcmp({M.name}, 'uv_CODAR')).time_window = 12;        % hours
 %
 %       To display updated values, use:
 %
@@ -108,17 +119,17 @@ function roms2ioda(ObsData, HisName, prefix, suffix, M)
 % Initialize area-averaged and time-averaged parameters from Metdata
 % structure, M.
 
-SSHareaAvg = M(strcmp({M.name}, 'SSH')).radius;
-SSHtimeAvg = M(strcmp({M.name}, 'SSH')).time_window;
+SSHareaAvg  = M(strcmp({M.name}, 'SSH')).radius;
+SSHtimeAvg  = M(strcmp({M.name}, 'SSH')).time_window;
 
-SSTareaAvg = M(strcmp({M.name}, 'SST')).radius;
-SSTtimeAvg = M(strcmp({M.name}, 'SST')).time_window;
+SSTareaAvg  = M(strcmp({M.name}, 'SST')).radius;
+SSTtimeAvg  = M(strcmp({M.name}, 'SST')).time_window;
 
-SSSareaAvg = M(strcmp({M.name}, 'SSS')).radius;
-SSStimeAvg = M(strcmp({M.name}, 'SSS')).time_window;
+SSSareaAvg  = M(strcmp({M.name}, 'SSS')).radius;
+SSStimeAvg  = M(strcmp({M.name}, 'SSS')).time_window;
 
-UVareaAvg  = M(strcmp({M.name}, 'uv_CODAR')).radius;
-UVtimeAvg  = M(strcmp({M.name}, 'uv_CODAR')).time_window;
+UVareaAvg   = M(strcmp({M.name}, 'uv_CODAR')).radius;
+UVtimeAvg   = M(strcmp({M.name}, 'uv_CODAR')).time_window;
 
 SALTareaAvg = M(strcmp({M.name}, 'salt')).radius;
 SALTtimeAvg = M(strcmp({M.name}, 'salt')).time_window;
@@ -206,9 +217,10 @@ isalt = find(S.type == 7);
 % assimilation cycle, but with different errors.
 %
 % Identify such repetitive observations by setting their provenance
-% to negative values.
+% to negative values. Repeated observations are removed if either
+% setting their area- or time-averaging variables for H(x) operators.
 
-norepeat = false;
+norepeat = true;
 if (~isempty(issh) & norepeat)
   [~,IA,~] = unique(complex(S.lat(issh), S.lon(issh)));
   if (~isempty(IA))
@@ -220,13 +232,13 @@ if (~isempty(issh) & norepeat)
   end
 
   if (~isempty(SSHareaAvg) || ~isempty(SSHtimeAvg))
-    issh = find(S.type == 1 & S.provenance > 0);
+    issh = find(S.type == 1 & S.provenance > 0);    % remove repetitive
   end
 
 else
 
   if (~isempty(SSHareaAvg) || ~isempty(SSHtimeAvg))
-    issh = find(S.type == 1 & S.provenance > 0);
+    issh = find(S.type == 1 & S.provenance > 0);    % remove repetitive
   end
 
 end

@@ -170,7 +170,7 @@ end
 
 for n = 1:S.nvars
 
-  Vname = S.iodaVarName{n};
+  Vname = S.ncvname{n};
 
 %--------------------------------------------------------------------------
 % Plot "ObsValue" Group.
